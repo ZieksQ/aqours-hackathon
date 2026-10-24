@@ -11,7 +11,7 @@ The repository contains the .NET API layer projects, a React web starter, Docker
 - Backend: .NET 10 / C#, ASP.NET Core Minimal API, ASP.NET Core Identity for planned account management.
 - .NET projects and namespaces use PascalCase: `Aqours.Domain`, `Aqours.Application`, `Aqours.Infrastructure`, and `Aqours.Api`; follow the Clean Architecture reference rules in `docs/architecture.md`.
 - Web: React with TypeScript, Vite, ESLint, and Tailwind CSS; React Router and TanStack Query are the agreed routing and server-state tools.
-- Database: PostgreSQL 18.6 using the locally installed `postgres:18.6-alpine3.23` Docker image. Keep persistence implementations in Infrastructure; a .NET database provider and migrations have not been added.
+- Database: PostgreSQL 18.6 using the locally installed `postgres:18.6-alpine3.23` Docker image. Keep persistence implementations in Infrastructure; EF Core with Npgsql, Identity persistence support, and snake_case naming are configured, but migrations and account endpoints have not been added.
 - Maps and weather: React Leaflet with Geoapify tiles on the web; Open-Meteo behind the API.
 - Tooling: pnpm workspace for JavaScript, NuGet/.NET CLI for .NET, Docker Compose for the local database, and root `concurrently` for running the API and web app together. See `README.md` for startup commands.
 - Mobile: React Native with Expo Go is planned; creation is deferred at the user's request.
