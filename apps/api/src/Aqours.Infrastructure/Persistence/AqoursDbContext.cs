@@ -1,3 +1,4 @@
+using Aqours.Infrastructure.Features.Accounts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -5,14 +6,26 @@ using Microsoft.EntityFrameworkCore;
 namespace Aqours.Infrastructure.Persistence;
 
 public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
-    : IdentityDbContext(options)
+    : IdentityDbContext<IdentityAccountUser>(options)
 {
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<IdentityAccountUser>().Property(u => u.FirstName).HasMaxLength(100).IsRequired();
+        builder.Entity<IdentityAccountUser>().Property(u => u.LastName).HasMaxLength(100).IsRequired();
+        builder.Entity<IdentityAccountUser>().Property(u => u.MiddleName).HasMaxLength(100);
+        builder.Entity<IdentityUserRole<string>>().HasIndex(r => r.UserId).IsUnique();
+        builder.Entity<RefreshFamily>().ToTable("refresh_families");
+        builder.Entity<RefreshFamily>().HasKey(f => f.Id);
+        builder.Entity<RefreshFamily>().HasOne<IdentityAccountUser>().WithMany().HasForeignKey(f => f.UserId);
+        builder.Entity<RefreshToken>().ToTable("refresh_tokens");
+        builder.Entity<RefreshToken>().HasKey(t => t.Hash);
+        builder.Entity<RefreshToken>().Property(t => t.Hash).HasMaxLength(64);
+        builder.Entity<RefreshToken>().HasOne<RefreshFamily>().WithMany().HasForeignKey(t => t.FamilyId);
+
         // Identity explicitly names these tables and indexes, overriding naming conventions.
-        builder.Entity<IdentityUser>().ToTable("asp_net_users");
+        builder.Entity<IdentityAccountUser>().ToTable("asp_net_users");
         builder.Entity<IdentityRole>().ToTable("asp_net_roles");
         builder.Entity<IdentityUserClaim<string>>().ToTable("asp_net_user_claims");
         builder.Entity<IdentityUserLogin<string>>().ToTable("asp_net_user_logins");
@@ -20,9 +33,9 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
         builder.Entity<IdentityUserToken<string>>().ToTable("asp_net_user_tokens");
         builder.Entity<IdentityRoleClaim<string>>().ToTable("asp_net_role_claims");
 
-        builder.Entity<IdentityUser>().HasIndex(user => user.NormalizedEmail)
-            .HasDatabaseName("email_index");
-        builder.Entity<IdentityUser>().HasIndex(user => user.NormalizedUserName)
+        builder.Entity<IdentityAccountUser>().HasIndex(user => user.NormalizedEmail)
+            .IsUnique().HasDatabaseName("email_index");
+        builder.Entity<IdentityAccountUser>().HasIndex(user => user.NormalizedUserName)
             .HasDatabaseName("user_name_index");
         builder.Entity<IdentityRole>().HasIndex(role => role.NormalizedName)
             .HasDatabaseName("role_name_index");

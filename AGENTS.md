@@ -4,14 +4,14 @@
 
 Aqours is a water reporting and supplier response system with a customer mobile app, supplier web portal, manual supply monitoring, and weather-based warnings. Keep work focused on the one-week MVP.
 
-The repository contains the .NET API layer projects, a React web starter, Docker PostgreSQL configuration, product and architecture documents, and the shared Philippine location dataset. The mobile app and MVP business features are not implemented yet.
+The repository contains the .NET API layer projects, a React web app with supplier account screens, Docker PostgreSQL configuration, product and architecture documents, and the shared Philippine location dataset. Account authentication is implemented; report, supply, weather, and mobile application features remain deferred.
 
 ## Basic technology stack
 
-- Backend: .NET 10 / C#, ASP.NET Core Minimal API, ASP.NET Core Identity for planned account management.
+- Backend: .NET 10 / C#, ASP.NET Core Minimal API, ASP.NET Core Identity for account management and authentication.
 - .NET projects and namespaces use PascalCase: `Aqours.Domain`, `Aqours.Application`, `Aqours.Infrastructure`, and `Aqours.Api`; follow the Clean Architecture reference rules in `docs/architecture.md`.
 - Web: React with TypeScript, Vite, ESLint, and Tailwind CSS; React Router and TanStack Query are the agreed routing and server-state tools.
-- Database: PostgreSQL 18.6 using the locally installed `postgres:18.6-alpine3.23` Docker image. Keep persistence implementations in Infrastructure; EF Core with Npgsql, Identity persistence support, and snake_case naming are configured, but migrations and account endpoints have not been added.
+- Database: PostgreSQL 18.6 using the locally installed `postgres:18.6-alpine3.23` Docker image. Keep persistence implementations in Infrastructure; EF Core with Npgsql, Identity persistence, snake_case naming, and the initial authentication migration are configured. Apply migrations explicitly; API startup does not modify the schema.
 - Maps and weather: React Leaflet with Geoapify tiles on the web; Open-Meteo behind the API.
 - Tooling: pnpm workspace for JavaScript, NuGet/.NET CLI for .NET, Docker Compose for the local database, and root `concurrently` for running the API and web app together. See `README.md` for startup commands.
 - Mobile: React Native with Expo Go is planned; creation is deferred at the user's request.
@@ -44,6 +44,22 @@ For location data work, also read `packages/psgc/README.md` for provenance, cons
 - Write application code and documentation directly when there is no appropriate generator. Do not run a generator over existing work without checking what it will replace.
 - Follow the required stack in `docs/architecture.md`. Ask before adding dependencies beyond the agreed stack, including development dependencies and NuGet packages.
 - Use actual project scripts and available CLI commands for verification; do not claim checks ran when they did not.
+
+## Domain entities and layer communication
+
+- Put business entities and their invariants in Domain, organized by feature. Domain must remain independent of ASP.NET Core Identity, EF Core, HTTP, and provider SDKs.
+- Keep framework-specific persistence models in Infrastructure (for example, `IdentityAccountUser : IdentityUser`), map them to the Domain entity, and never expose them through API responses.
+- Define use cases and the interfaces they need in Application. Infrastructure implements those interfaces; API endpoints call Application use cases and return explicit transport DTOs. Do not have layers communicate by reaching into concrete persistence services.
+
+## Persistence organization
+
+- Keep database setup and support code in Infrastructure under `Persistence/`, with separate folders for each concern: `Persistence/Seeders/` for seed data and seeding services, `Persistence/Migrations/` for generated EF migrations and snapshots, and dedicated folders such as `Persistence/Configurations/` when those concerns are introduced. Keep the DbContext at the Persistence root; feature-specific storage adapters can stay under `Features/` according to the architecture.
+- Generate migrations with the EF CLI using `--output-dir Persistence/Migrations`; keep folder and namespace organization consistent, and do not mix seeders or migrations into feature service folders.
+
+## Code formatting
+
+- Format every code file you create or change before verification and committing. Use the existing formatter or language tooling (for example, `dotnet format` for C# and the web formatter plus ESLint for TypeScript/React); preserve the repository conventions and avoid unrelated formatting changes.
+- Run available formatting checks and report any limitation; generated code should follow its official generator’s formatting.
 
 ## Keep implementation simple
 

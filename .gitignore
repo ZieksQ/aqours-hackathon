@@ -487,3 +487,6 @@ coverage/
 .env.*
 !.env.example
 *.local
+
+# Local browser/design verification evidence
+.taste-skill/
