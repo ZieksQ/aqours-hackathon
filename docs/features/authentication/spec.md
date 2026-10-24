@@ -48,6 +48,8 @@ Refresh rotation and replay handling serialize on the refresh-family row lock. R
 
 ## Database and startup behavior
 
+`apps/api/src/Aqours.Api/appsettings.json` includes the `SeedAdmin` email/name defaults and an empty password field; user secrets or environment variables supply the initial password and can override those defaults.
+
 The Domain layer defines the account model and role names. Infrastructure adapts accounts to ASP.NET Core Identity persistence in PostgreSQL and stores `refresh_families` and `refresh_tokens`. Naming uses snake_case; normalized email is unique, and the user-role join table limits each account to one role. The initial migration is in `Aqours.Infrastructure/Persistence/Migrations`. The API requires a configured connection string, JWT issuer/audience/signing key, and seed-admin email at startup; seed-admin name and password are needed when creating the initial admin. It explicitly does not run migrations. Apply committed EF migrations before launching; startup checks for pending migrations, ensures the three supported roles exist, and seeds the initial admin transactionally. See [authentication setup](../../authentication.md) for local secrets, migration, and test-database commands.
 
 ## Deferred

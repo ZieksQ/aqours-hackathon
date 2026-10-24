@@ -4,6 +4,8 @@ The API requires PostgreSQL, JWT settings, and `SeedAdmin:Email` at startup. Whe
 
 ## 1. Configure local secrets
 
+`apps/api/src/Aqours.Api/appsettings.json` includes a `SeedAdmin` section with development email/name defaults and an empty `Password` field. Change those nonsecret defaults there as needed; supply the initial password through user secrets or `SeedAdmin__Password`. User secrets in Development and environment variables override appsettings values.
+
 Start PostgreSQL using the root `.env` and `pnpm db:up`. Docker Compose settings are not automatically loaded by ASP.NET Core. Store API settings in .NET user secrets for the API project:
 
 ```sh
