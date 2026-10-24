@@ -1,0 +1,149 @@
+# Project architecture rules
+
+This document defines the required architecture and technology choices for Aqours. Use `docs/context.md` for the product workflow and MVP scope. If its earlier candidate technology choices differ from this document, this document takes precedence for architecture and stack decisions.
+
+## 1. Monorepo structure
+
+Keep the API, web app, mobile app, and reusable packages in one repository:
+
+```text
+apps/
+  api/
+    src/
+      Aqours.Domain/
+      Aqours.Application/
+      Aqours.Infrastructure/
+      Aqours.Api/
+    tests/
+  web/
+  mobile/
+packages/
+  ui/
+  psgc/
+docs/
+```
+
+This tree describes the intended structure; create application projects and packages when needed. Use pnpm to manage the JavaScript workspace and dependencies, and NuGet to manage .NET dependencies. Applications must not import another application's source code. Share reusable code or data through `packages/`.
+
+## 2. Required technology stack
+
+| Concern | Technology or rule |
+| --- | --- |
+| Workspace manager | pnpm |
+| Local development runner | Root `concurrently`; `pnpm dev` waits for PostgreSQL, then runs API and web together |
+| Web and mobile package manager | pnpm |
+| .NET package manager | NuGet |
+| Web application | React with TypeScript, Vite, and ESLint |
+| Web styling | Tailwind CSS through the official `@tailwindcss/vite` plugin |
+| Mobile application | React Native with Expo Go |
+| Mobile development and verification | Run Expo Go on a physical phone |
+| API | .NET 10 / C#, ASP.NET Core Minimal API |
+| Database | PostgreSQL 18.6, local Docker image `postgres:18.6-alpine3.23` |
+| Accounts and password handling | ASP.NET Core Identity |
+| Web routing | React Router |
+| Web maps | React Leaflet |
+| Map tiles | Geoapify |
+| Weather forecasting | Open-Meteo free forecast API |
+| Client server-data fetching, caching, and refreshing | TanStack Query |
+
+React Leaflet is for the web application. Select any mobile mapping library separately, ensure it supports Expo Go, and obtain approval before adding it. Check mobile behavior on a real phone, including connectivity to the development API.
+
+Use ASP.NET Core Identity for account and password management; do not implement custom password hashing or credential storage. Backend authorization remains mandatory regardless of client-side route or screen restrictions.
+
+### Local PostgreSQL and scaffold status
+
+`compose.yaml` uses the exact `postgres:18.6-alpine3.23` image already present on the development device. `pull_policy: never` keeps startup on that local image; on a new device explicitly run `docker pull postgres:18.6-alpine3.23` first. The Compose project is named `aqours-hackathon`, with its own `database` volume, to avoid sharing the existing `aqours` Compose project's container or data.
+
+The database binds to `127.0.0.1:5433` by default; container connections use `db:5432`. Port 5433 avoids the existing PostgreSQL container on host port 5432. Override `POSTGRES_PORT` in the root ignored `.env` when needed. Configure `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` there using `.env.example` as the template. Never commit the real password.
+
+Persist PostgreSQL 18 data at `/var/lib/postgresql`, with the image's default version-specific data directory underneath it, as required by the [official image documentation](https://github.com/docker-library/docs/blob/master/postgres/README.md#pgdata). The health check uses `pg_isready`; `docker compose up -d --wait db` waits for readiness. `docker compose down` retains the volume. Initialization environment variables apply when the volume is first created; editing them later does not change existing database roles or passwords.
+
+The API currently has only a process health endpoint at `/health`; it does not check PostgreSQL connectivity. Add persistence and Identity integration in Infrastructure when implementing those features, obtaining approval for database provider packages before installation. Supply the future connection string through `ConnectionStrings__Aqours` or .NET user secrets, for example `Host=localhost;Port=5433;Database=aqours;Username=aqours;Password=<local password>`. Docker Compose's `.env` is not automatically loaded by ASP.NET Core. No database provider, schema, migrations, or account endpoints are implemented by this scaffold.
+
+Tailwind CSS is installed in the web workspace through `tailwindcss` and `@tailwindcss/vite`. Register the plugin in `apps/web/vite.config.ts` and import `tailwindcss` from `apps/web/src/index.css`, following the [official Vite integration](https://tailwindcss.com/docs/installation/using-vite). Use Tailwind utilities for web styling; no separate PostCSS setup or Tailwind configuration file is needed for this initial integration.
+
+The web app currently contains the generated [Vite React TypeScript starter](https://vite.dev/guide/#scaffolding-your-first-vite-project). Install and integrate the agreed routing, query, and map libraries as their features are implemented. The mobile app, shared UI package, and feature/test folders remain deferred until needed. See `README.md` for local setup and verification commands.
+
+## 3. API: Clean Architecture with feature organization
+
+Use four separate .NET projects to enforce layer boundaries. Within each layer, organize related code by feature, such as Reports, SupplySites, Accounts, and Weather. Create feature folders only where that layer has responsibilities for the feature; do not create empty matching structures.
+
+| Project | Responsibilities |
+| --- | --- |
+| `Aqours.Domain` | Business entities, value objects, invariants, and domain rules |
+| `Aqours.Application` | Use cases, orchestration, application validation, and interfaces required by use cases |
+| `Aqours.Infrastructure` | Persistence, Identity integration, external HTTP clients, and implementations of application interfaces |
+| `Aqours.Api` | Minimal API endpoints, transport contracts, HTTP response mapping, authentication/authorization configuration, and dependency wiring |
+
+For example, a report use case belongs under `Aqours.Application/Features/Reports/`, while report endpoints belong under `Aqours.Api/Features/Reports/`. Domain models can live under `Aqours.Domain/Features/Reports/` and persistence implementations under `Aqours.Infrastructure/Features/Reports/`.
+
+### Dependency rules
+
+- Domain has no project references to other application layers and no dependency on ASP.NET Core, persistence frameworks, Identity, or external providers.
+- Application references Domain. It must not reference Infrastructure or Api, or depend on HTTP context, concrete database access, or provider SDKs.
+- Infrastructure references Application and Domain and implements the interfaces they require.
+- Api references Application and Infrastructure. Use Infrastructure from the composition root to register implementations; endpoints invoke application use cases rather than concrete infrastructure services.
+- Never introduce a circular project reference or reverse these dependencies.
+
+### Separation of concerns
+
+- Keep endpoints thin: bind requests, enforce access requirements, invoke a use case, and map its outcome to HTTP.
+- Keep business invariants in Domain and use-case coordination in Application. Do not put business decisions in endpoint handlers, database adapters, or external API clients.
+- Define interfaces at the boundary that needs them and implement external concerns in Infrastructure. Do not create an interface for every class.
+- Use explicit request and response contracts. Do not expose persistence or Identity entities directly to clients.
+- Enforce ownership and role permissions on the backend. Client checks improve navigation but do not grant access.
+- Keep persistence queries and external service details behind the appropriate application boundary. Keep domain and application logic testable without a running HTTP server or external provider.
+
+## 4. Web and mobile: feature-based organization
+
+Both clients organize implementation by product feature:
+
+```text
+src/
+  app/                  # Startup, providers, routing or navigation setup
+  features/
+    reports/            # Feature screens, components, hooks, queries, API calls, types
+    supply-sites/
+    accounts/
+  shared/               # Reusable code within this application
+```
+
+- Colocate code with its feature. Add subfolders only when the feature needs them.
+- Keep application setup separate from feature implementation. Use React Router for web routes.
+- Expose deliberate feature entry points when another feature needs a capability. Do not reach into another feature's private implementation.
+- Use TanStack Query for server state in both clients, including loading, failures, cache invalidation after mutations, and refreshing data. Keep temporary form and interaction state local unless sharing is necessary.
+- Treat the API as the authority for business state and access control. Handle loading, empty, failed, and stale server-data states explicitly.
+- Move code into an application's `shared/` folder when it has real reuse within that application; move it into `packages/` when multiple applications need it and the code is compatible with those consumers.
+
+## 5. Shared packages
+
+| Package | Purpose |
+| --- | --- |
+| `packages/ui` | Reusable web UI components; React Native uses native components rather than browser DOM components |
+| `packages/psgc` | Framework-independent Philippine location JSON shared by web, mobile, and API |
+
+Packages must not depend on application source. Keep their public interfaces small. Add packages for other shared concerns only when concrete reuse justifies them; do not create speculative package scaffolding.
+
+### Philippine location data
+
+- Maintain one canonical dataset in `packages/psgc/data`. See the package README for provenance and consumption details.
+- Read `data/list-of-all-regions.json` first, then load the region file referenced by the chosen entry's `file` property. Preserve the relative directory structure.
+- Preserve PSGC codes as strings, including leading zeroes. Do not rewrite the source hierarchy into incompatible application-specific copies.
+- Web and mobile consume `@aqours/psgc` through pnpm workspace dependencies when those workspaces are created. Bundle the required JSON through each client's supported asset mechanism.
+- The API accesses the same files through Infrastructure. Link the dataset as .NET content and copy it into build and publish output; do not rely on the repository's location at runtime.
+- Document dataset updates and validate the JSON and region references whenever replacing the dataset.
+
+## 6. External services and credentials
+
+- Keep weather-provider requests and other privileged integrations behind the API, with provider-specific implementation in Infrastructure.
+- Use Geoapify tiles with the chosen client map implementation. Treat client-visible tile keys as public credentials and apply provider-supported restrictions; keep privileged credentials on the server.
+- Never commit secrets. Supply credentials through environment configuration or appropriate local secret storage.
+- Handle external-service failures and identify missing or stale data. Do not silently interpret unavailable weather data as evidence that no supply risk exists.
+
+## 7. Dependencies and simplicity
+
+- Ask the user before adding dependencies beyond the agreed stack. This applies to runtime dependencies, development dependencies, NuGet packages, and new third-party services.
+- Use the agreed technologies and built-in capabilities first. Explain the need and tradeoff when requesting an additional dependency.
+- Do not overengineer. Prefer the smallest clear implementation that satisfies the current MVP and preserves the boundaries above.
+- Do not introduce speculative abstractions, generic repository frameworks, messaging infrastructure, microservices, or extra architectural layers without a concrete requirement.
+- Add tests for important business rules, authorization, and integration boundaries. Keep checks proportional to the change.

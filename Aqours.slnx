@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/apps/" />
+  <Folder Name="/apps/api/" />
+  <Folder Name="/apps/api/src/">
+    <Project Path="apps/api/src/Aqours.Api/Aqours.Api.csproj" />
+    <Project Path="apps/api/src/Aqours.Application/Aqours.Application.csproj" />
+    <Project Path="apps/api/src/Aqours.Domain/Aqours.Domain.csproj" />
+    <Project Path="apps/api/src/Aqours.Infrastructure/Aqours.Infrastructure.csproj" />
+  </Folder>
+</Solution>

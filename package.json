@@ -1,0 +1,29 @@
+{
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.24.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@11.24.0",
+  "type": "module",
+  "name": "aqours",
+  "private": true,
+  "engines": {
+    "node": ">=22.22.2"
+  },
+  "scripts": {
+    "dev": "pnpm db:up && concurrently --kill-others --names api,web \"pnpm dev:api\" \"pnpm dev:web\"",
+    "dev:web": "pnpm --filter @aqours/web dev",
+    "build:web": "pnpm --filter @aqours/web build",
+    "lint:web": "pnpm --filter @aqours/web lint",
+    "dev:api": "dotnet run --project apps/api/src/Aqours.Api --launch-profile http",
+    "build:api": "dotnet build Aqours.slnx",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
