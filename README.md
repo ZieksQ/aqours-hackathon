@@ -34,7 +34,19 @@ For separate terminals, use `pnpm db:up`, `pnpm dev:api`, and `pnpm dev:web`.
 
 The database uses a separate `aqours-hackathon` Compose project and volume to avoid the existing `aqours` database on port 5432. The image is reused locally without pulling. On another device, run `docker pull postgres:18.6-alpine3.23` once before `pnpm db:up`. Override `POSTGRES_PORT` in `.env` if necessary.
 
-The API has no database provider or schema yet. Its health endpoint only checks that the API is running. Persistence, Identity, product features, web routing/query/maps, and mobile setup are subsequent work. No privileged credentials belong in client configuration.
+The API registers an EF Core PostgreSQL context in Infrastructure with Identity persistence support and snake_case naming through `EFCore.NamingConventions`. Its health endpoint only checks that the API is running. Migrations, account services/endpoints, product features, web routing/query/maps, and mobile setup are subsequent work. No privileged credentials belong in client configuration.
+
+## API database configuration
+
+Supply the connection string through ASP.NET Core configuration before using the database context:
+
+```sh
+export ConnectionStrings__Aqours='Host=localhost;Port=5433;Database=aqours;Username=aqours;Password=<local password>'
+```
+
+Replace the placeholder with your local password; keep credentials out of tracked files. Docker Compose's `.env` is not automatically loaded by ASP.NET Core. The connection string is validated when the context is resolved, so the process-only `/health` endpoint can run without database configuration.
+
+`AqoursDbContext` derives from `IdentityDbContext`; tables, columns, keys, and indexes use snake_case (for example, `asp_net_users` and `user_name`). The context explicitly maps Identity's table and index names because Identity overrides those conventions. The API references `Microsoft.EntityFrameworkCore.Design` for migration tooling; target Infrastructure as the migrations project and Api as the startup project when using `dotnet ef`. No migrations are included, and startup does not create or modify the database.
 
 ## Web styling
 
