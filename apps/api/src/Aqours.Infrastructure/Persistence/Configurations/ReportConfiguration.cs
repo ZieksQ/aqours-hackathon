@@ -15,6 +15,9 @@ public sealed class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.Property(r => r.CustomerId).IsRequired();
         builder.Property(r => r.Description).HasMaxLength(Report.MaxDescriptionLength).IsRequired();
         builder.Property(r => r.IssueType).HasConversion<string>().HasMaxLength(20);
+        builder.Property(r => r.Priority).HasConversion<string>().HasMaxLength(20).HasDefaultValue(ReportPriority.Normal).HasSentinel(ReportPriority.Normal);
+        builder.HasOne<IdentityAccountUser>().WithMany().HasForeignKey(r => r.AssignedStaffId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(r => new { r.Status, r.CreatedAt, r.Id });
         builder.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(r => r.Address).HasColumnType("jsonb").IsRequired().HasConversion(
             address => JsonSerializer.Serialize(address, (JsonSerializerOptions?)null),

@@ -1,6 +1,6 @@
 # Customer reporting API
 
-This document describes the implemented API slice for submitting water reports and reading a customer's own reports. It does not describe a customer app or supplier response workflow.
+This document describes the implemented API slice for submitting water reports and reading a customer's own reports. Staff queue, ticket, and messaging behavior is implemented separately in the [Staff report workspace spec](../staff-report-workspace/spec.md); this existing contract remains unchanged.
 
 ## Access and ownership
 
@@ -134,4 +134,4 @@ The reporting integration coverage exercises customer submission and persistence
 
 ## Out of scope
 
-This API does not provide the customer mobile UI, location picking, supplier report queues, staff claims, response notes, status updates, map views, report editing, or report deletion. These remain separate product work.
+This API slice does not provide the customer mobile UI, location picking, report maps, report editing, or report deletion. Staff queues, claims, responses, status changes, and customer messaging are implemented separately in the [Staff report workspace spec](../staff-report-workspace/spec.md).

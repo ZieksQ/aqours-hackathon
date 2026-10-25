@@ -23,6 +23,7 @@ import {
   FormError,
   SignIn,
 } from "./features/accounts/AccountForms";
+import { Reports } from "./features/reports/Reports";
 import { Dashboard } from "./features/dashboard/Dashboard";
 
 function Portal({ account }: { account: Account }) {
@@ -61,6 +62,9 @@ function Portal({ account }: { account: Account }) {
             <>
               <NavLink to="/dashboard" onClick={() => setMenu(false)}>
                 Dashboard
+              </NavLink>
+              <NavLink to="/reports" onClick={() => setMenu(false)}>
+                Reports
               </NavLink>
               {account.role === "Admin" && (
                 <NavLink to="/accounts/new" onClick={() => setMenu(false)}>
@@ -164,6 +168,7 @@ function SessionRoutes() {
   return (
     <Routes>
       <Route element={<Portal account={account} />}>
+        <Route path="/reports/*" element={<Reports account={account} />} />
         <Route path="/dashboard" element={<Dashboard account={account} />} />
         <Route
           path="/change-password"

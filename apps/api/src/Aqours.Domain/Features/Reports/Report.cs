@@ -1,6 +1,7 @@
 namespace Aqours.Domain.Features.Reports;
 
 public enum IssueType { NoWater, LowPressure, DirtyWater }
+public enum ReportPriority { Low, Normal, High }
 public enum ReportStatus { Submitted, InProgress, Resolved }
 
 // Names are a snapshot of the canonical hierarchy at submission time.
@@ -31,6 +32,10 @@ public sealed class Report
     public double Latitude { get; private set; }
     public double Longitude { get; private set; }
     public ReportStatus Status { get; private set; }
+    public ReportPriority Priority { get; private set; } = ReportPriority.Normal;
+    public string? AssignedStaffId { get; private set; }
+    public DateTimeOffset? ClaimedAt { get; private set; }
+    public DateTimeOffset? ResolvedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
     private Report() { }
@@ -58,6 +63,21 @@ public sealed class Report
         var utc = createdAt.ToUniversalTime();
         CreatedAt = utc.AddTicks(-(utc.Ticks % TimeSpan.TicksPerMicrosecond));
         Status = ReportStatus.Submitted;
+    }
+
+    public void Resolve(DateTimeOffset now)
+    {
+        if (Status != ReportStatus.InProgress || AssignedStaffId is null)
+            throw new InvalidOperationException("Only a claimed report can be resolved.");
+        Status = ReportStatus.Resolved;
+        ResolvedAt = now;
+    }
+
+    public void ChangePriority(ReportPriority priority)
+    {
+        if (!Enum.IsDefined(priority)) throw new ArgumentOutOfRangeException(nameof(priority));
+        if (Status != ReportStatus.InProgress) throw new InvalidOperationException("Only active claimed reports can be changed.");
+        Priority = priority;
     }
 
     public static bool ValidLatitude(double value) => double.IsFinite(value) && value is >= -90 and <= 90;

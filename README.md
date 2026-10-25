@@ -1,6 +1,6 @@
 # Aqours
 
-Water reporting and supplier response MVP. Account authentication and the Customer reporting API (submission, customer-owned listing, and detail retrieval) are implemented. Supplier report response, supply, weather, map, and mobile application workflows remain to be built.
+Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), and the Staff report queue and ticket workspace are implemented. The Customer mobile UI, supply, weather, and map workflows remain deferred.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ cp .env.example .env
 
 Skip the copy if `.env` already exists. Set your own `POSTGRES_PASSWORD` in `.env` before starting PostgreSQL. Initial setup on the original development device created an ignored `.env` with a random local password. Configure the API's connection string, JWT key, and initial administrator through user secrets or environment variables as described in [authentication setup](docs/authentication.md).
 
-Before the first API start, restore the pinned EF tool and apply all committed migrations after configuring the connection string (including `InitialAccounts` and `CustomerReports`):
+Before the first API start, restore the pinned EF tool and apply all committed migrations after configuring the connection string (including `InitialAccounts`, `CustomerReports`, and `StaffReportWorkspace`):
 
 ```sh
 pnpm db:up
@@ -29,7 +29,7 @@ dotnet tool restore
 dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup-project apps/api/src/Aqours.Api
 ```
 
-Startup checks for pending migrations and seeds the supported roles and configured first administrator. It does not apply migrations automatically. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md) for its contract and migration details.
+Startup checks for pending migrations and seeds the supported roles and configured first administrator. It does not apply migrations automatically. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md) and [Staff report workspace spec](docs/features/staff-report-workspace/spec.md) for their contracts and migration details.
 
 ```sh
 pnpm dev
@@ -61,7 +61,7 @@ This connection string can also be set with `dotnet user-secrets`; see [authenti
 
 ## Web styling
 
-Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, account creation, password change, and a dashboard shell; customer reporting is currently API-only, and other product screens remain deferred.
+Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, account creation, password change, a dashboard shell, and the Staff report queue and ticket workspace. Customer reporting and messaging are API-only; supply, weather, maps, and mobile screens remain deferred.
 
 ## Verification
 
@@ -75,6 +75,8 @@ docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SEL
 ```
 
 The API integration suite requires its own disposable PostgreSQL database. Configure `AQOURS_TEST_CONNECTION_STRING` as described in [authentication setup](docs/authentication.md) before running `dotnet test`.
+
+Realtime integration verification starts the API on an ephemeral loopback port and runs the official SignalR JavaScript client through Node. Run `pnpm install --frozen-lockfile` first so `@microsoft/signalr` is available in the web workspace, and allow the test process to bind and connect to loopback. Node.js 22.22.2 or newer is required as listed above.
 
 Stop the database with `pnpm db:down`; its named volume persists. PostgreSQL initialization settings apply only to a new volume.
 

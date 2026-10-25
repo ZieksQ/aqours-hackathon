@@ -34,6 +34,14 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("address");
 
+                    b.Property<string>("AssignedStaffId")
+                        .HasColumnType("text")
+                        .HasColumnName("assigned_staff_id");
+
+                    b.Property<DateTimeOffset?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -63,6 +71,18 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("longitude");
 
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Normal")
+                        .HasColumnName("priority");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolved_at");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -72,11 +92,63 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_reports");
 
+                    b.HasIndex("AssignedStaffId")
+                        .HasDatabaseName("ix_reports_assigned_staff_id");
+
                     b.HasIndex("CustomerId", "CreatedAt", "Id")
                         .IsDescending(false, true, true)
                         .HasDatabaseName("ix_reports_customer_id_created_at_id");
 
+                    b.HasIndex("Status", "CreatedAt", "Id")
+                        .HasDatabaseName("ix_reports_status_created_at_id");
+
                     b.ToTable("reports", (string)null);
+                });
+
+            modelBuilder.Entity("Aqours.Domain.Features.Reports.ReportMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("report_id");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("sender_id");
+
+                    b.Property<long>("Sequence")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("sequence");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Sequence"));
+
+                    b.HasKey("Id")
+                        .HasName("pk_report_messages");
+
+                    b.HasIndex("SenderId")
+                        .HasDatabaseName("ix_report_messages_sender_id");
+
+                    b.HasIndex("ReportId", "Sequence")
+                        .IsUnique()
+                        .HasDatabaseName("ix_report_messages_report_id_sequence");
+
+                    b.ToTable("report_messages", (string)null);
                 });
 
             modelBuilder.Entity("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", b =>
@@ -411,10 +483,33 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", null)
                         .WithMany()
+                        .HasForeignKey("AssignedStaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_reports_asp_net_users_assigned_staff_id");
+
+                    b.HasOne("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", null)
+                        .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_reports_asp_net_users_customer_id");
+                });
+
+            modelBuilder.Entity("Aqours.Domain.Features.Reports.ReportMessage", b =>
+                {
+                    b.HasOne("Aqours.Domain.Features.Reports.Report", null)
+                        .WithMany()
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_report_messages_reports_report_id");
+
+                    b.HasOne("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", null)
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_report_messages_asp_net_users_sender_id");
                 });
 
             modelBuilder.Entity("Aqours.Infrastructure.Features.Accounts.RefreshFamily", b =>

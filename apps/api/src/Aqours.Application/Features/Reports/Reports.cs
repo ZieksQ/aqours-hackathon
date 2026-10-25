@@ -20,7 +20,7 @@ public interface IReportStore
     Task<ReportPage> ListAsync(string customerId, int page, int pageSize, CancellationToken cancellationToken);
 }
 
-public sealed class ReportService(IReportStore store, IPsgcAddresses addresses, TimeProvider clock)
+public sealed class ReportService(IReportStore store, IPsgcAddresses addresses, TimeProvider clock, IReportNotifications notifications)
 {
     public async Task<Outcome<Report>> SubmitAsync(string customerId, SubmitReport input, CancellationToken cancellationToken = default)
     {
@@ -48,6 +48,7 @@ public sealed class ReportService(IReportStore store, IPsgcAddresses addresses, 
         if (errors.Count > 0) return new(null, errors);
         var report = new Report(customerId, issue, description!, address!, input.Latitude!.Value, input.Longitude!.Value, clock.GetUtcNow());
         await store.AddAsync(report, cancellationToken);
+        await notifications.ReportCreatedAsync(report.Id);
         return new(report);
     }
 

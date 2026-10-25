@@ -41,6 +41,8 @@ public static class DependencyInjection
         services.AddSingleton<IPsgcAddresses, PsgcAddresses>();
         services.AddScoped<IReportStore, PostgresReportStore>();
         services.AddScoped<ReportService>();
+        services.AddScoped<IStaffReportStore, PostgresStaffReportStore>();
+        services.AddScoped<StaffReportService>();
         services.AddScoped<IAccountStore, IdentityAccountStore>();
         services.AddScoped<AccountService>();
         services.AddScoped<IRefreshSessions, PostgresRefreshSessions>();
