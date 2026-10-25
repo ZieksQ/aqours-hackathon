@@ -91,6 +91,8 @@ public static class AuthConfiguration
             options.AddPolicy("WebSession", policy => policy.AddAuthenticationSchemes(Cookie).RequireAuthenticatedUser().RequireRole(AccountRoles.Admin, AccountRoles.Staff));
             options.AddPolicy("Admin", policy => policy.AddAuthenticationSchemes(Cookie).RequireAuthenticatedUser()
                 .RequireRole(AccountRoles.Admin).RequireClaim(Restricted, "false"));
+            options.AddPolicy("Customer", policy => policy.AddAuthenticationSchemes(Bearer).RequireAuthenticatedUser()
+                .RequireRole(AccountRoles.Customer).RequireClaim(Restricted, "false"));
             // All future application endpoints must use a full-session policy.
             options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder(Smart)
                 .RequireAuthenticatedUser().RequireClaim(Restricted, "false").Build();

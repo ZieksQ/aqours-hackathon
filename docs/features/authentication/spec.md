@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The API implements account authentication for supplier portal users and customer mobile clients. The web starter includes supplier sign-in, first-login password change, account creation, and session-aware routing. This feature does not implement the remaining report, site, supply, map, or weather workflows. The mobile application is deferred; mobile auth endpoints are available for a future client.
+The API implements account authentication for supplier portal users and customer mobile clients. The web starter includes supplier sign-in, first-login password change, account creation, and session-aware routing. The Customer reporting API is documented separately; supplier report response, site, supply, map, and weather workflows remain deferred. The mobile application is deferred; mobile auth endpoints are available for a future client.
 
 Supported roles are `Admin`, `Staff`, and `Customer`. Every new account is flagged to change its initial password. Account creation is currently an Admin-only API action. The startup seeder provisions roles and one initial Admin from configuration.
 

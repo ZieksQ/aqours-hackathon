@@ -15,3 +15,5 @@
 - 2026-10-25: Added database connection and JWT configuration placeholders alongside the existing initial administrator settings in API appsettings, and documented configuration precedence. Verified JSON formatting and all required configuration keys; preserved existing local configuration edits and staged no credentials.
 
 - 2026-10-25: Removed initial administrator details from API appsettings and added a dedicated local user-secrets guide; confirmed the existing root `.env.example` contains placeholder-only Docker PostgreSQL settings. JSON and documentation updates recorded; no credentials added to tracked files.
+
+- 2026-10-25: Implemented the authenticated Customer reporting API for report submission, owner-scoped listing and detail retrieval, PSGC hierarchy validation/name snapshots, and the explicit `CustomerReports` migration; documented endpoint contracts and clarified deferred supplier/mobile workflows. Verified solution build (0 warnings/errors), PostgreSQL integration suite (16/16), C# formatting, EF model consistency, explicit migration application, and all 19 canonical PSGC files in build and publish output.

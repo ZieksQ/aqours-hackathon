@@ -1,4 +1,6 @@
 using Aqours.Infrastructure.Persistence;
+using Aqours.Infrastructure.Features.Reports;
+using Aqours.Application.Features.Reports;
 using Aqours.Infrastructure.Persistence.Seeders;
 using Aqours.Infrastructure.Features.Accounts;
 using Aqours.Application.Features.Accounts;
@@ -36,6 +38,9 @@ public static class DependencyInjection
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
         }).AddRoles<IdentityRole>().AddEntityFrameworkStores<AqoursDbContext>();
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IPsgcAddresses, PsgcAddresses>();
+        services.AddScoped<IReportStore, PostgresReportStore>();
+        services.AddScoped<ReportService>();
         services.AddScoped<IAccountStore, IdentityAccountStore>();
         services.AddScoped<AccountService>();
         services.AddScoped<IRefreshSessions, PostgresRefreshSessions>();

@@ -1,4 +1,5 @@
 using Aqours.Api.Features.Accounts;
+using Aqours.Api.Features.Reports;
 using Aqours.Application.Features.Accounts;
 using Aqours.Infrastructure;
 
@@ -17,7 +18,11 @@ await using (var scope = app.Services.CreateAsyncScope())
     catch (Exception ex) { throw new InvalidOperationException("Authentication startup failed. Check database availability, apply migrations, and configure SeedAdmin. See docs/authentication.md.", ex); }
 }
 if (!app.Environment.IsDevelopment()) app.UseHttpsRedirection();
-app.UseExceptionHandler();
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    StatusCodeSelector = exception => exception is BadHttpRequestException badRequest
+        ? badRequest.StatusCode : StatusCodes.Status500InternalServerError
+});
 app.Use(async (http, next) =>
 {
     if (http.Request.Path.StartsWithSegments("/api")) http.Response.Headers.CacheControl = "no-store";
@@ -27,6 +32,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapHealthChecks("/health");
 app.MapAccountEndpoints();
+app.MapReportEndpoints();
 app.Run();
 
 public partial class Program;

@@ -1,6 +1,6 @@
 # Water Reporting and Response System — App Context & MVP
 
-> This document defines the planned hackathon MVP. Authentication has been implemented; other features below describe product scope and are not implied to be implemented.
+> This document defines the hackathon MVP. Account authentication and the Customer reporting API have been implemented; other workflows below describe product scope and are not implied to be implemented.
 
 ## 1. App context
 
@@ -29,7 +29,7 @@ A simple water reporting, supplier response, and manual water supply monitoring 
 - Customers can access only their own reports.
 - Only authorized supplier personnel can access customer report locations.
 
-**Implemented account slice:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. The mobile application and report ownership endpoints are still deferred. See [the authentication feature spec](features/authentication/spec.md).
+**Implemented account and reporting API slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The mobile application, staff response queue, response notes, status changes, and report maps remain deferred. See [the authentication feature spec](features/authentication/spec.md) and [Customer reporting API spec](features/customer-reporting/specs.md).
 
 ### 3.2 Customer water reporting
 
@@ -206,9 +206,9 @@ If time gets tight, simplify styling and extra screens first.
 
 ## 9. Implementation context and open choices
 
-The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication is already implemented for the supplier web API and future mobile client; the mobile client and business workflows are not yet implemented.
+The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication and the Customer API for report submission, customer-owned listing, and detail retrieval are implemented. The mobile client, supplier response workflows, supply monitoring, weather warnings, and maps remain deferred.
 
-Before implementation, settle:
+Before implementing the remaining workflow slices, settle:
 
 - Final project name: Aqours or Upwards.
 - Weather API provider and forecast refresh interval.
