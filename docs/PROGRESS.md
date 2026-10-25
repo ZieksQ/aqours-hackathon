@@ -13,3 +13,5 @@
 - 2026-10-25: Added the initial Admin configuration section to API appsettings with nonsecret development defaults and a password supplied through user secrets; configured the missing local JWT/database/Admin secrets and explicitly applied the authentication migration. Verified normal development startup, health HTTP 200, seeded Admin sign-in with mandatory password change, and logout HTTP 204; no credentials were committed.
 
 - 2026-10-25: Added database connection and JWT configuration placeholders alongside the existing initial administrator settings in API appsettings, and documented configuration precedence. Verified JSON formatting and all required configuration keys; preserved existing local configuration edits and staged no credentials.
+
+- 2026-10-25: Removed initial administrator details from API appsettings and added a dedicated local user-secrets guide; confirmed the existing root `.env.example` contains placeholder-only Docker PostgreSQL settings. JSON and documentation updates recorded; no credentials added to tracked files.

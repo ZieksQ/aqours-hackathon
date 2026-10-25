@@ -4,26 +4,9 @@ The API requires PostgreSQL, JWT settings, and `SeedAdmin:Email` at startup. Whe
 
 ## 1. Configure local secrets
 
-`apps/api/src/Aqours.Api/appsettings.json` lists all required API configuration keys: `ConnectionStrings:Aqours`, `Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey`, and the `SeedAdmin` section. The connection string uses local database defaults with an empty password; the JWT signing key is also empty. Fill these sensitive values locally or supply overrides through user secrets or environment variables. Do not commit filled credentials. Existing user secrets and environment variables override values in this file.
+The API requires `ConnectionStrings:Aqours`, `Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey`, and `SeedAdmin:Email`. The initial administrator's first name, last name, and password are needed only when creating that account; middle name is optional. These values are intentionally kept out of the API settings files. See [local API user secrets](user-secrets.md) for setup commands. Docker Compose settings in the root `.env` are not automatically loaded by ASP.NET Core.
 
-The `SeedAdmin` section is included with development email/name defaults and an empty `Password` field. Change those nonsecret defaults there as needed; supply the initial password through user secrets or `SeedAdmin__Password`. User secrets in Development and environment variables override appsettings values.
-
-Start PostgreSQL using the root `.env` and `pnpm db:up`. Docker Compose settings are not automatically loaded by ASP.NET Core. Store API settings in .NET user secrets for the API project:
-
-```sh
-dotnet user-secrets set "ConnectionStrings:Aqours" "Host=localhost;Port=5433;Database=aqours;Username=aqours;Password=<the POSTGRES_PASSWORD from .env>" --project apps/api/src/Aqours.Api
-dotnet user-secrets set "Jwt:Issuer" "Aqours.Local" --project apps/api/src/Aqours.Api
-dotnet user-secrets set "Jwt:Audience" "Aqours.WebAndMobile" --project apps/api/src/Aqours.Api
-dotnet user-secrets set "Jwt:SigningKey" "<a random secret of at least 32 UTF-8 bytes>" --project apps/api/src/Aqours.Api
-dotnet user-secrets set "SeedAdmin:Email" "admin@example.test" --project apps/api/src/Aqours.Api
-dotnet user-secrets set "SeedAdmin:FirstName" "Aqours" --project apps/api/src/Aqours.Api
-dotnet user-secrets set "SeedAdmin:LastName" "Administrator" --project apps/api/src/Aqours.Api
-dotnet user-secrets set "SeedAdmin:Password" "<a unique password meeting the Identity policy>" --project apps/api/src/Aqours.Api
-```
-
-Replace every placeholder before use. Keep `.env`, user-secrets files, connection strings, signing keys, and passwords out of source control. The JWT signing key must contain at least 32 UTF-8 bytes. Identity requires passwords of at least 12 characters, including uppercase, lowercase, a digit, and a non-alphanumeric character. A missing setting fails API startup with a configuration error.
-
-For a deployed environment, supply the same configuration keys through a secret manager or environment variables, using double underscores for nested names. For example: `ConnectionStrings__Aqours`, `Jwt__Issuer`, `Jwt__Audience`, `Jwt__SigningKey`, `SeedAdmin__Email`, `SeedAdmin__FirstName`, `SeedAdmin__MiddleName`, `SeedAdmin__LastName`, and `SeedAdmin__Password`.
+For a deployed environment, provide the same configuration through a secret manager or environment variables, using double underscores for nested names. Examples include `ConnectionStrings__Aqours`, `Jwt__Issuer`, `Jwt__Audience`, `Jwt__SigningKey`, `SeedAdmin__Email`, and `SeedAdmin__Password`.
 
 ## 2. Apply the database migration
 
