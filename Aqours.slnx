@@ -7,4 +7,7 @@
     <Project Path="apps/api/src/Aqours.Domain/Aqours.Domain.csproj" />
     <Project Path="apps/api/src/Aqours.Infrastructure/Aqours.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/apps/api/tests/">
+    <Project Path="apps/api/tests/Aqours.Api.Tests/Aqours.Api.Tests.csproj" />
+  </Folder>
 </Solution>

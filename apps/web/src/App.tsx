@@ -1,122 +1,219 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from "react";
+import {
+  QueryClientProvider,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
+import {
+  BrowserRouter,
+  Link,
+  Navigate,
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router";
+import { queryClient } from "./shared/query";
+import { api, currentAccount, type Account } from "./features/accounts/api";
+import {
+  Brand,
+  ChangePassword,
+  CreateAccount,
+  FormError,
+  SignIn,
+} from "./features/accounts/AccountForms";
+import { Dashboard } from "./features/dashboard/Dashboard";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function Portal({ account }: { account: Account }) {
+  const [menu, setMenu] = useState(false);
+  const logout = useMutation({
+    mutationFn: () => api("/auth/web/logout", {}),
+    onSuccess: async () => {
+      await queryClient.cancelQueries();
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "account",
+      });
+      queryClient.setQueryData(["account"], null);
+      queryClient.getMutationCache().clear();
+    },
+  });
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+    <div className="portal">
+      <a className="skip-link" href="#content">
+        Skip to content
+      </a>
+      <header className="portal-header">
+        <Brand />
+        <span className="portal-label">Supplier portal</span>
         <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          className="menu-button"
+          aria-expanded={menu}
+          aria-controls="portal-nav"
+          onClick={() => setMenu(!menu)}
         >
-          Count is {count}
+          {menu ? "Close menu" : "Menu"}
         </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      </header>
+      <aside className={menu ? "sidebar open" : "sidebar"} id="portal-nav">
+        <nav aria-label="Main navigation">
+          {!account.requiresPasswordChange && (
+            <>
+              <NavLink to="/dashboard" onClick={() => setMenu(false)}>
+                Dashboard
+              </NavLink>
+              {account.role === "Admin" && (
+                <NavLink to="/accounts/new" onClick={() => setMenu(false)}>
+                  Create account
+                </NavLink>
+              )}
+            </>
+          )}
+          {account.requiresPasswordChange && (
+            <NavLink to="/change-password">Change password</NavLink>
+          )}
+        </nav>
+        <div className="account-summary">
+          <p className="font-medium break-words">
+            {account.firstName} {account.lastName}
+          </p>
+          <p className="muted break-all">{account.email}</p>
+          <p className="muted mt-1 mb-4">{account.role}</p>
+          <button
+            className="secondary"
+            disabled={logout.isPending}
+            onClick={() => logout.mutate()}
+          >
+            {logout.isPending ? "Signing out…" : "Sign out"}
+          </button>
+          <FormError error={logout.error} />
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </aside>
+      <main id="content" className="sheet" tabIndex={-1}>
+        <Outlet />
+      </main>
+    </div>
+  );
 }
-
-export default App
+function SessionRoutes() {
+  const accountQuery = useQuery({
+    queryKey: ["account"],
+    queryFn: currentAccount,
+  });
+  const location = useLocation();
+  if (accountQuery.isPending)
+    return (
+      <div className="auth-page">
+        <div className="auth-brand">
+          <Brand />
+        </div>
+        <main className="auth-form" role="status">
+          <h1>Loading your portal…</h1>
+        </main>
+      </div>
+    );
+  if (accountQuery.isError)
+    return (
+      <div className="auth-page">
+        <div className="auth-brand">
+          <Brand />
+        </div>
+        <main className="auth-form">
+          <h1>Connection unavailable</h1>
+          <FormError error={accountQuery.error} />
+          <button
+            className="primary"
+            onClick={() => void accountQuery.refetch()}
+          >
+            Try again
+          </button>
+        </main>
+      </div>
+    );
+  const account = accountQuery.data;
+  if (!account)
+    return (
+      <Routes>
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="*" element={<Navigate to="/sign-in" replace />} />
+      </Routes>
+    );
+  if (account.role === "Customer")
+    return (
+      <div className="auth-form">
+        <h1>Customer access</h1>
+        <p>Customer accounts use the mobile app.</p>
+        <Link
+          to="/sign-in"
+          onClick={() => {
+            queryClient.removeQueries({
+              predicate: (query) => query.queryKey[0] !== "account",
+            });
+            queryClient.setQueryData(["account"], null);
+          }}
+        >
+          Return to sign in
+        </Link>
+      </div>
+    );
+  if (
+    account.requiresPasswordChange &&
+    location.pathname !== "/change-password"
+  )
+    return <Navigate to="/change-password" replace />;
+  return (
+    <Routes>
+      <Route element={<Portal account={account} />}>
+        <Route path="/dashboard" element={<Dashboard account={account} />} />
+        <Route
+          path="/change-password"
+          element={
+            account.requiresPasswordChange ? (
+              <ChangePassword />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          }
+        />
+        <Route
+          path="/accounts/new"
+          element={
+            account.role === "Admin" ? (
+              <CreateAccount />
+            ) : (
+              <section>
+                <h1>Access denied</h1>
+                <p className="mt-4 mb-6">
+                  Only administrators can create accounts.
+                </p>
+                <Link to="/dashboard">Return to dashboard</Link>
+              </section>
+            )
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={
+                account.requiresPasswordChange
+                  ? "/change-password"
+                  : "/dashboard"
+              }
+              replace
+            />
+          }
+        />
+      </Route>
+    </Routes>
+  );
+}
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <SessionRoutes />
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}

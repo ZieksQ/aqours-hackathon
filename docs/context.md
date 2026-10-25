@@ -1,6 +1,6 @@
 # Water Reporting and Response System — App Context & MVP
 
-> This document describes the planned hackathon MVP, not verified existing functionality.
+> This document defines the planned hackathon MVP. Authentication has been implemented; other features below describe product scope and are not implied to be implemented.
 
 ## 1. App context
 
@@ -28,6 +28,8 @@ A simple water reporting, supplier response, and manual water supply monitoring 
 - Restrict pages and backend actions according to the user's role.
 - Customers can access only their own reports.
 - Only authorized supplier personnel can access customer report locations.
+
+**Implemented account slice:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. The mobile application and report ownership endpoints are still deferred. See [the authentication feature spec](features/authentication/spec.md).
 
 ### 3.2 Customer water reporting
 
@@ -204,7 +206,7 @@ If time gets tight, simplify styling and extra screens first.
 
 ## 9. Implementation context and open choices
 
-The PDF does not prescribe a technology stack or weather API provider. Earlier project discussions considered ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile; treat these as candidate choices rather than requirements established by this PDF.
+The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication is already implemented for the supplier web API and future mobile client; the mobile client and business workflows are not yet implemented.
 
 Before implementation, settle:
 
