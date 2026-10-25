@@ -67,9 +67,14 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
         ? "Your session has expired. Please sign in again."
         : response.status === 403
           ? "You do not have permission to do this."
-          : response.status === 400
-            ? "Check the highlighted fields and try again."
-            : "Aqours could not complete your request. Please try again.",
+          : response.status === 404
+            ? "This report is unavailable."
+            : response.status === 409
+              ? (detail.detail ??
+                "This ticket has changed. Refresh and try again.")
+              : response.status === 400
+                ? "Check the highlighted fields and try again."
+                : "Aqours could not complete your request. Please try again.",
       detail.errors ?? {},
     );
   }

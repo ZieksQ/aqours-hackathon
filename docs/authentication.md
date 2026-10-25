@@ -10,7 +10,7 @@ For a deployed environment, provide the same configuration through a secret mana
 
 ## 2. Apply the database migration
 
-The initial `InitialAccounts` migration is committed under `apps/api/src/Aqours.Infrastructure/Persistence/Migrations`. Restore the repository-pinned EF tool and apply it explicitly:
+The EF migrations, including `InitialAccounts`, `CustomerReports`, and `StaffReportWorkspace`, are committed under `apps/api/src/Aqours.Infrastructure/Persistence/Migrations`. Restore the repository-pinned EF tool and apply them explicitly:
 
 ```sh
 dotnet tool restore
@@ -33,8 +33,10 @@ The web portal is at `http://localhost:5173`, the API is at `http://localhost:52
 
 ## Web/API routing in deployment
 
-The browser calls the relative `/api` path. Vite proxies it to `http://localhost:5251` during development, preserving a same-origin browser request for the session and antiforgery cookies. In deployment, route `/api/*` through the web origin to the API, and configure the web host to return the SPA's `index.html` for client routes such as `/sign-in`, `/dashboard`, `/change-password`, and `/accounts/new`. Keep browser authentication same-origin; cookie and CSRF behavior depends on that routing.
+The browser calls the relative `/api` path. Vite proxies it to `http://localhost:5251` during development, preserving a same-origin browser request for the session and antiforgery cookies. In deployment, route `/api/*` through the web origin to the API, and configure the web host to return the SPA's `index.html` for client routes such as `/sign-in`, `/dashboard`, `/change-password`, and `/accounts/new`. Keep browser authentication same-origin; cookie and CSRF behavior depends on that routing. Staff report workspace mutations also use the web session and must include the antiforgery request token; see the [workspace spec](features/staff-report-workspace/spec.md) for REST and SignalR access rules.
 
 ## Integration test database
 
 The API integration suite uses a real PostgreSQL database and migrates it. Create a separate disposable database named `aqours_auth_integration_tests`, then set `AQOURS_TEST_CONNECTION_STRING` to its connection string before running `dotnet test Aqours.slnx`. The test fixture checks the database name before changing its schema. Never point it at a development or production database.
+
+The realtime SignalR integration test also starts the API with Kestrel on an ephemeral loopback port and launches the official JavaScript client from `apps/web/scripts/verify-reports-realtime.mjs`. Install workspace dependencies first with `pnpm install --frozen-lockfile`; Node.js 22.22.2 or newer is required, and the environment must allow binding and connecting to loopback ports.

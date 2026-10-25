@@ -1,4 +1,6 @@
 using Aqours.Infrastructure.Features.Accounts;
+using Aqours.Domain.Features.Reports;
+using Aqours.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +10,24 @@ namespace Aqours.Infrastructure.Persistence;
 public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
     : IdentityDbContext<IdentityAccountUser>(options)
 {
+    public DbSet<Report> Reports => Set<Report>();
+
+    public DbSet<ReportMessage> ReportMessages => Set<ReportMessage>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.ApplyConfiguration(new ReportConfiguration());
+        builder.Entity<ReportMessage>(message =>
+        {
+            message.ToTable("report_messages");
+            message.HasKey(m => m.Id);
+            message.Property(m => m.Sequence).ValueGeneratedOnAdd();
+            message.Property(m => m.Body).HasMaxLength(ReportMessage.MaxBodyLength).IsRequired();
+            message.HasOne<Report>().WithMany().HasForeignKey(m => m.ReportId).OnDelete(DeleteBehavior.Restrict);
+            message.HasOne<IdentityAccountUser>().WithMany().HasForeignKey(m => m.SenderId).OnDelete(DeleteBehavior.Restrict);
+            message.HasIndex(m => new { m.ReportId, m.Sequence }).IsUnique();
+        });
 
         builder.Entity<IdentityAccountUser>().Property(u => u.FirstName).HasMaxLength(100).IsRequired();
         builder.Entity<IdentityAccountUser>().Property(u => u.LastName).HasMaxLength(100).IsRequired();

@@ -33,7 +33,8 @@ public static class AuthConfiguration
         });
         services.AddAuthentication(Smart)
             .AddPolicyScheme(Smart, Smart, options => options.ForwardDefaultSelector = context =>
-                context.Request.Headers.Authorization.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? Bearer : Cookie)
+                (context.Request.Headers.Authorization.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ||
+                 context.Request.Path.StartsWithSegments("/api/hubs/reports") && context.Request.Query.ContainsKey("access_token")) ? Bearer : Cookie)
             .AddCookie(Cookie, options =>
             {
                 options.Cookie.Name = "Aqours.Session";
@@ -78,6 +79,13 @@ public static class AuthConfiguration
                 };
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/api/hubs/reports") &&
+                            !string.IsNullOrEmpty(context.Request.Query["access_token"]))
+                            context.Token = context.Request.Query["access_token"];
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = async context =>
                 {
                     if (!await ValidSessionAsync(context.Principal!, context.HttpContext.RequestServices, true))
@@ -89,8 +97,12 @@ public static class AuthConfiguration
         {
             options.AddPolicy("Session", policy => policy.AddAuthenticationSchemes(Smart).RequireAuthenticatedUser());
             options.AddPolicy("WebSession", policy => policy.AddAuthenticationSchemes(Cookie).RequireAuthenticatedUser().RequireRole(AccountRoles.Admin, AccountRoles.Staff));
+            options.AddPolicy("Personnel", policy => policy.AddAuthenticationSchemes(Cookie).RequireAuthenticatedUser()
+                .RequireRole(AccountRoles.Admin, AccountRoles.Staff).RequireClaim(Restricted, "false"));
             options.AddPolicy("Admin", policy => policy.AddAuthenticationSchemes(Cookie).RequireAuthenticatedUser()
                 .RequireRole(AccountRoles.Admin).RequireClaim(Restricted, "false"));
+            options.AddPolicy("Customer", policy => policy.AddAuthenticationSchemes(Bearer).RequireAuthenticatedUser()
+                .RequireRole(AccountRoles.Customer).RequireClaim(Restricted, "false"));
             // All future application endpoints must use a full-session policy.
             options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder(Smart)
                 .RequireAuthenticatedUser().RequireClaim(Restricted, "false").Build();
