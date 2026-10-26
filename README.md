@@ -89,7 +89,20 @@ Stop the database with `pnpm db:down`; its named volume persists. PostgreSQL ini
 - `apps/api/src/Aqours.Infrastructure`: persistence and integrations; references Application and Domain.
 - `apps/api/src/Aqours.Api`: Minimal API host; references Application and Infrastructure.
 - `apps/web`: React + TypeScript + Vite app with ESLint, Tailwind CSS, routing, query state, and supplier account screens.
+- `apps/mobile`: React Native + TypeScript starter for Expo Go on a real phone.
 - `packages/ui`: reusable browser UI components shared across web features; see [the package README](packages/ui/README.md) for its public exports and usage.
 - `packages/psgc`: canonical shared Philippine location data.
 
-Read [architecture](docs/architecture.md), [product context](docs/context.md), [progress](docs/PROGRESS.md), and the [authentication spec](docs/features/authentication/spec.md) before implementation. The mobile app will be created separately.
+Read [architecture](docs/architecture.md), [product context](docs/context.md), [progress](docs/PROGRESS.md), and the [authentication spec](docs/features/authentication/spec.md) before implementation. The Expo Go TypeScript starter is in `apps/mobile`; Customer feature screens remain deferred.
+
+## Mobile development (Expo Go)
+
+```sh
+pnpm dev:mobile
+```
+
+Install Expo Go on your real Android or iOS phone, connect the phone and development computer to the same Wi-Fi network, and scan the terminal QR code (Expo Go on Android or Camera on iOS). Allow local network access and development-server traffic through the computer firewall. The command explicitly uses Expo Go over LAN. SDK 57 is selected for physical-device Expo Go compatibility per the [Expo project setup guidance](https://docs.expo.dev/get-started/create-a-project/).
+
+Use only a real phone connected to Expo Go for mobile runtime testing. Do not generate APKs, native builds, or test through emulators/simulators. `pnpm typecheck:mobile` checks TypeScript but does not replace phone verification. No physical-phone test has been performed as part of initialization.
+
+When API integration is implemented, use the computer's LAN IP rather than `localhost` in the phone's API URL, and expose the development API on a reachable LAN interface. Keep privileged credentials on the API. The starter does not yet call the API or implement authentication, reports, maps, or supply screens.

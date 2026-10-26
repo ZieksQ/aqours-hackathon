@@ -36,7 +36,7 @@ This tree describes the intended structure; create application projects and pack
 | Web application | React with TypeScript, Vite, and ESLint |
 | Web styling | Tailwind CSS through the official `@tailwindcss/vite` plugin |
 | Mobile application | React Native with Expo Go |
-| Mobile development and verification | Run Expo Go on a physical phone |
+| Mobile development and verification | Connect Expo Go on a real physical phone; no APKs, native builds, emulators, or simulators |
 | API | .NET 10 / C#, ASP.NET Core Minimal API |
 | Database | PostgreSQL 18.6, local Docker image `postgres:18.6-alpine3.23` |
 | Accounts and password handling | ASP.NET Core Identity |
@@ -62,7 +62,7 @@ The API exposes a process health endpoint at `/health`; it does not report Postg
 
 Tailwind CSS is installed in the web workspace through `tailwindcss` and `@tailwindcss/vite`. Register the plugin in `apps/web/vite.config.ts` and import `tailwindcss` from `apps/web/src/index.css`, following the [official Vite integration](https://tailwindcss.com/docs/installation/using-vite). Use Tailwind utilities for web styling; no separate PostCSS setup or Tailwind configuration file is needed for this initial integration.
 
-The web app includes supplier authentication screens, a dashboard shell, and the implemented Staff report queue and ticket workspace, using React Router and TanStack Query. Shared browser primitives belong in `packages/ui` and are consumed through its public exports; see that package's README for the available components. Customer reporting and messaging have API support, while the Customer mobile UI remains deferred. Supply and weather workflows and maps also remain deferred until needed. See `README.md` for local setup and verification commands.
+The web app includes supplier authentication screens, a dashboard shell, and the implemented Staff report queue and ticket workspace, using React Router and TanStack Query. Shared browser primitives belong in `packages/ui` and are consumed through its public exports; see that package's README for the available components. Customer reporting and messaging have API support, while `apps/mobile` contains only the Expo Go TypeScript starter and Customer feature screens remain deferred. Supply and weather workflows and maps also remain deferred until needed. See `README.md` for local setup and verification commands.
 
 ## 3. API: Clean Architecture with feature organization
 
