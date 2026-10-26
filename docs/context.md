@@ -1,6 +1,6 @@
 # Water Reporting and Response System — App Context & MVP
 
-> This document defines the hackathon MVP. Account authentication, the Customer reporting API, and the Staff report queue and ticket workspace have been implemented; other workflows below describe product scope and are not implied to be implemented.
+> This document defines the hackathon MVP. Account authentication, the Customer reporting API, the Staff report queue and ticket workspace, and mobile Customer login and Home have been implemented; other workflows below describe product scope and are not implied to be implemented.
 
 ## 1. App context
 
@@ -29,7 +29,7 @@ A simple water reporting, supplier response, and manual water supply monitoring 
 - Customers can access only their own reports.
 - Only authorized supplier personnel can access customer report locations.
 
-**Implemented account and Customer reporting API slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. The Customer mobile application, supply monitoring, weather warnings, and maps remain deferred. See [the authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), and [Staff report workspace spec](features/staff-report-workspace/spec.md).
+**Implemented account and Customer reporting slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. The mobile app implements Customer sign-in, initial password change, and Home with the latest owned report, progress, supplier response, and read-only summary. Mobile submission/history, supply monitoring, weather warnings, and maps remain deferred. See [the authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), and [Staff report workspace spec](features/staff-report-workspace/spec.md).
 
 ### 3.2 Customer water reporting
 

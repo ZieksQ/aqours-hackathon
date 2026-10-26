@@ -4,7 +4,7 @@
 
 Aqours is a water reporting and supplier response system with a customer mobile app, supplier web portal, manual supply monitoring, and weather-based warnings. Keep work focused on the one-week MVP.
 
-The repository contains the .NET API layer projects, a React web app with supplier account screens, Docker PostgreSQL configuration, product and architecture documents, and the shared Philippine location dataset. Account authentication and the Customer reporting API are implemented. The Staff report queue and ticket workspace are implemented; Customer mobile UI, supply monitoring, weather, and maps remain deferred.
+The repository contains the .NET API layer projects, a React web app with supplier account screens, Docker PostgreSQL configuration, product and architecture documents, and the shared Philippine location dataset. Account authentication and the Customer reporting API are implemented. The Staff report queue and ticket workspace and Customer mobile login/Home are implemented; remaining mobile workflows, supply monitoring, weather, and maps remain deferred.
 
 ## Basic technology stack
 
@@ -16,7 +16,7 @@ The repository contains the .NET API layer projects, a React web app with suppli
 - Database: PostgreSQL 18.6 using the locally installed `postgres:18.6-alpine3.23` Docker image. Keep persistence implementations in Infrastructure; EF Core with Npgsql, Identity persistence, snake_case naming, and the initial authentication migration are configured. Apply migrations explicitly; API startup does not modify the schema.
 - Maps and weather: React Leaflet with Geoapify tiles on the web; Open-Meteo behind the API.
 - Tooling: pnpm workspace for JavaScript, NuGet/.NET CLI for .NET, Docker Compose for the local database, and root `concurrently` for running the API and web app together. See `README.md` for startup commands.
-- Mobile: React Native with Expo Go; the starter lives in `apps/mobile`, while Customer feature screens remain deferred. Test by connecting Expo Go on a real mobile phone to the development server. Do not create APKs, native builds, or use emulators/simulators for mobile testing.
+- Mobile: React Native with Expo Go; Customer login and Home live in `apps/mobile`, while remaining feature screens are deferred. Test by connecting Expo Go on a real mobile phone to the development server. Do not create APKs, native builds, or use emulators/simulators for mobile testing.
 
 ## Important documentation
 
