@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The API implements account authentication for supplier portal users and customer mobile clients. The web starter includes supplier sign-in, first-login password change, account creation, and session-aware routing. The Customer reporting API and Staff report queue/ticket workspace are documented separately; site, supply, map, and weather workflows remain deferred. The mobile application is deferred; mobile auth endpoints are available for a future client.
+The API implements account authentication for supplier portal users and customer mobile clients. The web app includes supplier sign-in, first-login password change, account creation, and session-aware routing. The mobile app implements Customer sign-in, required initial password change, in-memory JWT/refresh sessions, sign-out, and Home with the latest owned report and supplier response. The Customer reporting API and Staff report queue/ticket workspace are documented separately; site, supply, map, and weather workflows remain deferred. See [mobile setup](../../../apps/mobile/README.md) for configuration and implementation limits.
 
 Supported roles are `Admin`, `Staff`, and `Customer`. Every new account is flagged to change its initial password. Account creation is currently an Admin-only API action. The startup seeder provisions roles and one initial Admin from configuration.
 
@@ -54,7 +54,7 @@ The Domain layer defines the account model and role names. Infrastructure adapts
 
 ## Deferred
 
-- Customer and supplier mobile app screens and secure client token storage.
+- Remaining Customer mobile screens, supplier mobile screens, and persistent secure client token storage. The implemented Customer login/Home keeps tokens in memory and requires sign-in after reopening the app.
 - Email verification, password reset/recovery, MFA, invitation links, and self-service registration.
 - Admin account editing, deletion, role changes, and disabling accounts.
 - Refresh tokens for supplier web sessions, cross-device session management, and a refresh-family cleanup job.

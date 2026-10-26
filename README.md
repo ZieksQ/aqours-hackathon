@@ -1,6 +1,6 @@
 # Aqours
 
-Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), and the Staff report queue and ticket workspace are implemented. The Customer mobile UI, supply, weather, and map workflows remain deferred.
+Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, and mobile Customer login and Home are implemented. Mobile report submission/history, supply, weather, and map workflows remain deferred.
 
 ## Prerequisites
 
@@ -61,7 +61,7 @@ This connection string can also be set with `dotnet user-secrets`; see [authenti
 
 ## Web styling
 
-Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, account creation, password change, a dashboard shell, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Customer reporting and messaging are API-only; supply, weather, maps, and mobile screens remain deferred.
+Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, account creation, password change, a dashboard shell, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Mobile Customer login and Home show the latest report and supplier response; mobile submission/history, supply, weather, and maps remain deferred.
 
 ## Verification
 
@@ -89,7 +89,20 @@ Stop the database with `pnpm db:down`; its named volume persists. PostgreSQL ini
 - `apps/api/src/Aqours.Infrastructure`: persistence and integrations; references Application and Domain.
 - `apps/api/src/Aqours.Api`: Minimal API host; references Application and Infrastructure.
 - `apps/web`: React + TypeScript + Vite app with ESLint, Tailwind CSS, routing, query state, and supplier account screens.
+- `apps/mobile`: React Native + TypeScript Customer login and Home for Expo Go on a real phone.
 - `packages/ui`: reusable browser UI components shared across web features; see [the package README](packages/ui/README.md) for its public exports and usage.
 - `packages/psgc`: canonical shared Philippine location data.
 
-Read [architecture](docs/architecture.md), [product context](docs/context.md), [progress](docs/PROGRESS.md), and the [authentication spec](docs/features/authentication/spec.md) before implementation. The mobile app will be created separately.
+Read [architecture](docs/architecture.md), [product context](docs/context.md), [progress](docs/PROGRESS.md), and the [authentication spec](docs/features/authentication/spec.md) before implementation. See [mobile setup and design rules](apps/mobile/README.md) for the implemented login/Home screens and deferred features.
+
+## Mobile development (Expo Go)
+
+```sh
+pnpm dev:mobile
+```
+
+Install Expo Go on your real Android or iOS phone, connect the phone and development computer to the same Wi-Fi network, and scan the terminal QR code (Expo Go on Android or Camera on iOS). Allow local network access and development-server traffic through the computer firewall. The command explicitly uses Expo Go over LAN. SDK 57 is selected for physical-device Expo Go compatibility per the [Expo project setup guidance](https://docs.expo.dev/get-started/create-a-project/).
+
+Use only a real phone connected to Expo Go for mobile runtime testing. Do not generate APKs, native builds, or test through emulators/simulators. `pnpm typecheck:mobile` checks TypeScript but does not replace phone verification. Physical-phone verification of the login and Home screens remains pending.
+
+Copy `apps/mobile/.env.example` to `apps/mobile/.env.local`, set `EXPO_PUBLIC_API_URL` to the computer's LAN origin (for example, `http://192.168.1.100:5251`, without `/api`), and expose the configured development API with `dotnet run --project apps/api/src/Aqours.Api --launch-profile http --urls http://0.0.0.0:5251`. Sign in with a supplier-created Customer account; the app handles the required initial password change and keeps tokens in memory. The development-only **Preview Home design** button shows labeled Stitch sample data without signing in. Keep privileged credentials on the API; see [the mobile README](apps/mobile/README.md) for details and verification commands.

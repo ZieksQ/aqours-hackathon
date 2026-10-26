@@ -490,3 +490,6 @@ coverage/
 
 # Local browser/design verification evidence
 .taste-skill/
+
+# Local Stitch design exports for review
+/design/aqours-mobile-stitch/

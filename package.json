@@ -21,7 +21,9 @@
     "dev:api": "dotnet run --project apps/api/src/Aqours.Api --launch-profile http",
     "build:api": "dotnet build Aqours.slnx",
     "db:up": "docker compose up -d --wait db",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "dev:mobile": "pnpm --filter @aqours/mobile start",
+    "typecheck:mobile": "pnpm --filter @aqours/mobile typecheck"
   },
   "devDependencies": {
     "concurrently": "^10.0.6"
