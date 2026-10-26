@@ -62,7 +62,7 @@ The API exposes a process health endpoint at `/health`; it does not report Postg
 
 Tailwind CSS is installed in the web workspace through `tailwindcss` and `@tailwindcss/vite`. Register the plugin in `apps/web/vite.config.ts` and import `tailwindcss` from `apps/web/src/index.css`, following the [official Vite integration](https://tailwindcss.com/docs/installation/using-vite). Use Tailwind utilities for web styling; no separate PostCSS setup or Tailwind configuration file is needed for this initial integration.
 
-The web app includes supplier authentication screens, a dashboard shell, and the implemented Staff report queue and ticket workspace, using React Router and TanStack Query. Customer reporting and messaging have API support, while the Customer mobile UI remains deferred. Supply and weather workflows, maps, and the shared UI package also remain deferred until needed. See `README.md` for local setup and verification commands.
+The web app includes supplier authentication screens, a dashboard shell, and the implemented Staff report queue and ticket workspace, using React Router and TanStack Query. Shared browser primitives belong in `packages/ui` and are consumed through its public exports; see that package's README for the available components. Customer reporting and messaging have API support, while the Customer mobile UI remains deferred. Supply and weather workflows and maps also remain deferred until needed. See `README.md` for local setup and verification commands.
 
 ## 3. API: Clean Architecture with feature organization
 
@@ -113,13 +113,17 @@ src/
 - Expose deliberate feature entry points when another feature needs a capability. Do not reach into another feature's private implementation.
 - Use TanStack Query for server state in both clients, including loading, failures, cache invalidation after mutations, and refreshing data. Keep temporary form and interaction state local unless sharing is necessary.
 - Treat the API as the authority for business state and access control. Handle loading, empty, failed, and stale server-data states explicitly.
-- Move code into an application's `shared/` folder when it has real reuse within that application; move it into `packages/` when multiple applications need it and the code is compatible with those consumers.
+- Keep code in a feature when it serves that feature. Use an application's `shared/` folder for concrete reuse within that application.
+- Use `packages/ui` for concrete reusable browser UI shared across web features, even when the web app is currently the only consumer. Pages must use its public components rather than copying repeated structure or styling. Keep route definitions, feature behavior, permissions, and data fetching in the application; pass required labels, state, and callbacks into shared UI through component props.
+- Keep viewport-level navigation independent of page content height. Give the sidebar a viewport-bound height and its own overflow when needed; let the main page content scroll independently. At narrow widths, provide an accessible responsive navigation pattern. Use semantic navigation landmarks, accessible names, keyboard operation, and visible focus.
+- Keep `packages/ui` browser-only. React Native must use native components and must not import DOM-based components from the shared web package.
+- Move code into another `packages/` package when multiple applications need it and the code is compatible with those consumers.
 
 ## 5. Shared packages
 
 | Package | Purpose |
 | --- | --- |
-| `packages/ui` | Reusable web UI components; React Native uses native components rather than browser DOM components |
+| `packages/ui` | Public reusable browser UI components used by the web app across product features; not for React Native |
 | `packages/psgc` | Framework-independent Philippine location JSON shared by web, mobile, and API |
 
 Packages must not depend on application source. Keep their public interfaces small. Add packages for other shared concerns only when concrete reuse justifies them; do not create speculative package scaffolding.

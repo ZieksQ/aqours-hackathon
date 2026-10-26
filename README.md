@@ -61,9 +61,11 @@ This connection string can also be set with `dotnet user-secrets`; see [authenti
 
 ## Web styling
 
-Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, account creation, password change, a dashboard shell, and the Staff report queue and ticket workspace. Customer reporting and messaging are API-only; supply, weather, maps, and mobile screens remain deferred.
+Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, account creation, password change, a dashboard shell, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Customer reporting and messaging are API-only; supply, weather, maps, and mobile screens remain deferred.
 
 ## Verification
+
+`pnpm build:web` type-checks `@aqours/ui` before building the web app. `pnpm lint:web` lints the shared UI package and web app.
 
 ```sh
 pnpm build:api
@@ -87,6 +89,7 @@ Stop the database with `pnpm db:down`; its named volume persists. PostgreSQL ini
 - `apps/api/src/Aqours.Infrastructure`: persistence and integrations; references Application and Domain.
 - `apps/api/src/Aqours.Api`: Minimal API host; references Application and Infrastructure.
 - `apps/web`: React + TypeScript + Vite app with ESLint, Tailwind CSS, routing, query state, and supplier account screens.
+- `packages/ui`: reusable browser UI components shared across web features; see [the package README](packages/ui/README.md) for its public exports and usage.
 - `packages/psgc`: canonical shared Philippine location data.
 
 Read [architecture](docs/architecture.md), [product context](docs/context.md), [progress](docs/PROGRESS.md), and the [authentication spec](docs/features/authentication/spec.md) before implementation. The mobile app will be created separately.
