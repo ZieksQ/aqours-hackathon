@@ -11,6 +11,8 @@ The repository contains the .NET API layer projects, a React web app with suppli
 - Backend: .NET 10 / C#, ASP.NET Core Minimal API, ASP.NET Core Identity for account management and authentication.
 - .NET projects and namespaces use PascalCase: `Aqours.Domain`, `Aqours.Application`, `Aqours.Infrastructure`, and `Aqours.Api`; follow the Clean Architecture reference rules in `docs/architecture.md`.
 - Web: React with TypeScript, Vite, ESLint, and Tailwind CSS; React Router and TanStack Query are the agreed routing and server-state tools.
+- Shared web UI: use the reusable primitives in `@aqours/ui` for portal interface elements. Before adding a new primitive, check the package's public exports and extend a concrete shared component when appropriate; do not duplicate shared markup in pages. Keep feature behavior, routes, and data access in `apps/web`.
+- Icons: use the installed Feather icon set from `react-icons/fi` for web UI rather than hand-drawn Unicode or copied SVG markup. Mark decorative icons `aria-hidden="true"`; icon-only controls need an accessible name. Preserve the existing custom Aqours brand mark in `apps/web/src/shared/Brand.tsx` instead of replacing it with a library icon.
 - Database: PostgreSQL 18.6 using the locally installed `postgres:18.6-alpine3.23` Docker image. Keep persistence implementations in Infrastructure; EF Core with Npgsql, Identity persistence, snake_case naming, and the initial authentication migration are configured. Apply migrations explicitly; API startup does not modify the schema.
 - Maps and weather: React Leaflet with Geoapify tiles on the web; Open-Meteo behind the API.
 - Tooling: pnpm workspace for JavaScript, NuGet/.NET CLI for .NET, Docker Compose for the local database, and root `concurrently` for running the API and web app together. See `README.md` for startup commands.
@@ -60,6 +62,14 @@ For location data work, also read `packages/psgc/README.md` for provenance, cons
 
 - Format every code file you create or change before verification and committing. Use the existing formatter or language tooling (for example, `dotnet format` for C# and the web formatter plus ESLint for TypeScript/React); preserve the repository conventions and avoid unrelated formatting changes.
 - Run available formatting checks and report any limitation; generated code should follow its official generator’s formatting.
+
+## Web UI reuse and navigation
+
+- Use `packages/ui` for concrete web UI primitives reused across portal screens, including shared navigation chrome. Pages must consume the package's public components instead of copying equivalent markup or styles.
+- Keep application-specific labels, navigation destinations, permissions, route definitions, and business behavior in `apps/web`; shared components receive the data and callbacks they need through their public props.
+- Keep portal sidebars and navigation bars sized against the viewport, not the height of page content. Long navigation and page content should scroll independently so a short page does not collapse the sidebar and a long page does not stretch it.
+- Navigation must remain usable at narrow widths and with keyboard and assistive technology: use semantic navigation landmarks, accessible names, visible focus, and responsive behavior that does not hide destinations without an accessible way to reach them.
+- `packages/ui` is browser UI for the React web app. React Native screens must use native components and must not import browser DOM components from this package.
 
 ## Keep implementation simple
 

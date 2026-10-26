@@ -1,10 +1,14 @@
 import { useState, type FormEvent } from "react";
+import { Alert, Button, Field, PageHeader } from "@aqours/ui";
+import { FiLogIn, FiLock, FiUserPlus } from "react-icons/fi";
+import { Brand } from "../../shared/Brand";
+import { FormError } from "../../shared/FormError";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { api, ApiError, csrf, type Account } from "./api";
 import { queryClient } from "../../shared/query";
 
-export function Field({
+function AccountField({
   name,
   label,
   type = "text",
@@ -23,11 +27,12 @@ export function Field({
 }) {
   const errors = error?.errors[name];
   return (
-    <div className="field">
-      <label htmlFor={name}>
-        {label}
-        {!required && <span className="muted"> (optional)</span>}
-      </label>
+    <Field
+      id={name}
+      label={label}
+      optional={!required}
+      error={errors?.join(" ")}
+    >
       {children ?? (
         <input
           id={name}
@@ -47,44 +52,7 @@ export function Field({
           aria-describedby={errors ? `${name}-error` : undefined}
         />
       )}
-      {errors && (
-        <p id={`${name}-error`} className="field-error">
-          {errors.join(" ")}
-        </p>
-      )}
-    </div>
-  );
-}
-export function FormError({
-  error,
-  login = false,
-}: {
-  error: Error | null;
-  login?: boolean;
-}) {
-  if (!error) return null;
-  return (
-    <div className="error" role="alert">
-      {login && error instanceof ApiError && error.status === 401
-        ? "Email or password is incorrect, this account uses the mobile app, or sign-in is temporarily locked. Try again in 15 minutes if you have made several attempts."
-        : error.message}
-      {error instanceof ApiError &&
-        Object.entries(error.errors)
-          .filter(
-            ([key]) =>
-              ![
-                "firstName",
-                "middleName",
-                "lastName",
-                "email",
-                "initialPassword",
-                "role",
-                "currentPassword",
-                "newPassword",
-              ].includes(key),
-          )
-          .map(([key, values]) => <p key={key}>{values.join(" ")}</p>)}
-    </div>
+    </Field>
   );
 }
 function fields(form: HTMLFormElement) {
@@ -125,31 +93,38 @@ export function SignIn() {
         <Brand />
       </div>
       <main className="auth-form">
-        <h1>Sign in</h1>
-        <p className="muted mb-6">Access the Aqours supplier portal.</p>
+        <PageHeader
+          title="Sign in"
+          description="Access the Aqours supplier portal."
+        />
         <form
           onSubmit={(event: FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             mutation.mutate(fields(event.currentTarget));
           }}
         >
-          <Field
+          <AccountField
             name="email"
             label="Email address"
             type="email"
             autoComplete="username"
             error={mutation.error as ApiError}
           />
-          <Field
+          <AccountField
             name="password"
             label="Password"
             type="password"
             autoComplete="current-password"
           />
           <FormError error={mutation.error} login />
-          <button className="primary w-full" disabled={mutation.isPending}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={mutation.isPending}
+          >
+            <FiLogIn aria-hidden="true" />
             {mutation.isPending ? "Signing in…" : "Sign in"}
-          </button>
+          </Button>
         </form>
         <p className="muted mt-6">
           Accounts are provided by your administrator. Customers sign in through
@@ -171,10 +146,10 @@ export function ChangePassword() {
   const [mismatch, setMismatch] = useState(false);
   return (
     <section className="max-w-xl">
-      <h1>Change your password</h1>
-      <p className="muted mb-6">
-        Set a new password before continuing to the portal.
-      </p>
+      <PageHeader
+        title="Change your password"
+        description="Set a new password before continuing to the portal."
+      />
       <p id="password-help" className="mb-6">
         Use at least 12 characters with an uppercase letter, a lowercase letter,
         a number, and a symbol.
@@ -192,35 +167,34 @@ export function ChangePassword() {
         }}
         aria-describedby="password-help"
       >
-        <Field
+        <AccountField
           name="currentPassword"
           label="Current password"
           type="password"
           autoComplete="current-password"
           error={mutation.error as ApiError}
         />
-        <Field
+        <AccountField
           name="newPassword"
           label="New password"
           type="password"
           autoComplete="new-password"
           error={mutation.error as ApiError}
         />
-        <Field
+        <AccountField
           name="confirmPassword"
           label="Confirm new password"
           type="password"
           autoComplete="new-password"
         />
         {mismatch && (
-          <p className="error" role="alert">
-            The new passwords do not match.
-          </p>
+          <Alert tone="error">The new passwords do not match.</Alert>
         )}
         <FormError error={mutation.error} />
-        <button className="primary" disabled={mutation.isPending}>
+        <Button type="submit" disabled={mutation.isPending}>
+          <FiLock aria-hidden="true" />
           {mutation.isPending ? "Saving…" : "Save new password"}
-        </button>
+        </Button>
       </form>
     </section>
   );
@@ -233,7 +207,10 @@ export function CreateAccount() {
   });
   return (
     <section>
-      <h1>Create account</h1>
+      <PageHeader
+        title="Create account"
+        description="Give a colleague or customer access to Aqours."
+      />
       <div className="settings-grid">
         <div>
           <h2>Account details</h2>
@@ -265,41 +242,45 @@ export function CreateAccount() {
           }}
         >
           {created && (
-            <div role="status" className="success mb-6">
+            <Alert tone="success" className="mb-6">
               Account created for <strong>{created.email}</strong> as{" "}
               {created.role}. They must change their initial password when
               signing in.
-            </div>
+            </Alert>
           )}
           <div className="grid gap-x-4 sm:grid-cols-2">
-            <Field
+            <AccountField
               name="firstName"
               label="First name"
               autoComplete="off"
               error={mutation.error as ApiError}
             />
-            <Field
+            <AccountField
               name="lastName"
               label="Last name"
               autoComplete="off"
               error={mutation.error as ApiError}
             />
           </div>
-          <Field
+          <AccountField
             name="middleName"
             label="Middle name"
             required={false}
             autoComplete="off"
             error={mutation.error as ApiError}
           />
-          <Field
+          <AccountField
             name="email"
             label="Email address"
             type="email"
             autoComplete="off"
             error={mutation.error as ApiError}
           />
-          <Field name="role" label="Role" error={mutation.error as ApiError}>
+          <AccountField
+            name="role"
+            label="Role"
+            error={mutation.error as ApiError}
+          >
             <select
               id="role"
               name="role"
@@ -315,8 +296,8 @@ export function CreateAccount() {
               <option value="Admin">Admin</option>
               <option value="Customer">Customer</option>
             </select>
-          </Field>
-          <Field
+          </AccountField>
+          <AccountField
             name="initialPassword"
             label="Initial password"
             type="password"
@@ -329,34 +310,14 @@ export function CreateAccount() {
           </p>
           <FormError error={mutation.error} />
           <div className="flex flex-wrap items-center gap-4">
-            <button className="primary" disabled={mutation.isPending}>
+            <Button type="submit" disabled={mutation.isPending}>
+              <FiUserPlus aria-hidden="true" />
               {mutation.isPending ? "Creating…" : "Create account"}
-            </button>
+            </Button>
             <Link to="/dashboard">Cancel</Link>
           </div>
         </form>
       </div>
     </section>
-  );
-}
-export function Brand() {
-  return (
-    <span className="brand">
-      <svg width="24" height="28" viewBox="0 0 24 28" aria-hidden="true">
-        <path
-          d="M12 2C9 7 3 13 3 18a9 9 0 0 0 18 0c0-5-6-11-9-16Z"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        />
-        <path
-          d="M7 18a5 5 0 0 0 5 5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        />
-      </svg>
-      Aqours
-    </span>
   );
 }

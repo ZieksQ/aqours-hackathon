@@ -1,3 +1,5 @@
+import { PageHeader, buttonClassName } from "@aqours/ui";
+import { FiArrowRight, FiUserPlus } from "react-icons/fi";
 import { Link } from "react-router";
 import type { Account } from "../accounts/api";
 const planned = [
@@ -13,25 +15,26 @@ const planned = [
 export function Dashboard({ account }: { account: Account }) {
   return (
     <section>
-      <div className="title-row">
-        <div>
-          <h1>Dashboard</h1>
-          <p className="muted">Customer reports and supplier responses.</p>
-        </div>
-        {account.role === "Admin" && (
-          <Link className="primary" to="/accounts/new">
-            Create account
-          </Link>
-        )}
-      </div>
-      <div className="notice">
+      <PageHeader
+        title="Dashboard"
+        description="Customer reports and supplier responses."
+        actions={
+          account.role === "Admin" && (
+            <Link className={buttonClassName("secondary")} to="/accounts/new">
+              <FiUserPlus aria-hidden="true" />
+              Create account
+            </Link>
+          )
+        }
+      />
+      <div className="report-overview">
         <h2>Water reports</h2>
         <p className="mt-2 mb-4">
           Review incoming water issues, claim a ticket, and respond to
           customers.
         </p>
-        <Link className="primary" to="/reports">
-          Open report queue
+        <Link className={buttonClassName()} to="/reports">
+          Open report queue <FiArrowRight aria-hidden="true" />
         </Link>
       </div>
       <h2 className="mt-8 mb-4">Planned functionality</h2>

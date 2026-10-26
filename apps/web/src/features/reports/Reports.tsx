@@ -1,3 +1,18 @@
+import { Alert, Button, PageHeader, StatePanel } from "@aqours/ui";
+import {
+  FiArrowDown,
+  FiArrowLeft,
+  FiCheck,
+  FiChevronLeft,
+  FiChevronRight,
+  FiFilter,
+  FiRefreshCw,
+  FiSearch,
+  FiSend,
+  FiUserCheck,
+  FiWifi,
+  FiWifiOff,
+} from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import {
   useInfiniteQuery,
@@ -7,7 +22,7 @@ import {
 } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router";
 import { api, ApiError, type Account } from "../accounts/api";
-import { FormError } from "../accounts/AccountForms";
+import { FormError } from "../../shared/FormError";
 import {
   addressText,
   fetchQueue,
@@ -86,15 +101,15 @@ export function Reports({ account }: { account: Account }) {
           : "Loading reports…"}
       </span>
       <div>
-        <button
-          className="secondary"
+        <Button
+          variant="secondary"
           disabled={page <= 1 || queue.isFetching}
           onClick={() => update({ page: String(page - 1) })}
         >
-          Previous
-        </button>
-        <button
-          className="secondary"
+          <FiChevronLeft aria-hidden="true" /> Previous
+        </Button>
+        <Button
+          variant="secondary"
           disabled={
             !queue.data ||
             page * queue.data.pageSize >= queue.data.totalCount ||
@@ -102,14 +117,15 @@ export function Reports({ account }: { account: Account }) {
           }
           onClick={() => update({ page: String(page + 1) })}
         >
-          Next
-        </button>
+          Next <FiChevronRight aria-hidden="true" />
+        </Button>
       </div>
     </div>
   );
   const claimButton = (t: Ticket) =>
     account.role === "Staff" && t.status === "Submitted" && !t.assignedStaff ? (
-      <button
+      <Button
+        variant="secondary"
         className="report-action"
         disabled={claim.isPending}
         onClick={() => {
@@ -117,45 +133,61 @@ export function Reports({ account }: { account: Account }) {
           claim.mutate(t.id);
         }}
       >
+        <FiUserCheck aria-hidden="true" />
         {claim.isPending && claim.variables === t.id ? "Claiming…" : "Claim"}
-      </button>
+      </Button>
     ) : null;
   return (
     <section className={`reports ${id ? "reports-workspace" : ""}`}>
-      <div className="report-heading">
-        <div>
-          {id && (
-            <Link className="muted" to={`/reports${query ? `?${query}` : ""}`}>
-              ← Report queue
+      <PageHeader
+        title={id ? "Ticket workspace" : "Reports"}
+        description={
+          id
+            ? "Customer issue, conversation, and response."
+            : "Review water issues and take the next report."
+        }
+        back={
+          id && (
+            <Link
+              className="back-link"
+              to={`/reports${query ? `?${query}` : ""}`}
+            >
+              <FiArrowLeft aria-hidden="true" />
+              Report queue
             </Link>
-          )}
-          <h1>{id ? "Ticket workspace" : "Reports"}</h1>
-          <p className="muted">Supplier organization</p>
-        </div>
-        <div className="report-connection" role="status">
-          <span>
-            {realtime.state === "Connected"
-              ? "Live updates connected"
-              : `${realtime.state} · updates may be delayed`}
-          </span>
-          {realtime.state !== "Connected" &&
-            realtime.state !== "Connecting" && (
-              <button onClick={realtime.retry}>Retry connection</button>
-            )}
-          <button
-            onClick={() =>
-              void client.invalidateQueries({ queryKey: ["reports"] })
-            }
-          >
-            Refresh
-          </button>
-        </div>
-      </div>
-      {claimNotice && (
-        <p className="notice" role="status">
-          {claimNotice}
-        </p>
-      )}
+          )
+        }
+        actions={
+          <div className="report-connection">
+            <span role="status" className="connection-status">
+              {realtime.state === "Connected" ? (
+                <FiWifi aria-hidden="true" />
+              ) : (
+                <FiWifiOff aria-hidden="true" />
+              )}
+              {realtime.state === "Connected"
+                ? "Live updates connected"
+                : `${realtime.state} · updates may be delayed`}
+            </span>
+            {realtime.state !== "Connected" &&
+              realtime.state !== "Connecting" && (
+                <Button variant="ghost" onClick={realtime.retry}>
+                  Retry connection
+                </Button>
+              )}
+            <Button
+              variant="secondary"
+              onClick={() =>
+                void client.invalidateQueries({ queryKey: ["reports"] })
+              }
+            >
+              <FiRefreshCw aria-hidden="true" />
+              Refresh
+            </Button>
+          </div>
+        }
+      />
+      {claimNotice && <Alert>{claimNotice}</Alert>}
       {!claimNotice && <FormError error={claim.error} />}
       {!id ? (
         <>
@@ -182,7 +214,8 @@ export function Reports({ account }: { account: Account }) {
           </div>
           <nav className="report-tabs" aria-label="Report views">
             {tabs.map(([value, label]) => (
-              <button
+              <Button
+                variant="ghost"
                 key={value}
                 aria-current={tab === value ? "page" : undefined}
                 onClick={() =>
@@ -195,7 +228,7 @@ export function Reports({ account }: { account: Account }) {
                 }
               >
                 {label}
-              </button>
+              </Button>
             ))}
           </nav>
           <form
@@ -217,9 +250,15 @@ export function Reports({ account }: { account: Account }) {
               placeholder="Search ticket ID, issue, customer or address"
               maxLength={200}
             />
-            <button className="secondary">Search</button>
+            <Button type="submit" variant="secondary">
+              <FiSearch aria-hidden="true" />
+              Search
+            </Button>
             <details className="report-filters">
-              <summary>Filters</summary>
+              <summary>
+                <FiFilter aria-hidden="true" />
+                Filters
+              </summary>
               <div>
                 {[
                   [
@@ -267,9 +306,13 @@ export function Reports({ account }: { account: Account }) {
                     </select>
                   </label>
                 ))}
-                <button type="button" onClick={() => setParams({ tab })}>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setParams({ tab })}
+                >
                   Clear filters
-                </button>
+                </Button>
               </div>
             </details>
           </form>
@@ -344,15 +387,19 @@ export function Reports({ account }: { account: Account }) {
                 </table>
               </div>
               {!queue.data.items.length && (
-                <div className="report-empty">
-                  <h2>No reports in this view</h2>
-                  <p className="muted">
-                    Try another tab or clear your search and filters.
-                  </p>
-                  <button onClick={() => setParams({ tab: "all" })}>
-                    View all reports
-                  </button>
-                </div>
+                <StatePanel
+                  title="No reports in this view"
+                  action={
+                    <Button
+                      variant="secondary"
+                      onClick={() => setParams({ tab: "all" })}
+                    >
+                      View all reports
+                    </Button>
+                  }
+                >
+                  Try another tab or clear your search and filters.
+                </StatePanel>
               )}
               {pager}
             </>
@@ -361,28 +408,31 @@ export function Reports({ account }: { account: Account }) {
       ) : (
         <>
           <div className="workspace-switch">
-            <button
+            <Button
+              variant="ghost"
               aria-pressed={panel === "list"}
               onClick={() =>
                 setPanel(panel === "list" ? "conversation" : "list")
               }
             >
               Ticket list
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               aria-pressed={panel === "conversation"}
               onClick={() => setPanel("conversation")}
             >
               Conversation
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               aria-pressed={panel === "details"}
               onClick={() =>
                 setPanel(panel === "details" ? "conversation" : "details")
               }
             >
               Details
-            </button>
+            </Button>
           </div>
           <div className={`workspace-grid show-${panel}`}>
             <aside
@@ -472,17 +522,22 @@ export function Reports({ account }: { account: Account }) {
 
 function LoadError({ error, retry }: { error: Error; retry: () => void }) {
   return (
-    <div className="report-empty" role="alert">
-      <h2>
-        {error instanceof ApiError && error.status === 404
+    <StatePanel
+      role="alert"
+      title={
+        error instanceof ApiError && error.status === 404
           ? "Ticket unavailable"
-          : "Could not load reports"}
-      </h2>
-      <p className="muted">{error.message}</p>
-      <button className="secondary" onClick={retry}>
-        Retry
-      </button>
-    </div>
+          : "Could not load reports"
+      }
+      action={
+        <Button variant="secondary" onClick={retry}>
+          <FiRefreshCw aria-hidden="true" />
+          Retry
+        </Button>
+      }
+    >
+      {error.message}
+    </StatePanel>
   );
 }
 
@@ -524,7 +579,7 @@ function TicketWorkspace({
   ];
   const lastId = messages.at(-1)?.id;
   useEffect(() => {
-    if (stick.current && scroll.current)
+    if (lastId && stick.current && scroll.current)
       scroll.current.scrollTop = scroll.current.scrollHeight;
   }, [lastId]);
   const refresh = () => client.invalidateQueries({ queryKey: ["reports"] });
@@ -600,7 +655,8 @@ function TicketWorkspace({
             <div className="initial-location muted">{addressText(ticket)}</div>
           </article>
           {history.hasNextPage && (
-            <button
+            <Button
+              variant="ghost"
               className="history-older"
               disabled={history.isFetchingNextPage}
               onClick={() => {
@@ -609,7 +665,7 @@ function TicketWorkspace({
               }}
             >
               {history.isFetchingNextPage ? "Loading…" : "Load older messages"}
-            </button>
+            </Button>
           )}
           {history.isPending && <p role="status">Loading conversation…</p>}
           {history.isError && (
@@ -665,7 +721,8 @@ function TicketWorkspace({
           <FormError error={send.error} />
           <div className="composer-actions">
             <span className="muted">{draft.length}/2,000</span>
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => {
                 if (scroll.current)
@@ -673,14 +730,16 @@ function TicketWorkspace({
                 stick.current = true;
               }}
             >
-              Latest messages ↓
-            </button>
-            <button
-              className="primary"
+              Latest messages <FiArrowDown aria-hidden="true" />
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
               disabled={!writable || !draft.trim() || send.isPending}
             >
+              <FiSend aria-hidden="true" />
               {send.isPending ? "Sending…" : "Send message"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -694,28 +753,30 @@ function TicketWorkspace({
               <p>
                 Resolve this ticket? The conversation will become read-only.
               </p>
-              <button
-                className="primary"
+              <Button
+                variant="primary"
                 disabled={!writable || change.isPending}
                 onClick={() => change.mutate({ status: "Resolved" })}
               >
                 Confirm resolution
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 disabled={change.isPending}
                 onClick={() => setResolveConfirm(false)}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
-              className="secondary"
+            <Button
+              variant="secondary"
               disabled={!writable || change.isPending}
               onClick={() => setResolveConfirm(true)}
             >
+              <FiCheck aria-hidden="true" />
               Resolve ticket
-            </button>
+            </Button>
           )}
         </div>
         <dl>

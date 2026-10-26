@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { AppShell, Button, Navbar, PageHeader, Sidebar } from "@aqours/ui";
+import { FiGrid, FiInbox, FiLock, FiLogOut, FiUserPlus } from "react-icons/fi";
+import { Brand } from "./shared/Brand";
+import { FormError } from "./shared/FormError";
 import {
   QueryClientProvider,
   useMutation,
@@ -17,10 +21,8 @@ import {
 import { queryClient } from "./shared/query";
 import { api, currentAccount, type Account } from "./features/accounts/api";
 import {
-  Brand,
   ChangePassword,
   CreateAccount,
-  FormError,
   SignIn,
 } from "./features/accounts/AccountForms";
 import { Reports } from "./features/reports/Reports";
@@ -28,6 +30,11 @@ import { Dashboard } from "./features/dashboard/Dashboard";
 
 function Portal({ account }: { account: Account }) {
   const [menu, setMenu] = useState(false);
+  const closeMenu = useCallback(() => setMenu(false), []);
+  const { pathname } = useLocation();
+  useEffect(() => {
+    document.getElementById("content")?.scrollTo({ top: 0 });
+  }, [pathname]);
   const logout = useMutation({
     mutationFn: () => api("/auth/web/logout", {}),
     onSuccess: async () => {
@@ -40,63 +47,81 @@ function Portal({ account }: { account: Account }) {
     },
   });
   return (
-    <div className="portal">
-      <a className="skip-link" href="#content">
-        Skip to content
-      </a>
-      <header className="portal-header">
-        <Brand />
-        <span className="portal-label">Supplier portal</span>
-        <button
-          className="menu-button"
-          aria-expanded={menu}
-          aria-controls="portal-nav"
-          onClick={() => setMenu(!menu)}
+    <AppShell
+      navbar={
+        <Navbar
+          brand={
+            <Link to="/dashboard" aria-label="Aqours dashboard">
+              <Brand />
+            </Link>
+          }
+          context="Supplier portal"
+          navigationId="portal-nav"
+          menuOpen={menu}
+          onMenuToggle={() => setMenu(!menu)}
+        />
+      }
+      sidebar={
+        <Sidebar
+          id="portal-nav"
+          open={menu}
+          onClose={closeMenu}
+          footer={
+            <div className="account-summary">
+              <div className="account-identity">
+                <span className="account-initials" aria-hidden="true">
+                  {account.firstName[0]}
+                  {account.lastName[0]}
+                </span>
+                <div>
+                  <p className="font-medium break-words">
+                    {account.firstName} {account.lastName}
+                  </p>
+                  <p className="muted">{account.role}</p>
+                </div>
+              </div>
+              <p className="muted account-email">{account.email}</p>
+              <Button
+                variant="secondary"
+                className="w-full"
+                disabled={logout.isPending}
+                onClick={() => logout.mutate()}
+              >
+                <FiLogOut aria-hidden="true" />
+                {logout.isPending ? "Signing out…" : "Sign out"}
+              </Button>
+              <FormError error={logout.error} />
+            </div>
+          }
         >
-          {menu ? "Close menu" : "Menu"}
-        </button>
-      </header>
-      <aside className={menu ? "sidebar open" : "sidebar"} id="portal-nav">
-        <nav aria-label="Main navigation">
-          {!account.requiresPasswordChange && (
+          {!account.requiresPasswordChange ? (
             <>
-              <NavLink to="/dashboard" onClick={() => setMenu(false)}>
+              <NavLink to="/dashboard" onClick={closeMenu}>
+                <FiGrid aria-hidden="true" />
                 Dashboard
               </NavLink>
-              <NavLink to="/reports" onClick={() => setMenu(false)}>
+              <NavLink to="/reports" onClick={closeMenu}>
+                <FiInbox aria-hidden="true" />
                 Reports
               </NavLink>
               {account.role === "Admin" && (
-                <NavLink to="/accounts/new" onClick={() => setMenu(false)}>
+                <NavLink to="/accounts/new" onClick={closeMenu}>
+                  <FiUserPlus aria-hidden="true" />
                   Create account
                 </NavLink>
               )}
             </>
+          ) : (
+            <NavLink to="/change-password" onClick={closeMenu}>
+              <FiLock aria-hidden="true" />
+              Change password
+            </NavLink>
           )}
-          {account.requiresPasswordChange && (
-            <NavLink to="/change-password">Change password</NavLink>
-          )}
-        </nav>
-        <div className="account-summary">
-          <p className="font-medium break-words">
-            {account.firstName} {account.lastName}
-          </p>
-          <p className="muted break-all">{account.email}</p>
-          <p className="muted mt-1 mb-4">{account.role}</p>
-          <button
-            className="secondary"
-            disabled={logout.isPending}
-            onClick={() => logout.mutate()}
-          >
-            {logout.isPending ? "Signing out…" : "Sign out"}
-          </button>
-          <FormError error={logout.error} />
-        </div>
-      </aside>
-      <main id="content" className="sheet" tabIndex={-1}>
-        <Outlet />
-      </main>
-    </div>
+        </Sidebar>
+      }
+    >
+      <Outlet />
+    </AppShell>
   );
 }
 function SessionRoutes() {
@@ -125,12 +150,7 @@ function SessionRoutes() {
         <main className="auth-form">
           <h1>Connection unavailable</h1>
           <FormError error={accountQuery.error} />
-          <button
-            className="primary"
-            onClick={() => void accountQuery.refetch()}
-          >
-            Try again
-          </button>
+          <Button onClick={() => void accountQuery.refetch()}>Try again</Button>
         </main>
       </div>
     );
@@ -187,7 +207,7 @@ function SessionRoutes() {
               <CreateAccount />
             ) : (
               <section>
-                <h1>Access denied</h1>
+                <PageHeader title="Access denied" />
                 <p className="mt-4 mb-6">
                   Only administrators can create accounts.
                 </p>
