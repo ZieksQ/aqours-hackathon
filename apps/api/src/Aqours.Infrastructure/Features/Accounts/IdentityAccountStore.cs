@@ -35,6 +35,16 @@ public sealed class IdentityAccountStore(UserManager<IdentityAccountUser> users,
         return user is null ? null : await SessionAsync(user);
     }
 
+    public async Task<IReadOnlyList<Account>> ListAsync(CancellationToken ct = default) =>
+        await (from user in db.Users.AsNoTracking()
+               join membership in db.UserRoles on user.Id equals membership.UserId
+               join role in db.Roles on membership.RoleId equals role.Id
+               where role.Name != null && AccountRoles.All.Contains(role.Name)
+               orderby role.Name == AccountRoles.Admin ? 0 : role.Name == AccountRoles.Staff ? 1 : 2,
+                   user.FirstName, user.LastName, user.Id
+               select new Account(user.Id, user.Email!, user.FirstName, user.MiddleName, user.LastName,
+                   role.Name!, user.RequiresPasswordChange)).ToListAsync(ct);
+
     private async Task<AccountSession?> SessionAsync(IdentityAccountUser user)
     {
         var roles = await users.GetRolesAsync(user);

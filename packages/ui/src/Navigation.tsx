@@ -19,6 +19,7 @@ export function Navbar({
   menuOpen,
   onMenuToggle,
   actions,
+  search,
 }: {
   brand: ReactNode;
   context: ReactNode;
@@ -26,23 +27,27 @@ export function Navbar({
   menuOpen: boolean;
   onMenuToggle: () => void;
   actions?: ReactNode;
+  search?: ReactNode;
 }) {
   return (
-    <header className="ui-navbar">
+    <>
       <div className="ui-navbar-brand">{brand}</div>
-      <div className="ui-navbar-context">{context}</div>
-      {actions && <div className="ui-navbar-actions">{actions}</div>}
-      <Button
-        variant="ghost"
-        className="ui-menu-toggle"
-        aria-expanded={menuOpen}
-        aria-controls={navigationId}
-        onClick={onMenuToggle}
-      >
-        <FiMenu aria-hidden="true" />
-        Menu
-      </Button>
-    </header>
+      <header className="ui-navbar">
+        <div className="ui-navbar-context">{context}</div>
+        {search && <div className="ui-navbar-search">{search}</div>}
+        {actions && <div className="ui-navbar-actions">{actions}</div>}
+        <Button
+          variant="ghost"
+          className="ui-menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls={navigationId}
+          onClick={onMenuToggle}
+        >
+          <FiMenu aria-hidden="true" />
+          Menu
+        </Button>
+      </header>
+    </>
   );
 }
 
@@ -154,14 +159,18 @@ export function AppShell({
   sidebar,
   children,
   collapsed = false,
+  className = "",
 }: {
+  className?: string;
   navbar: ReactNode;
   sidebar: ReactNode;
   children: ReactNode;
   collapsed?: boolean;
 }) {
   return (
-    <div className={`ui-shell${collapsed ? " ui-shell-collapsed" : ""}`}>
+    <div
+      className={`ui-shell${collapsed ? " ui-shell-collapsed" : ""} ${className}`}
+    >
       <a className="ui-skip-link" href="#content">
         Skip to content
       </a>

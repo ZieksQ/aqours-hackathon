@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Alert, Button, Field, PageHeader, PasswordInput } from "@aqours/ui";
-import { FiLogIn, FiLock, FiUserPlus } from "react-icons/fi";
+import { FiInfo, FiLock } from "react-icons/fi";
 import { Brand } from "../../shared/Brand";
 import { FormError } from "../../shared/FormError";
 import { useMutation } from "@tanstack/react-query";
@@ -41,6 +41,18 @@ function AccountField({
           {...(type === "password" ? {} : { type })}
           required={required}
           autoComplete={autoComplete}
+          placeholder={
+            (
+              {
+                firstName: "e.g. Dina",
+                lastName: "e.g. Flores",
+                middleName: "e.g. Santos",
+                email: "name@example.com",
+                password: "Enter your password",
+                initialPassword: "Enter initial password",
+              } as Record<string, string>
+            )[name]
+          }
           maxLength={type === "password" || type === "email" ? 256 : 100}
           minLength={
             type === "password" &&
@@ -92,16 +104,22 @@ export function SignIn() {
     <div className="auth-page">
       <div className="auth-brand">
         <Brand />
+        <span className="auth-scope">· Supplier portal</span>
       </div>
       <main className="auth-form">
         <div className="auth-card-brand">
-          <Brand />
-          <p className="muted">Water reporting and supplier response</p>
+          <span className="auth-droplet">
+            <Brand />
+          </span>
+          <h1>Aqours Supplier Portal</h1>
+          <p className="muted">Water reporting and response</p>
         </div>
-        <PageHeader
-          title="Sign in"
-          description="Access the Aqours supplier portal."
-        />
+        <div className="auth-intro">
+          <h2>Sign in</h2>
+          <p className="muted">
+            Use the account provided by your administrator.
+          </p>
+        </div>
         <form
           onSubmit={(event: FormEvent<HTMLFormElement>) => {
             event.preventDefault();
@@ -127,17 +145,16 @@ export function SignIn() {
             className="w-full"
             disabled={mutation.isPending}
           >
-            <FiLogIn aria-hidden="true" />
             {mutation.isPending ? "Signing in…" : "Sign in"}
           </Button>
         </form>
-        <p className="muted mt-6">
-          Accounts are provided by your administrator. Customers sign in through
-          the mobile app.
+        <p className="auth-card-footer muted">
+          Water reporting, response and monitoring
         </p>
       </main>
       <footer className="auth-footer">
-        Water reporting & supplier response
+        <span>Aqours · Supplier portal</span>
+        <span>Water reporting, response and monitoring</span>
       </footer>
     </div>
   );
@@ -222,27 +239,41 @@ export function CreateAccount() {
   const mutation = useMutation({
     mutationFn: (body: Record<string, FormDataEntryValue>) =>
       submitCredentials("/accounts", body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accounts"] }),
   });
   return (
-    <section>
+    <section className="create-account">
       <PageHeader
         title="Create account"
         description="Give a colleague or customer access to Aqours."
       />
       <div className="settings-grid">
         <aside className="account-help">
-          <h2>Account provisioning</h2>
-          <p className="muted mt-2">
-            Create access for a supplier colleague or customer.
-          </p>
-          <p className="muted mt-4">
-            Share the initial password securely. Every new account must change
-            it on first sign-in.
-          </p>
-          <p className="muted mt-4">
-            Admin and Staff use this portal. Customer accounts use the mobile
-            app.
-          </p>
+          <h2>
+            <FiInfo aria-hidden="true" />
+            Account provisioning
+          </h2>
+          <div>
+            <h3>Roles</h3>
+            <p>
+              Admin &amp; Staff access the web portal; Customers access the
+              mobile app.
+            </p>
+          </div>
+          <div>
+            <h3>Initial password policy</h3>
+            <p>
+              Temporary passwords must be changed by the user upon first
+              sign-in.
+            </p>
+          </div>
+          <div>
+            <h3>Secure distribution</h3>
+            <p>
+              Share the temporary credentials securely through your internal
+              operational channels.
+            </p>
+          </div>
         </aside>
         <form
           className="form-panel"
@@ -260,8 +291,8 @@ export function CreateAccount() {
           }}
         >
           <h2 className="form-panel-title">Credential details</h2>
-          <p className="muted mb-6">
-            Enter account details and choose an access role.
+          <p className="muted form-panel-description">
+            Enter complete identity and assign role authorization.
           </p>
           {created && (
             <Alert tone="success" className="mb-6">
@@ -326,17 +357,20 @@ export function CreateAccount() {
             autoComplete="new-password"
             error={mutation.error as ApiError}
           />
-          <p className="muted mb-6">
-            At least 12 characters, including uppercase, lowercase, a number,
-            and a symbol.
-          </p>
+          <ul className="password-policy">
+            <li>At least 12 characters</li>
+            <li>Uppercase and lowercase letters</li>
+            <li>Number and special symbol (!@#$)</li>
+            <li>First sign-in password change required</li>
+          </ul>
           <FormError error={mutation.error} />
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="account-form-actions">
+            <Link className="ui-button ui-button-secondary" to="/accounts">
+              Cancel
+            </Link>
             <Button type="submit" disabled={mutation.isPending}>
-              <FiUserPlus aria-hidden="true" />
               {mutation.isPending ? "Creating…" : "Create account"}
             </Button>
-            <Link to="/dashboard">Cancel</Link>
           </div>
         </form>
       </div>

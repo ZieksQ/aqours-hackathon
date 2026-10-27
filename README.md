@@ -61,7 +61,7 @@ This connection string can also be set with `dotnet user-secrets`; see [authenti
 
 ## Web styling
 
-Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, account creation, password change, a dashboard shell, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; supplier-site maps, supply, weather, an Updates inbox, and full Profile remain deferred.
+Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, an Admin account directory and creation form, password change, report dashboards with seven-day submission charts and workload summaries, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; supplier-site maps, supply, weather, an Updates inbox, and full Profile remain deferred.
 
 ## Verification
 

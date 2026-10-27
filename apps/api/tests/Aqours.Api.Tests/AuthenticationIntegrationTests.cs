@@ -537,6 +537,51 @@ public sealed class AuthenticationIntegrationTests(ApiFixture fixture)
         Assert.Equal(HttpStatusCode.OK, otherRefresh.StatusCode);
     }
 
+    [Fact]
+    public async Task Account_directory_requires_completed_admin_setup_and_returns_only_public_fields()
+    {
+        using var client = fixture.Factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var anonymous = await client.GetAsync("/api/accounts");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+        var suffix = Guid.NewGuid().ToString("N");
+        var adminEmail = $"directory-admin-{suffix}@aqours.test";
+        var staffEmail = $"directory-staff-{suffix}@aqours.test";
+        var customerEmail = $"directory-customer-{suffix}@aqours.test";
+        await CreateAccountAsync(adminEmail, AccountRoles.Admin);
+        await CreateAccountAsync(staffEmail, AccountRoles.Staff);
+        await CreateCustomerAsync(customerEmail);
+        await LoginWebAsync(client, adminEmail, ApiFixture.AdminPassword, await GetCsrfAsync(client));
+        using var restricted = await client.GetAsync("/api/accounts");
+        Assert.Equal(HttpStatusCode.Forbidden, restricted.StatusCode);
+        using var changed = await ChangePasswordAsync(client, "/api/auth/change-password", ApiFixture.AdminPassword,
+            ApiFixture.ChangedPassword, await GetCsrfAsync(client));
+        Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
+        using var response = await client.GetAsync("/api/accounts");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var body = await response.Content.ReadFromJsonAsync<JsonDocument>(JsonOptions);
+        var accounts = body!.RootElement.EnumerateArray().ToArray();
+        Assert.Contains(accounts, a => a.GetProperty("email").GetString() == adminEmail &&
+            !a.GetProperty("requiresPasswordChange").GetBoolean());
+        Assert.Contains(accounts, a => a.GetProperty("email").GetString() == staffEmail &&
+            a.GetProperty("role").GetString() == AccountRoles.Staff && a.GetProperty("requiresPasswordChange").GetBoolean());
+        Assert.Contains(accounts, a => a.GetProperty("email").GetString() == customerEmail);
+        var allowed = new[] { "email", "firstName", "id", "lastName", "middleName", "requiresPasswordChange", "role" };
+        foreach (var account in accounts)
+            Assert.Equal(allowed, account.EnumerateObject().Select(p => p.Name).Order().ToArray());
+        using var staff = fixture.Factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        await LoginWebAsync(staff, staffEmail, ApiFixture.AdminPassword, await GetCsrfAsync(staff));
+        using var staffChanged = await ChangePasswordAsync(staff, "/api/auth/change-password", ApiFixture.AdminPassword,
+            ApiFixture.ChangedPassword, await GetCsrfAsync(staff));
+        Assert.Equal(HttpStatusCode.OK, staffChanged.StatusCode);
+        using var forbidden = await staff.GetAsync("/api/accounts");
+        Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        using var mobile = fixture.Factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var customer = await LoginMobileAsync(mobile, customerEmail, ApiFixture.AdminPassword);
+        mobile.DefaultRequestHeaders.Authorization = new("Bearer", customer.AccessToken);
+        using var customerDirectory = await mobile.GetAsync("/api/accounts");
+        Assert.Equal(HttpStatusCode.Unauthorized, customerDirectory.StatusCode);
+    }
+
     private static CreateAccountRequest NewAccount(string email, string role) =>
         new(email, "Integration", null, "User", ApiFixture.AdminPassword, role);
 

@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppShell, Button, Navbar, PageHeader, Sidebar } from "@aqours/ui";
+import {
+  AppShell,
+  Badge,
+  Button,
+  Navbar,
+  PageHeader,
+  Sidebar,
+} from "@aqours/ui";
 import {
   FiChevronDown,
   FiGrid,
   FiInbox,
   FiLock,
   FiLogOut,
-  FiUserPlus,
+  FiUsers,
+  FiSearch,
 } from "react-icons/fi";
 import { Brand } from "./shared/Brand";
 import { FormError } from "./shared/FormError";
@@ -24,6 +32,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from "react-router";
 import { queryClient } from "./shared/query";
 import { api, currentAccount, type Account } from "./features/accounts/api";
@@ -33,6 +42,7 @@ import {
   SignIn,
 } from "./features/accounts/AccountForms";
 import { Reports } from "./features/reports/Reports";
+import { Accounts } from "./features/accounts/Accounts";
 import { Dashboard } from "./features/dashboard/Dashboard";
 
 function Portal({ account }: { account: Account }) {
@@ -41,6 +51,7 @@ function Portal({ account }: { account: Account }) {
   const profile = useRef<HTMLDetailsElement>(null);
   const closeMenu = useCallback(() => setMenu(false), []);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   useEffect(() => {
     document.getElementById("content")?.scrollTo({ top: 0 });
     if (profile.current) profile.current.open = false;
@@ -70,11 +81,13 @@ function Portal({ account }: { account: Account }) {
     ? "Ticket workspace"
     : pathname.startsWith("/reports")
       ? "Reports"
-      : pathname.startsWith("/accounts")
+      : pathname === "/accounts/new"
         ? "Create account"
-        : pathname === "/change-password"
-          ? "Change password"
-          : "Dashboard";
+        : pathname === "/accounts"
+          ? "Accounts"
+          : pathname === "/change-password"
+            ? "Change password"
+            : "Dashboard";
   const logout = useMutation({
     mutationFn: () => api("/auth/web/logout", {}),
     onSuccess: async () => {
@@ -89,19 +102,66 @@ function Portal({ account }: { account: Account }) {
   return (
     <AppShell
       collapsed={collapsed}
+      className={`portal ${pathname.startsWith("/reports/") ? "portal-workspace" : pathname === "/accounts/new" ? "portal-create" : "portal-sheet"}`}
       navbar={
         <Navbar
           brand={
             <Link to="/dashboard" aria-label="Aqours dashboard">
-              <Brand />
+              <span className="portal-brand">
+                <Brand />
+                <span className="portal-brand-scope">Supplier portal</span>
+              </span>
             </Link>
           }
           context={
             <nav aria-label="Breadcrumb" className="portal-breadcrumb">
-              <Link to="/dashboard">Supplier portal</Link>
+              <Link
+                to={
+                  pathname.startsWith("/accounts") ? "/accounts" : "/dashboard"
+                }
+              >
+                {pathname.startsWith("/accounts")
+                  ? "Accounts"
+                  : pathname.startsWith("/reports")
+                    ? "Aqours"
+                    : "Supplier portal"}
+              </Link>
               <span aria-hidden="true">/</span>
-              <span aria-current="page">{page}</span>
+              {pathname.startsWith("/reports/") && (
+                <>
+                  <Link to="/reports">Reports</Link>
+                  <span aria-hidden="true">/</span>
+                </>
+              )}
+              <span aria-current="page">
+                {pathname.startsWith("/reports/")
+                  ? pathname.split("/").at(-1)?.slice(0, 12)
+                  : page}
+              </span>
             </nav>
+          }
+          search={
+            pathname === "/dashboard" && account.role === "Staff" ? (
+              <form
+                className="navbar-search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const search = new FormData(event.currentTarget).get(
+                    "search",
+                  );
+                  navigate(
+                    `/reports?tab=all&search=${encodeURIComponent(String(search ?? ""))}`,
+                  );
+                }}
+              >
+                <FiSearch aria-hidden="true" />
+                <input
+                  name="search"
+                  aria-label="Search reports"
+                  placeholder="Search reports…"
+                />
+              </form>
+            ) : undefined
           }
           actions={
             <details className="profile-menu" ref={profile}>
@@ -114,11 +174,13 @@ function Portal({ account }: { account: Account }) {
                 </span>
                 <span className="profile-name">
                   {account.firstName} {account.lastName}
-                  <span className="muted report-subline">{account.role}</span>
+                  <Badge>{account.role}</Badge>
+                  <span className="muted profile-email">{account.email}</span>
                 </span>
                 <FiChevronDown aria-hidden="true" />
               </summary>
               <div className="profile-popover">
+                <p className="muted">Signed in as</p>
                 <p className="font-medium">
                   {account.firstName} {account.lastName}
                 </p>
@@ -156,7 +218,7 @@ function Portal({ account }: { account: Account }) {
           onClose={closeMenu}
           collapsed={collapsed}
           onCollapse={() => setCollapsed(!collapsed)}
-          footer={<p className="muted ui-nav-label">Supplier portal</p>}
+          footer={null}
         >
           {!account.requiresPasswordChange ? (
             <>
@@ -180,13 +242,13 @@ function Portal({ account }: { account: Account }) {
               </NavLink>
               {account.role === "Admin" && (
                 <NavLink
-                  to="/accounts/new"
+                  to="/accounts"
                   onClick={closeMenu}
-                  aria-label="Create account"
-                  title={collapsed ? "Create account" : undefined}
+                  aria-label="Accounts"
+                  title={collapsed ? "Accounts" : undefined}
                 >
-                  <FiUserPlus aria-hidden="true" />
-                  <span className="ui-nav-label">Create account</span>
+                  <FiUsers aria-hidden="true" />
+                  <span className="ui-nav-label">Accounts</span>
                 </NavLink>
               )}
             </>
@@ -277,6 +339,16 @@ function SessionRoutes() {
         <Route
           path="/change-password"
           element={<ChangePassword required={account.requiresPasswordChange} />}
+        />
+        <Route
+          path="/accounts"
+          element={
+            account.role === "Admin" ? (
+              <Accounts account={account} />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          }
         />
         <Route
           path="/accounts/new"

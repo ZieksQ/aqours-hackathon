@@ -83,11 +83,15 @@ export function PasswordInput(
 export function Badge({
   children,
   tone = "neutral",
+  className = "",
 }: {
+  className?: string;
   children: ReactNode;
   tone?: "neutral" | "info" | "warning" | "success" | "danger";
 }) {
-  return <span className={`ui-badge ui-badge-${tone}`}>{children}</span>;
+  return (
+    <span className={`ui-badge ui-badge-${tone} ${className}`}>{children}</span>
+  );
 }
 
 export function MetricStrip({
@@ -95,7 +99,12 @@ export function MetricStrip({
   items,
 }: {
   label: string;
-  items: { label: string; value: number | undefined }[];
+  items: {
+    label: string;
+    value: number | undefined;
+    detail?: string;
+    unit?: string;
+  }[];
 }) {
   return (
     <dl className="ui-metric-strip" aria-label={label}>
@@ -108,7 +117,9 @@ export function MetricStrip({
             ) : (
               item.value
             )}
+            {item.unit && <span className="ui-metric-unit">{item.unit}</span>}
           </dd>
+          {item.detail && <p className="ui-metric-detail">{item.detail}</p>}
         </div>
       ))}
     </dl>
@@ -181,5 +192,26 @@ export function StatePanel({
       {children && <div className="muted">{children}</div>}
       {action && <div className="ui-state-action">{action}</div>}
     </div>
+  );
+}
+
+export function Avatar({
+  name,
+  small = false,
+}: {
+  name: string;
+  small?: boolean;
+}) {
+  const words = name.trim().split(/\s+/);
+  const initials = (
+    (words[0]?.[0] ?? "") + (words.length > 1 ? (words.at(-1)?.[0] ?? "") : "")
+  ).toUpperCase();
+  return (
+    <span
+      className={`ui-avatar${small ? " ui-avatar-small" : ""}`}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
   );
 }

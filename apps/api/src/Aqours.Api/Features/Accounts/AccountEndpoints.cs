@@ -80,6 +80,10 @@ public static class AccountEndpoints
             return Results.Ok(AccountInfo.From(result.Value!.Account));
         }).RequireAuthorization("Session").AddEndpointFilter<CsrfFilter>();
 
+        app.MapGet("/api/accounts", async (AccountService accounts, CancellationToken ct) =>
+            Results.Ok((await accounts.ListAsync(ct)).Select(AccountInfo.From)))
+            .RequireAuthorization("Admin");
+
         app.MapPost("/api/accounts", async (CreateAccountRequest request, AccountService accounts) =>
         {
             var result = await accounts.CreateAsync(new(request.Email, request.FirstName, request.MiddleName,

@@ -33,7 +33,11 @@ The web portal is at `http://localhost:5173`, the API is at `http://localhost:52
 
 ## Web/API routing in deployment
 
-The browser calls the relative `/api` path. Vite proxies it to `http://localhost:5251` during development, preserving a same-origin browser request for the session and antiforgery cookies. In deployment, route `/api/*` through the web origin to the API, and configure the web host to return the SPA's `index.html` for client routes such as `/sign-in`, `/dashboard`, `/change-password`, and `/accounts/new`. Keep browser authentication same-origin; cookie and CSRF behavior depends on that routing. Staff report workspace mutations also use the web session and must include the antiforgery request token; see the [workspace spec](features/staff-report-workspace/spec.md) for REST and SignalR access rules.
+The browser calls the relative `/api` path. Vite proxies it to `http://localhost:5251` during development, preserving a same-origin browser request for the session and antiforgery cookies. In deployment, route `/api/*` through the web origin to the API, and configure the web host to return the SPA's `index.html` for client routes such as `/sign-in`, `/dashboard`, `/change-password`, `/accounts`, and `/accounts/new`. Keep browser authentication same-origin; cookie and CSRF behavior depends on that routing. Staff report workspace mutations also use the web session and must include the antiforgery request token; see the [workspace spec](features/staff-report-workspace/spec.md) for REST and SignalR access rules.
+
+## Account directory
+
+`GET /api/accounts` returns the existing public account DTOs (identity, role, and initial-password-change state) for an unrestricted Admin web session. Anonymous sessions, Staff, Customers, and Admins who have not changed their initial password cannot list accounts; passwords, security stamps, and Identity persistence fields are never returned. The one-organization MVP directory applies name/email, role, password-setup filters and ten-row pagination in the web client.
 
 ## Integration test database
 

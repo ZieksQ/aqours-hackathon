@@ -9,7 +9,7 @@ export function StatusBadge({ status }: { status: Ticket["status"] }) {
           ? "success"
           : status === "InProgress"
             ? "warning"
-            : "info"
+            : "danger"
       }
     >
       {statusName(status)}
@@ -19,6 +19,10 @@ export function StatusBadge({ status }: { status: Ticket["status"] }) {
 
 export function PriorityBadge({ priority }: { priority: Ticket["priority"] }) {
   return (
-    <Badge tone={priority === "High" ? "danger" : "neutral"}>{priority}</Badge>
+    <span
+      className={`priority-mark${priority === "High" ? " priority-high" : ""}`}
+    >
+      {priority}
+    </span>
   );
 }
