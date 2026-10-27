@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aqours Supplier Portal — Ticket Workspace AQ-1042</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-lowest": "#ffffff",
+            "inverse-surface": "#2d3131",
+            "surface": "#f7faf9",
+            "on-error-container": "#93000a",
+            "secondary-fixed-dim": "#8ad1e7",
+            "on-primary-fixed-variant": "#454748",
+            "tertiary-fixed": "#ebe0de",
+            "on-secondary": "#ffffff",
+            "inverse-on-surface": "#eef1f0",
+            "on-primary-fixed": "#1a1c1d",
+            "on-secondary-container": "#17697d",
+            "tertiary-container": "#231e1d",
+            "surface-variant": "#e0e3e2",
+            "tertiary-fixed-dim": "#cec4c2",
+            "error-container": "#ffdad6",
+            "on-secondary-fixed-variant": "#004e5e",
+            "on-background": "#181c1c",
+            "inverse-primary": "#c6c6c7",
+            "on-tertiary-container": "#8d8583",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed": "#001f27",
+            "primary-fixed": "#e2e2e3",
+            "outline-variant": "#c4c7c9",
+            "on-primary-container": "#858688",
+            "error": "#ba1a1a",
+            "background": "#f7faf9",
+            "tertiary": "#090605",
+            "surface-dim": "#d7dbda",
+            "secondary": "#12677b",
+            "primary-fixed-dim": "#c6c6c7",
+            "surface-tint": "#5d5e60",
+            "on-surface-variant": "#444749",
+            "secondary-fixed": "#b2ebff",
+            "surface-container-highest": "#e0e3e2",
+            "on-tertiary": "#ffffff",
+            "on-tertiary-fixed-variant": "#4c4544",
+            "surface-container-high": "#e6e9e8",
+            "outline": "#747779",
+            "primary-container": "#1d1f20",
+            "on-surface": "#181c1c",
+            "primary": "#050607",
+            "surface-container": "#ebeeed",
+            "surface-bright": "#f7faf9",
+            "on-tertiary-fixed": "#1f1a19",
+            "secondary-container": "#a1e7fe",
+            "surface-container-low": "#f1f4f3",
+            "on-error": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.25rem",
+            "space-base": "1rem",
+            "space-2xl": "2rem",
+            "space-2xs": "0.125rem",
+            "margin": "1rem",
+            "gutter": "1rem",
+            "space-md": "0.75rem",
+            "margin-panel": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-xl": "1.5rem",
+            "gutter-dense": "0.5rem"
+          },
+          "fontFamily": {
+            "kpi-compact": ["IBM Plex Sans"],
+            "display-kpi": ["IBM Plex Sans"],
+            "label-default": ["IBM Plex Sans"],
+            "headline-page": ["IBM Plex Sans"],
+            "body-default": ["IBM Plex Sans"],
+            "badge-caption": ["IBM Plex Sans"],
+            "subhead": ["IBM Plex Sans"],
+            "body-medium": ["IBM Plex Sans"],
+            "table-header": ["IBM Plex Sans"],
+            "headline-section": ["IBM Plex Sans"],
+            "metadata": ["IBM Plex Sans"]
+          },
+          "fontSize": {
+            "kpi-compact": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "display-kpi": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-default": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "headline-page": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-default": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "badge-caption": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "subhead": ["15px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "body-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "table-header": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-section": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "metadata": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden select-none min-h-screen">
+<!-- ========================================================================= -->
+<!-- SHARED COMPONENT: SideNavBar                                              -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-[232px] flex flex-col z-30 border-r border-surface-variant bg-surface"><div class="w-[232px] h-screen flex flex-col justify-between py-space-base"><div class="flex flex-col gap-space-lg"><div class="px-space-base flex items-center gap-space-sm"><div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary"><span class="material-symbols-outlined text-[20px]" data-icon="water_drop">water_drop</span></div><div class="flex flex-col"><span class="text-subhead font-subhead font-semibold text-primary">Aqours</span><span class="text-metadata font-metadata text-on-surface-variant">Supplier portal</span></div></div><nav aria-label="Main Navigation" class="flex flex-col gap-space-2xs px-space-xs"><a class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low font-normal cursor-pointer select-none transition-all duration-150 rounded" href="#"><span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span><span class="text-label-default font-label-default">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-base py-space-sm bg-surface-container-high text-primary border-l-2 border-secondary font-medium cursor-pointer select-none transition-all duration-150" href="#"><span class="material-symbols-outlined text-[20px]" data-icon="assessment">assessment</span><span class="text-label-default font-label-default">Reports</span></a></nav></div></div></aside>
+<!-- ========================================================================= -->
+<!-- SHARED COMPONENT: TopNavBar                                               -->
+<!-- ========================================================================= -->
+<header class="fixed top-0 left-[232px] right-0 h-[56px] z-20 flex items-center border-b border-surface-variant bg-surface"><div class="h-[56px] px-space-xl flex justify-between items-center w-full"><div class="flex items-center gap-space-xl"><div class="flex items-center gap-space-sm text-primary"><span class="text-headline-section font-headline-section font-semibold">Aqours</span><span class="text-surface-variant text-[14px]">/</span><span class="text-label-default font-label-default text-on-surface-variant">Reports</span><span class="text-surface-variant text-[14px]">/</span><span class="text-label-default font-label-default font-semibold text-primary">AQ-1042</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm cursor-pointer"><div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center text-label-default font-label-default font-semibold ring-1 ring-surface-variant">AR</div><div class="flex flex-col text-left"><span class="text-label-default font-label-default font-medium text-primary leading-tight">Alex Reyes</span><span class="text-metadata font-metadata text-on-surface-variant text-[11px] leading-tight">Staff</span></div></div></div></div></header>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE: Framed Sheet Architecture (Three-Pane Layout)              -->
+<!-- ========================================================================= -->
+<main class="ml-[232px] pt-[56px] h-screen bg-background p-space-base flex flex-col box-border overflow-hidden">
+<!-- Outer Inset Sheet: 1px hairline border, rounded corners, zero drop shadow -->
+<div class="flex-1 w-full bg-surface-container-lowest border border-surface-variant rounded-lg overflow-hidden flex flex-row">
+<!-- ===================================================================== -->
+<!-- PANE 1: LEFT QUEUE PANE (~260px)                                      -->
+<!-- ===================================================================== -->
+<section aria-label="Ticket Queue" class="w-[260px] flex-shrink-0 flex flex-col border-r border-surface-variant bg-surface">
+<!-- Queue Header & Search Filter -->
+<div class="p-space-sm border-b border-surface-variant flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="text-table-header font-table-header uppercase text-on-surface-variant">Reports Queue</span>
+<span class="text-badge-caption font-badge-caption px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant border border-surface-variant">4 Active</span>
+</div>
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-2 top-2 text-on-surface-variant text-[16px]" data-icon="search">search</span>
+<input class="w-full h-[28px] pl-7 pr-2 bg-surface-container-lowest border border-surface-variant rounded text-metadata font-metadata text-primary placeholder-on-surface-variant focus:outline-none focus:border-secondary" placeholder="Search reports..." type="text" value="AQ-1042"/>
+</div>
+<!-- Queue Segment Switchers (All, Mine, Unassigned) -->
+<div class="grid grid-cols-3 gap-space-2xs bg-surface-container p-0.5 rounded">
+<button class="py-1 text-center text-metadata font-metadata text-on-surface-variant hover:text-primary transition-colors">All</button>
+<button class="py-1 text-center text-metadata font-metadata font-medium bg-surface-container-lowest text-primary rounded shadow-none">Mine</button>
+<button class="py-1 text-center text-metadata font-metadata text-on-surface-variant hover:text-primary transition-colors">Unassigned</button>
+</div>
+</div>
+<!-- Ticket Card Queue List -->
+<div class="flex-1 overflow-y-auto divide-y divide-surface-variant" role="list">
+<!-- ITEM 1: AQ-1042 (ACTIVE STATE) -->
+<div aria-selected="true" class="p-space-sm bg-surface-container-lowest border-l-4 border-secondary cursor-pointer transition-colors" role="listitem">
+<div class="flex items-center justify-between mb-1">
+<span class="text-label-default font-label-default font-semibold text-primary">AQ-1042</span>
+<!-- Status: In progress badge -->
+<span class="text-badge-caption font-badge-caption px-1.5 py-0.5 rounded bg-[rgba(148,99,0,0.08)] text-[#946300] border border-[rgba(148,99,0,0.25)]">
+                In progress
+              </span>
+</div>
+<div class="text-label-default font-label-default font-medium text-primary truncate">Mia Santos</div>
+<div class="text-metadata font-metadata text-on-surface-variant truncate">No water · Commonwealth</div>
+<div class="mt-2 flex items-center justify-between text-metadata font-metadata">
+<span class="text-[#ba1a1a] font-medium flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]" data-icon="priority_high">priority_high</span> High
+              </span>
+<span class="text-on-surface-variant text-[11px]">Today 09:10</span>
+</div>
+</div>
+<!-- ITEM 2: AQ-1048 -->
+<div class="p-space-sm hover:bg-surface-container-low cursor-pointer transition-colors" role="listitem">
+<div class="flex items-center justify-between mb-1">
+<span class="text-label-default font-label-default text-primary">AQ-1048</span>
+<span class="text-badge-caption font-badge-caption px-1.5 py-0.5 rounded bg-[rgba(165,29,37,0.08)] text-[#A51D25] border border-[rgba(165,29,37,0.25)]">
+                Submitted
+              </span>
+</div>
+<div class="text-label-default font-label-default text-primary truncate">Rodrigo Diaz</div>
+<div class="text-metadata font-metadata text-on-surface-variant truncate">Burst main pipeline · Fairview</div>
+<div class="mt-2 flex items-center justify-between text-metadata font-metadata">
+<span class="text-on-surface-variant">Normal</span>
+<span class="text-on-surface-variant text-[11px]">27 Oct 08:15</span>
+</div>
+</div>
+<!-- ITEM 3: AQ-1046 -->
+<div class="p-space-sm hover:bg-surface-container-low cursor-pointer transition-colors" role="listitem">
+<div class="flex items-center justify-between mb-1">
+<span class="text-label-default font-label-default text-primary">AQ-1046</span>
+<span class="text-badge-caption font-badge-caption px-1.5 py-0.5 rounded bg-[rgba(148,99,0,0.08)] text-[#946300] border border-[rgba(148,99,0,0.25)]">
+                In progress
+              </span>
+</div>
+<div class="text-label-default font-label-default text-primary truncate">Teresa Macaraeg</div>
+<div class="text-metadata font-metadata text-on-surface-variant truncate">Turbid supply output · Batasan</div>
+<div class="mt-2 flex items-center justify-between text-metadata font-metadata">
+<span class="text-on-surface-variant">Low</span>
+<span class="text-on-surface-variant text-[11px]">26 Oct 19:40</span>
+</div>
+</div>
+<!-- ITEM 4: AQ-1045 -->
+<div class="p-space-sm hover:bg-surface-container-low cursor-pointer transition-colors" role="listitem">
+<div class="flex items-center justify-between mb-1">
+<span class="text-label-default font-label-default text-primary">AQ-1045</span>
+<span class="text-badge-caption font-badge-caption px-1.5 py-0.5 rounded bg-[rgba(25,91,56,0.08)] text-[#195B38] border border-[rgba(25,91,56,0.25)]">
+                Resolved
+              </span>
+</div>
+<div class="text-label-default font-label-default text-primary truncate">Gerardo V. Yap</div>
+<div class="text-metadata font-metadata text-on-surface-variant truncate">Valve pressure variance · Novaliches</div>
+<div class="mt-2 flex items-center justify-between text-metadata font-metadata">
+<span class="text-on-surface-variant">Normal</span>
+<span class="text-on-surface-variant text-[11px]">26 Oct 14:10</span>
+</div>
+</div>
+</div>
+<!-- Pane Footer Queue Meta -->
+<div class="p-space-xs border-t border-surface-variant bg-surface text-center"><span class="text-metadata font-metadata text-on-surface-variant text-[11px]">Ticket queue synced</span></div>
+</section>
+<!-- ===================================================================== -->
+<!-- PANE 2: CENTER CONVERSATION PANE (Primary Work Surface)               -->
+<!-- ===================================================================== -->
+<section aria-label="Conversation and Actions" class="flex-1 flex flex-col bg-surface-container-lowest overflow-hidden">
+<!-- Ticket Header Toolbar -->
+<div class="h-[56px] px-space-lg border-b border-surface-variant flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-space-md">
+<h1 class="text-headline-section font-headline-section font-semibold text-primary">
+              AQ-1042 — No water outage
+            </h1>
+<!-- Status Badge: In progress -->
+<span class="text-badge-caption font-badge-caption px-2 py-0.5 rounded bg-[rgba(148,99,0,0.08)] text-[#946300] border border-[rgba(148,99,0,0.25)] font-medium">
+              In progress
+            </span>
+<!-- Priority Selector Dropdown -->
+<div class="flex items-center gap-1.5 pl-space-xs border-l border-surface-variant">
+<label class="text-metadata font-metadata text-on-surface-variant" for="priority-select">Priority:</label>
+<select class="h-[28px] py-0 pl-2 pr-6 bg-surface-container-lowest border border-surface-variant rounded text-metadata font-metadata font-medium text-primary focus:outline-none focus:border-secondary cursor-pointer" id="priority-select">
+<option selected="" value="High">High</option>
+<option value="Normal">Normal</option>
+<option value="Low">Low</option>
+</select>
+</div>
+</div>
+<!-- Secondary Action: Resolve Ticket -->
+<div class="flex items-center gap-space-sm">
+<button class="h-[36px] px-3.5 bg-surface-container-lowest text-primary border border-surface-variant rounded text-label-default font-label-default font-medium hover:bg-surface hover:border-outline-variant cursor-pointer transition-colors flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px] text-[#195B38]" data-icon="check_circle">check_circle</span>
+<span>Resolve ticket</span>
+</button>
+</div>
+</div>
+<!-- Strict Operational Notification Callout Banner -->
+<div class="px-space-lg py-2 bg-surface-container-low border-b border-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-secondary flex-shrink-0" data-icon="info">info</span><span class="text-metadata font-metadata text-on-surface-variant">Only Alex Reyes can update status and send messages.</span></div>
+<!-- Chronological Message History Canvas -->
+<div class="flex-1 overflow-y-auto p-space-xl flex flex-col gap-space-lg bg-surface-container-lowest" id="message-container"><div class="flex flex-col items-start max-w-[80%]"><div class="flex items-baseline gap-space-sm mb-1 px-1"><span class="text-label-default font-label-default font-semibold text-primary">Mia Santos</span><span class="text-badge-caption font-badge-caption text-on-surface-variant">Customer</span><span class="text-metadata font-metadata text-on-surface-variant">26 Oct 16:30</span></div><div class="p-space-md bg-surface-container-low border border-surface-variant rounded-lg text-body-default font-body-default text-primary">There has been no water since this afternoon. Our neighbors are experiencing the same issue.</div></div><div class="w-full flex items-center justify-center my-space-xs"><div class="px-space-md py-1 bg-surface-container border border-surface-variant rounded-full flex items-center gap-1.5 text-metadata font-metadata text-on-surface-variant"><span class="material-symbols-outlined text-[14px] text-secondary" data-icon="assignment_ind">assignment_ind</span><span>Alex Reyes took this report. Status changed to In progress. 26 Oct 16:42</span></div></div><div class="flex flex-col items-end max-w-[80%] self-end"><div class="flex items-baseline gap-space-sm mb-1 px-1"><span class="text-metadata font-metadata text-on-surface-variant">26 Oct 16:45</span><span class="text-badge-caption font-badge-caption text-secondary font-medium">Staff</span><span class="text-label-default font-label-default font-semibold text-primary">Alex Reyes</span></div><div class="p-space-md bg-surface-container-high border border-surface-variant rounded-lg text-body-default font-body-default text-primary">Thank you, Mia. Our team is checking the affected supply line in Commonwealth. I will update this report when we have more information.</div></div><div class="flex flex-col items-start max-w-[80%]"><div class="flex items-baseline gap-space-sm mb-1 px-1"><span class="text-label-default font-label-default font-semibold text-primary">Mia Santos</span><span class="text-badge-caption font-badge-caption text-on-surface-variant">Customer</span><span class="text-metadata font-metadata text-on-surface-variant">27 Oct 08:50</span></div><div class="p-space-md bg-surface-container-low border border-surface-variant rounded-lg text-body-default font-body-default text-primary">Thank you. The water supply has not returned this morning.</div></div><div class="flex flex-col items-end max-w-[80%] self-end"><div class="flex items-baseline gap-space-sm mb-1 px-1"><span class="text-metadata font-metadata text-on-surface-variant">27 Oct 09:10</span><span class="text-badge-caption font-badge-caption text-secondary font-medium">Staff</span><span class="text-label-default font-label-default font-semibold text-primary">Alex Reyes</span></div><div class="p-space-md bg-surface-container-high border border-surface-variant rounded-lg text-body-default font-body-default text-primary">We are continuing the inspection. I will post the next update here.</div></div></div>
+<!-- Bottom Composer: Plain text input with character limit & Send -->
+<div class="p-space-md border-t border-surface-variant bg-surface-container-lowest">
+<div class="flex flex-col border border-surface-variant rounded-lg bg-surface-container-lowest focus-within:border-secondary transition-colors">
+<textarea class="w-full p-space-sm text-body-default font-body-default text-primary bg-transparent border-0 focus:ring-0 focus:outline-none resize-none placeholder-on-surface-variant" id="plain-text-composer" placeholder="Write a message to Mia Santos…" rows="3"></textarea>
+<!-- Composer Actions & Counter -->
+<div class="px-space-sm py-2 border-t border-surface-variant flex items-center justify-between bg-surface"><div class="flex items-center gap-space-sm"><span class="text-metadata font-metadata text-on-surface-variant" id="char-counter">0 / 2000 characters</span><span class="text-outline-variant text-[11px]">|</span><span class="text-metadata font-metadata text-on-surface-variant text-[11px]">Plain text only · 2,000-character limit</span></div><button class="h-[36px] px-space-base bg-primary-container text-on-primary rounded text-label-default font-label-default font-medium hover:bg-inverse-surface cursor-pointer select-none transition-colors flex items-center gap-1.5" type="button"><span>Send message</span><span class="material-symbols-outlined text-[16px]" data-icon="send">send</span></button></div>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- PANE 3: RIGHT DETAILS PANE (~260px)                                    -->
+<!-- ===================================================================== -->
+<section aria-label="Ticket Meta Information" class="w-[260px] flex-shrink-0 flex flex-col border-l border-surface-variant bg-surface overflow-y-auto">
+<!-- Pane Header -->
+<div class="h-[56px] px-space-md border-b border-surface-variant flex items-center justify-between bg-surface">
+<span class="text-table-header font-table-header uppercase text-on-surface-variant">Report Context</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="info">info</span>
+</div>
+<div class="p-space-md flex flex-col gap-space-xl"><div class="flex flex-col gap-space-sm"><span class="text-table-header font-table-header uppercase text-on-surface-variant">Report Journey</span><div class="flex flex-col gap-space-sm pl-2 border-l border-surface-variant relative ml-2"><div class="relative pl-space-md"><div class="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-secondary"></div><div class="text-label-default font-label-default font-medium text-primary">Submitted</div><div class="text-metadata font-metadata text-on-surface-variant">26 Oct 16:30</div></div><div class="relative pl-space-md"><div class="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-secondary-fixed"></div><div class="text-label-default font-label-default font-medium text-secondary">In progress</div><div class="text-metadata font-metadata text-on-surface-variant">26 Oct 16:42</div></div><div class="relative pl-space-md opacity-60"><div class="absolute -left-[13px] top-1 w-2.5 h-2.5 rounded-full bg-surface-variant border border-outline"></div><div class="text-label-default font-label-default text-on-surface-variant">Resolved</div><div class="text-metadata font-metadata text-on-surface-variant">Pending outcome</div></div></div></div><div class="flex flex-col gap-space-xs border-t border-surface-variant pt-space-md"><span class="text-table-header font-table-header uppercase text-on-surface-variant">Customer Info</span><div class="p-space-sm bg-surface-container-lowest border border-surface-variant rounded flex flex-col gap-1"><div class="text-label-default font-label-default font-semibold text-primary">Mia Santos</div><div class="text-metadata font-metadata text-on-surface-variant">Resident Account · ID #QC-88219</div><div class="text-metadata font-metadata text-primary truncate mt-0.5">mia.santos@example.com</div><div class="text-metadata font-metadata text-on-surface-variant font-mono text-[11px]">+63 917 555 4912</div></div></div><div class="flex flex-col gap-space-xs border-t border-surface-variant pt-space-md"><span class="text-table-header font-table-header uppercase text-on-surface-variant">Location</span><div class="p-space-sm bg-surface-container-lowest border border-surface-variant rounded flex flex-col gap-space-xs"><div class="text-body-default font-body-default text-primary leading-snug">24 Sampaguita Street, Commonwealth, Quezon City</div><div class="border-t border-surface-variant pt-1.5 mt-1 flex flex-col"><span class="text-metadata font-metadata text-on-surface-variant text-[11px]">Coordinates</span><span class="text-metadata font-metadata font-mono text-primary font-medium text-[11px]">14.697° N, 121.083° E</span></div></div></div><div class="flex flex-col gap-space-xs border-t border-surface-variant pt-space-md"><span class="text-table-header font-table-header uppercase text-on-surface-variant">Assigned Handler</span><div class="p-space-sm bg-surface-container-lowest border border-surface-variant rounded flex items-center gap-space-sm"><div class="w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center text-metadata font-metadata font-bold">AR</div><div class="flex flex-col"><div class="text-label-default font-label-default font-medium text-primary">Alex Reyes</div><div class="text-metadata font-metadata text-on-surface-variant text-[11px]">Staff</div></div></div></div><div class="flex flex-col gap-space-xs border-t border-surface-variant pt-space-md"><span class="text-table-header font-table-header uppercase text-on-surface-variant">Claimed</span><div class="p-space-sm bg-surface-container-lowest border border-surface-variant rounded"><div class="text-metadata font-metadata text-primary font-medium">26 Oct 2026, 16:42</div></div></div></div>
+</section>
+</div>
+</main>
+<!-- ========================================================================= -->
+<!-- LIGHTWEIGHT INTERACTION LOGIC (Plain Vanilla JS)                          -->
+<!-- ========================================================================= -->
+<script>
+    // Live Counter & Length Constraint for Plain Text Composer
+    const composer = document.getElementById('plain-text-composer');
+    const counter = document.getElementById('char-counter');
+
+    if (composer && counter) {
+      composer.addEventListener('input', (e) => {
+        const length = e.target.value.length;
+        counter.textContent = `${length} / 2000 characters`;
+        if (length > 2000) {
+          counter.classList.add('text-error');
+        } else {
+          counter.classList.remove('text-error');
+        }
+      });
+    }
+
+    // Auto-scroll message feed to bottom on load
+    const messageContainer = document.getElementById('message-container');
+    if (messageContainer) {
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+  </script>
+</body></html>

@@ -1,0 +1,277 @@
+{
+  "status": "design review only; unresolved findings documented in review-notes.md",
+  "runs": [
+    {
+      "run": "inspect-admin",
+      "target": "design/aqours-web-stitch/02-admin-dashboard.html",
+      "at": "2026-10-27T06:16:44.739Z",
+      "allow": [],
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "findings": [
+        {
+          "level": "FAIL",
+          "id": "micro-label",
+          "width": 1440,
+          "message": "4 tiny uppercase letter-spaced labels (e.g. \"Total reports\", \"Unassigned\", \"In progress\", \"Resolved\").",
+          "fix": "Use sentence-case text at a readable size, or delete the label.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "contrast",
+          "width": 1440,
+          "message": "Low-contrast text: \"info\" 4.1:1 needs 4.5:1; \"assessment\" 4.3:1 needs 4.5:1; \"manage_accounts\" 4.3:1 needs 4.5:1; \"Supplier portal\" 4.3:1 needs 4.5:1",
+          "fix": "Darken or lighten the text colour.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "font-count",
+          "width": 1440,
+          "message": "3 typefaces in use (IBM Plex Sans, Material Symbols Outlined, ui-monospace).",
+          "fix": "Two at most.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "FAIL",
+          "id": "placeholder-data",
+          "width": 1440,
+          "message": "Placeholder data on screen: example.com.",
+          "fix": "Use believable data for this product: real-looking names, amounts that add up, dates in order, units on every figure.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "tiny-text",
+          "width": 1440,
+          "message": "72% of the text is under 13px.",
+          "fix": "Data and labels read at 13–14px; keep 11–12px for sublines and axis ticks.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "FAIL",
+          "id": "edge-text",
+          "width": 390,
+          "message": "7 text block(s) sit within 12px of the screen edge: \"Report triage, customer messag\" (5px from the right); \"Unassigned\" (9px from the right); \"24 Oct\" (4px from the right); \"Issue breakdown\" (-1px from the right)",
+          "fix": "Keep text inside the page margin (16–20px). Only display type deliberately bled past the edge may touch it."
+        }
+      ]
+    },
+    {
+      "run": "inspect-reports-refined",
+      "target": "design/aqours-web-stitch/04-reports.html",
+      "at": "2026-10-27T06:22:29.089Z",
+      "allow": [
+        "placeholder-data"
+      ],
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "findings": [
+        {
+          "level": "FAIL",
+          "id": "micro-label",
+          "width": 1440,
+          "message": "4 tiny uppercase letter-spaced labels (e.g. \"Total reports\", \"Unassigned\", \"In progress\", \"Resolved\").",
+          "fix": "Use sentence-case text at a readable size, or delete the label.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "contrast",
+          "width": 1440,
+          "message": "Low-contrast text: \"Previous\" 4.3:1 needs 4.5:1; \"chevron_left\" 4.3:1 needs 4.5:1",
+          "fix": "Darken or lighten the text colour.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "edge-text",
+          "width": 390,
+          "message": "2 text block(s) sit 12–15px from the phone's edge: \"In progress (18)\" (12px); \"...\" (15px)",
+          "fix": "The page margin is 16–20px on a phone; the header and the corner labels sit on it too."
+        }
+      ]
+    },
+    {
+      "run": "inspect-ticket-refined",
+      "target": "design/aqours-web-stitch/05-ticket-active.html",
+      "at": "2026-10-27T06:19:00.992Z",
+      "allow": [
+        "placeholder-data"
+      ],
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "findings": [
+        {
+          "level": "WARN",
+          "id": "font-count",
+          "width": 1440,
+          "message": "3 typefaces in use (IBM Plex Sans, Material Symbols Outlined, ui-monospace).",
+          "fix": "Two at most.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "tiny-text",
+          "width": 1440,
+          "message": "52% of the text is under 13px.",
+          "fix": "Data and labels read at 13–14px; keep 11–12px for sublines and axis ticks.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "FAIL",
+          "id": "edge-text",
+          "width": 768,
+          "message": "1 text block(s) sit within 16px of the screen edge: \"info\" (11px from the right)",
+          "fix": "Keep text inside the page margin (16–32px or more). Only display type deliberately bled past the edge may touch it.",
+          "alsoAt": [
+            390
+          ]
+        }
+      ]
+    },
+    {
+      "run": "inspect-create-final",
+      "target": "design/aqours-web-stitch/09-create-account.html",
+      "at": "2026-10-27T06:23:54.601Z",
+      "allow": [
+        "placeholder-data"
+      ],
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "findings": [
+        {
+          "level": "WARN",
+          "id": "contrast",
+          "width": 1440,
+          "message": "Low-contrast text: \"Optional\" 3.2:1 needs 4.5:1",
+          "fix": "Darken or lighten the text colour.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "ragged-row",
+          "width": 1440,
+          "message": "1 pair(s) of cards in one row end at different heights (by 420px).",
+          "fix": "Cards that share a row share a bottom edge: balance them by their content (the same number of rows, a block of similar height beside it), or stack them. In testing, ragged rows were marked down every time."
+        },
+        {
+          "level": "FAIL",
+          "id": "sidebar-phone",
+          "width": 390,
+          "message": "The sidebar still takes 40% of the width on a 390px phone.",
+          "fix": "On a phone the navigation folds into a top bar with a menu button or a bottom bar of four or five destinations; the screen's content gets the full width."
+        }
+      ]
+    },
+    {
+      "run": "inspect-collapsed-final",
+      "target": "design/aqours-web-stitch/07-layout-collapsed.html",
+      "at": "2026-10-27T06:23:42.322Z",
+      "allow": [
+        "placeholder-data"
+      ],
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "findings": [
+        {
+          "level": "FAIL",
+          "id": "micro-label",
+          "width": 1440,
+          "message": "4 tiny uppercase letter-spaced labels (e.g. \"Total\", \"Unassigned\", \"In progress\", \"Resolved\").",
+          "fix": "Use sentence-case text at a readable size, or delete the label.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "contrast",
+          "width": 1440,
+          "message": "Low-contrast text: \"Unassigned\" 3.2:1 needs 4.5:1; \"Unassigned\" 3.2:1 needs 4.5:1; \"chevron_left\" 3.2:1 needs 4.5:1",
+          "fix": "Darken or lighten the text colour.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "WARN",
+          "id": "font-count",
+          "width": 1440,
+          "message": "3 typefaces in use (IBM Plex Sans, Material Symbols Outlined, ui-monospace).",
+          "fix": "Two at most.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "FAIL",
+          "id": "heavy-shadow",
+          "width": 1440,
+          "message": "1 panel shadow(s) heavy enough to read as floating: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px",
+          "fix": "Panels sit on the ground: separate them with a fill one step from the ground or a quiet 1px border. A shadow, if any, is under 8% black with a small blur. Real overlays (menus, dialogs, popovers) may float.",
+          "alsoAt": [
+            768,
+            390
+          ]
+        },
+        {
+          "level": "FAIL",
+          "id": "edge-text",
+          "width": 390,
+          "message": "1 text block(s) sit within 12px of the screen edge: \"All\" (1px from the right)",
+          "fix": "Keep text inside the page margin (16–20px). Only display type deliberately bled past the edge may touch it."
+        }
+      ]
+    }
+  ]
+}

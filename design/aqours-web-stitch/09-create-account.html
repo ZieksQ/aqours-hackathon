@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>09 Admin create account — Aqours</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- IBM Plex Sans Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"IBM Plex Sans"', 'sans-serif'],
+          },
+          colors: {
+            aqours: {
+              teal: '#1B6C80',
+              'teal-light': '#E8F3F5',
+              dark: '#1D1F20',
+              muted: '#5D5F60',
+              border: '#D7DBDA',
+              bg: '#F4F7F6',
+              surface: '#F7FAF9',
+            }
+          }
+        },
+      }
+    };
+  </script>
+<style>
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background-color: #F4F7F6;
+      color: #1D1F20;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-aqours-bg min-h-screen text-[#1D1F20]">
+<!-- 1. LEFT SIDEBAR (Fixed 232px width) -->
+<aside class="fixed top-0 left-0 bottom-0 w-[232px] bg-[#F7FAF9] border-r border-[#D7DBDA] z-30 flex flex-col justify-between select-none">
+<div class="flex flex-col">
+<!-- Top Brand Header -->
+<div class="h-14 px-5 border-b border-[#D7DBDA] flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-[#1B6C80] flex items-center justify-center text-white shrink-0 shadow-sm">
+<!-- Aqours Droplet SVG -->
+<svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+</svg>
+</div>
+<div class="flex flex-col leading-tight overflow-hidden">
+<span class="font-semibold text-[15px] text-[#1D1F20] tracking-tight">Aqours</span>
+<span class="text-[12px] text-[#5D5F60]">Supplier portal</span>
+</div>
+</div>
+<!-- Navigation links (Dashboard, Reports, Accounts) -->
+<nav class="p-3 space-y-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-[14px] text-[#5D5F60] hover:bg-[#EBEFED] hover:text-[#1D1F20] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-[#5D5F60]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Reports -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-[14px] text-[#5D5F60] hover:bg-[#EBEFED] hover:text-[#1D1F20] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-[#5D5F60]">assessment</span>
+<span>Reports</span>
+</a>
+<!-- Accounts (Active) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-[14px] bg-[#E8F3F5] text-[#1B6C80] font-semibold border-l-[3px] border-[#1B6C80] transition-colors" href="#">
+<span class="material-symbols-outlined text-[#1B6C80]" style="font-variation-settings: 'FILL' 1;">manage_accounts</span>
+<span>Accounts</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- 2. TOPBAR (Fixed 56px height, left 232px) -->
+<header class="fixed top-0 left-[232px] right-0 h-[56px] bg-white border-b border-[#D7DBDA] z-20 flex items-center justify-between px-8 select-none">
+<!-- Breadcrumb: Accounts / Create account -->
+<nav aria-label="Breadcrumb" class="flex items-center gap-2 text-[13px] font-medium">
+<a class="text-[#5D5F60] hover:text-[#1D1F20] transition-colors" href="#">Accounts</a>
+<span class="text-[#8C9092] text-[12px]">/</span>
+<span class="text-[#1D1F20] font-semibold">Create account</span>
+</nav>
+<!-- User Profile: Elena Cruz, Admin -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-[#E8F3F5] text-[#1B6C80] border border-[#C5DFE5] flex items-center justify-center font-semibold text-xs tracking-tight">
+        EC
+      </div>
+<div class="flex flex-col text-right leading-tight">
+<div class="flex items-center gap-2 justify-end">
+<span class="text-[13px] font-semibold text-[#1D1F20]">Elena Cruz</span>
+<span class="text-[11px] font-medium px-1.5 py-0.5 rounded bg-[#EBEFED] text-[#5D5F60] border border-[#D7DBDA]">Admin</span>
+</div>
+<span class="text-[11px] text-[#5D5F60]">elena.cruz@example.com</span>
+</div>
+</div>
+</header>
+<!-- 3. MAIN CONTENT (Offset left 232px, top 56px) -->
+<main class="ml-[232px] pt-[56px] min-h-screen bg-[#F4F7F6]">
+<div class="p-8 max-w-[1200px]">
+<!-- 4. PAGE HEADER -->
+<div class="mb-8">
+<h1 class="text-[24px] font-semibold text-[#1D1F20] tracking-tight">Create account</h1>
+<p class="text-[14px] text-[#5D5F60] mt-1">Give a colleague or customer access to Aqours.</p>
+</div>
+<!-- 5. TWO-COLUMN LAYOUT -->
+<div class="flex flex-col lg:flex-row items-start gap-8">
+<!-- Left Column: 300px fixed helper panel -->
+<aside class="w-full lg:w-[300px] shrink-0 bg-white border border-[#D7DBDA] rounded-lg p-6 shadow-sm">
+<h2 class="text-[15px] font-semibold text-[#1D1F20] mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[#1B6C80] text-[18px]">info</span>
+            Account provisioning
+          </h2>
+<div class="space-y-5 text-[13px] leading-relaxed text-[#5D5F60]">
+<div>
+<h3 class="font-semibold text-[#1D1F20] mb-1">Roles</h3>
+<p>Admin &amp; Staff access the web portal; Customers access the mobile intake app.</p>
+</div>
+<div class="pt-3 border-t border-[#EAECEB]">
+<h3 class="font-semibold text-[#1D1F20] mb-1">Initial password policy</h3>
+<p>Temporary password must be changed by user upon first sign-in.</p>
+</div>
+<div class="pt-3 border-t border-[#EAECEB]">
+<h3 class="font-semibold text-[#1D1F20] mb-1">Secure distribution</h3>
+<p>Share the generated or temporary credentials securely via internal operational channels.</p>
+</div>
+</div>
+</aside>
+<!-- Right Column: Wide Form Container -->
+<section class="flex-1 w-full min-w-[320px] max-w-[640px] bg-white border border-[#D7DBDA] rounded-lg p-8 shadow-sm">
+<div class="border-b border-[#D7DBDA] pb-4 mb-6">
+<h2 class="text-[18px] font-medium text-[#1D1F20]">Credential details</h2>
+<p class="text-[13px] text-[#5D5F60] mt-1">Enter complete identity and assign role authorization.</p>
+</div>
+<form class="space-y-5" id="createAccountForm" onsubmit="event.preventDefault();">
+<!-- Row 1: First name & Last name (2-column grid) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<label class="block text-[14px] font-medium text-[#1D1F20] mb-1.5" for="firstName">
+                  First name <span class="text-red-500">*</span>
+</label>
+<input class="w-full h-[40px] px-3 border border-[#D7DBDA] rounded-md text-[14px] text-[#1D1F20] placeholder-[#8C9092] bg-white focus:outline-none focus:border-[#1B6C80] focus:ring-1 focus:ring-[#1B6C80] transition-colors" id="firstName" name="firstName" placeholder="e.g. Dina" required="" type="text"/>
+</div>
+<div>
+<label class="block text-[14px] font-medium text-[#1D1F20] mb-1.5" for="lastName">
+                  Last name <span class="text-red-500">*</span>
+</label>
+<input class="w-full h-[40px] px-3 border border-[#D7DBDA] rounded-md text-[14px] text-[#1D1F20] placeholder-[#8C9092] bg-white focus:outline-none focus:border-[#1B6C80] focus:ring-1 focus:ring-[#1B6C80] transition-colors" id="lastName" name="lastName" placeholder="e.g. Flores" required="" type="text"/>
+</div>
+</div>
+<!-- Row 2: Middle name (optional) -->
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="text-[14px] font-medium text-[#1D1F20]" for="middleName">Middle name</label>
+<span class="text-[12px] text-[#8C9092]">Optional</span>
+</div>
+<input class="w-full h-[40px] px-3 border border-[#D7DBDA] rounded-md text-[14px] text-[#1D1F20] placeholder-[#8C9092] bg-white focus:outline-none focus:border-[#1B6C80] focus:ring-1 focus:ring-[#1B6C80] transition-colors" id="middleName" name="middleName" placeholder="e.g. Santos" type="text"/>
+</div>
+<!-- Row 3: Email address -->
+<div>
+<label class="block text-[14px] font-medium text-[#1D1F20] mb-1.5" for="email">
+                Email address <span class="text-red-500">*</span>
+</label>
+<input class="w-full h-[40px] px-3 border border-[#D7DBDA] rounded-md text-[14px] text-[#1D1F20] placeholder-[#8C9092] bg-white focus:outline-none focus:border-[#1B6C80] focus:ring-1 focus:ring-[#1B6C80] transition-colors" id="email" name="email" placeholder="name@example.com" required="" type="email"/>
+</div>
+<!-- Row 4: Role selector dropdown -->
+<div>
+<label class="block text-[14px] font-medium text-[#1D1F20] mb-1.5" for="role">
+                Role selector <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<select class="w-full h-[40px] px-3 pr-10 border border-[#D7DBDA] rounded-md text-[14px] text-[#1D1F20] bg-white focus:outline-none focus:border-[#1B6C80] focus:ring-1 focus:ring-[#1B6C80] appearance-none cursor-pointer transition-colors" id="role" name="role">
+<option selected="" value="Staff">Staff</option>
+<option value="Admin">Admin</option>
+<option value="Customer">Customer</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#5D5F60]">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Row 5: Initial password field with Show/Eye toggle -->
+<div>
+<label class="block text-[14px] font-medium text-[#1D1F20] mb-1.5" for="password">
+                Initial password <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<input class="w-full h-[40px] pl-3 pr-16 border border-[#D7DBDA] rounded-md text-[14px] text-[#1D1F20] placeholder-[#8C9092] bg-white focus:outline-none focus:border-[#1B6C80] focus:ring-1 focus:ring-[#1B6C80] transition-colors" id="password" name="password" placeholder="Enter initial password" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 px-3 flex items-center gap-1 text-[13px] font-medium text-[#5D5F60] hover:text-[#1D1F20] transition-colors" id="togglePasswordBtn" type="button">
+<span class="material-symbols-outlined text-[18px]" id="passwordIcon">visibility</span>
+<span id="passwordBtnText">Show</span>
+</button>
+</div>
+</div>
+<!-- Password Policy Checklist -->
+<div class="p-3.5 bg-[#F4F7F6] border border-[#D7DBDA] rounded-md space-y-1.5 text-[12px] text-[#5D5F60]">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1B6C80]"></span>
+<span>At least 12 characters</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1B6C80]"></span>
+<span>Uppercase and lowercase letters</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1B6C80]"></span>
+<span>Number and special symbol (!@#$)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1B6C80]"></span>
+<span>First sign-in password change required</span>
+</div>
+</div>
+<!-- Action buttons -->
+<div class="pt-6 border-t border-[#D7DBDA] flex items-center justify-end gap-3">
+<button class="h-[40px] px-5 border border-[#D7DBDA] bg-white text-[#1D1F20] rounded-md text-[14px] font-medium hover:bg-[#F4F7F6] transition-colors" onclick="window.history.back();" type="button">
+                Cancel
+              </button>
+<button class="h-[40px] px-6 bg-[#1D1F20] text-white rounded-md text-[14px] font-medium hover:bg-[#2F3234] active:bg-black transition-colors shadow-sm" type="submit">
+                Create account
+              </button>
+</div>
+</form>
+</section>
+</div>
+</div>
+</main>
+<!-- Interactive script for password toggle -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const passwordInput = document.getElementById('password');
+      const toggleBtn = document.getElementById('togglePasswordBtn');
+      const passwordIcon = document.getElementById('passwordIcon');
+      const passwordBtnText = document.getElementById('passwordBtnText');
+
+      if (toggleBtn && passwordInput) {
+        toggleBtn.addEventListener('click', () => {
+          const isPassword = passwordInput.getAttribute('type') === 'password';
+          if (isPassword) {
+            passwordInput.setAttribute('type', 'text');
+            passwordIcon.textContent = 'visibility_off';
+            passwordBtnText.textContent = 'Hide';
+          } else {
+            passwordInput.setAttribute('type', 'password');
+            passwordIcon.textContent = 'visibility';
+            passwordBtnText.textContent = 'Show';
+          }
+        });
+      }
+    });
+  </script>
+</body></html>
