@@ -41,7 +41,7 @@ export type Message = {
 };
 export type History = { items: Message[]; nextBefore: number | null };
 export const statusName = (status: Ticket["status"]) =>
-  ({ Submitted: "Open", InProgress: "In Progress", Resolved: "Resolved" })[
+  ({ Submitted: "Submitted", InProgress: "In progress", Resolved: "Resolved" })[
     status
   ];
 export const addressText = (ticket: Ticket) =>
@@ -65,3 +65,9 @@ export const timestamp = (value: string) =>
   });
 export const fetchQueue = (query: string) =>
   api<Queue>(`/staff/reports?${query}`);
+
+export const fetchOverview = () => fetchQueue("tab=all&pageSize=1");
+
+export function reportReference(id: string) {
+  return id.length > 20 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
+}

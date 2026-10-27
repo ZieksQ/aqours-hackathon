@@ -1,5 +1,16 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { FiAlertCircle, FiCheckCircle, FiInfo } from "react-icons/fi";
+import {
+  useState,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
+import {
+  FiAlertCircle,
+  FiCheckCircle,
+  FiEye,
+  FiEyeOff,
+  FiInfo,
+} from "react-icons/fi";
 import { buttonClassName, type ButtonVariant } from "./buttonStyles";
 
 export function Button({
@@ -43,6 +54,64 @@ export function Field({
         </p>
       )}
     </div>
+  );
+}
+
+export function PasswordInput(
+  props: Omit<InputHTMLAttributes<HTMLInputElement>, "type">,
+) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="ui-password-input">
+      <input {...props} type={visible ? "text" : "password"} />
+      <Button
+        variant="ghost"
+        aria-label={visible ? "Hide password" : "Show password"}
+        aria-pressed={visible}
+        onClick={() => setVisible(!visible)}
+      >
+        {visible ? (
+          <FiEyeOff aria-hidden="true" />
+        ) : (
+          <FiEye aria-hidden="true" />
+        )}
+      </Button>
+    </div>
+  );
+}
+
+export function Badge({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "info" | "warning" | "success" | "danger";
+}) {
+  return <span className={`ui-badge ui-badge-${tone}`}>{children}</span>;
+}
+
+export function MetricStrip({
+  label,
+  items,
+}: {
+  label: string;
+  items: { label: string; value: number | undefined }[];
+}) {
+  return (
+    <dl className="ui-metric-strip" aria-label={label}>
+      {items.map((item) => (
+        <div key={item.label}>
+          <dt>{item.label}</dt>
+          <dd>
+            {item.value === undefined ? (
+              <span className="ui-metric-loading" aria-label="Loading" />
+            ) : (
+              item.value
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

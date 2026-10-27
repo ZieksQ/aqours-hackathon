@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Alert, Button, Field, PageHeader } from "@aqours/ui";
+import { Alert, Button, Field, PageHeader, PasswordInput } from "@aqours/ui";
 import { FiLogIn, FiLock, FiUserPlus } from "react-icons/fi";
 import { Brand } from "../../shared/Brand";
 import { FormError } from "../../shared/FormError";
 import { useMutation } from "@tanstack/react-query";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { api, ApiError, csrf, type Account } from "./api";
 import { queryClient } from "../../shared/query";
 
@@ -26,6 +26,7 @@ function AccountField({
   children?: React.ReactNode;
 }) {
   const errors = error?.errors[name];
+  const Input = type === "password" ? PasswordInput : "input";
   return (
     <Field
       id={name}
@@ -34,10 +35,10 @@ function AccountField({
       error={errors?.join(" ")}
     >
       {children ?? (
-        <input
+        <Input
           id={name}
           name={name}
-          type={type}
+          {...(type === "password" ? {} : { type })}
           required={required}
           autoComplete={autoComplete}
           maxLength={type === "password" || type === "email" ? 256 : 100}
@@ -93,6 +94,10 @@ export function SignIn() {
         <Brand />
       </div>
       <main className="auth-form">
+        <div className="auth-card-brand">
+          <Brand />
+          <p className="muted">Water reporting and supplier response</p>
+        </div>
         <PageHeader
           title="Sign in"
           description="Access the Aqours supplier portal."
@@ -137,18 +142,26 @@ export function SignIn() {
     </div>
   );
 }
-export function ChangePassword() {
+export function ChangePassword({ required = true }: { required?: boolean }) {
+  const navigate = useNavigate();
   const mutation = useMutation({
     mutationFn: (body: Record<string, FormDataEntryValue>) =>
       submitCredentials("/auth/change-password", body),
-    onSuccess: acceptSession,
+    onSuccess: async (account) => {
+      await acceptSession(account);
+      navigate("/dashboard", { replace: true });
+    },
   });
   const [mismatch, setMismatch] = useState(false);
   return (
     <section className="max-w-xl">
       <PageHeader
         title="Change your password"
-        description="Set a new password before continuing to the portal."
+        description={
+          required
+            ? "Set a new password before continuing to the portal."
+            : "Choose a new password for your account."
+        }
       />
       <p id="password-help" className="mb-6">
         Use at least 12 characters with an uppercase letter, a lowercase letter,
@@ -195,6 +208,11 @@ export function ChangePassword() {
           <FiLock aria-hidden="true" />
           {mutation.isPending ? "Saving…" : "Save new password"}
         </Button>
+        {!required && (
+          <Link className="ml-4" to="/dashboard">
+            Back to dashboard
+          </Link>
+        )}
       </form>
     </section>
   );
@@ -212,8 +230,8 @@ export function CreateAccount() {
         description="Give a colleague or customer access to Aqours."
       />
       <div className="settings-grid">
-        <div>
-          <h2>Account details</h2>
+        <aside className="account-help">
+          <h2>Account provisioning</h2>
           <p className="muted mt-2">
             Create access for a supplier colleague or customer.
           </p>
@@ -225,7 +243,7 @@ export function CreateAccount() {
             Admin and Staff use this portal. Customer accounts use the mobile
             app.
           </p>
-        </div>
+        </aside>
         <form
           className="form-panel"
           onSubmit={async (event) => {
@@ -241,6 +259,10 @@ export function CreateAccount() {
             }
           }}
         >
+          <h2 className="form-panel-title">Credential details</h2>
+          <p className="muted mb-6">
+            Enter account details and choose an access role.
+          </p>
           {created && (
             <Alert tone="success" className="mb-6">
               Account created for <strong>{created.email}</strong> as{" "}

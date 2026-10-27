@@ -1,4 +1,12 @@
-import { Alert, Button, PageHeader, StatePanel } from "@aqours/ui";
+import {
+  Alert,
+  Badge,
+  Button,
+  MetricStrip,
+  PageHeader,
+  StatePanel,
+  buttonClassName,
+} from "@aqours/ui";
 import {
   FiArrowDown,
   FiArrowLeft,
@@ -26,19 +34,21 @@ import { FormError } from "../../shared/FormError";
 import {
   addressText,
   fetchQueue,
-  statusName,
+  fetchOverview,
+  reportReference,
   timestamp,
   type History,
   type Ticket,
 } from "./api";
 import { useReportConnection } from "./realtime";
+import { StatusBadge, PriorityBadge } from "./ReportPresentation";
 import "./reports.css";
 
 const tabs = [
   ["unassigned", "Unassigned"],
-  ["mine", "My Tickets"],
-  ["in-progress", "In Progress"],
-  ["all", "All Reports"],
+  ["mine", "Mine"],
+  ["in-progress", "In progress"],
+  ["all", "All"],
 ];
 
 export function Reports({ account }: { account: Account }) {
@@ -51,6 +61,14 @@ export function Reports({ account }: { account: Account }) {
     queryKey: ["reports", "queue", query],
     queryFn: () => fetchQueue(query),
   });
+  const overview = useQuery({
+    queryKey: ["reports", "overview"],
+    queryFn: fetchOverview,
+    enabled: !id,
+  });
+  const visibleTabs = tabs.filter(
+    ([value]) => account.role === "Staff" || value !== "mine",
+  );
   const ticket = useQuery({
     queryKey: ["reports", "ticket", id],
     queryFn: () => api<Ticket>(`/staff/reports/${id}`),
@@ -97,7 +115,7 @@ export function Reports({ account }: { account: Account }) {
     <div className="report-pagination">
       <span>
         {queue.data
-          ? `${queue.data.totalCount} reports · Page ${page} of ${Math.max(1, Math.ceil(queue.data.totalCount / queue.data.pageSize))}`
+          ? `Showing ${queue.data.items.length ? (page - 1) * queue.data.pageSize + 1 : 0}–${queue.data.items.length ? (page - 1) * queue.data.pageSize + queue.data.items.length : 0} of ${queue.data.totalCount} reports`
           : "Loading reports…"}
       </span>
       <div>
@@ -125,7 +143,7 @@ export function Reports({ account }: { account: Account }) {
   const claimButton = (t: Ticket) =>
     account.role === "Staff" && t.status === "Submitted" && !t.assignedStaff ? (
       <Button
-        variant="secondary"
+        variant="primary"
         className="report-action"
         disabled={claim.isPending}
         onClick={() => {
@@ -134,7 +152,9 @@ export function Reports({ account }: { account: Account }) {
         }}
       >
         <FiUserCheck aria-hidden="true" />
-        {claim.isPending && claim.variables === t.id ? "Claiming…" : "Claim"}
+        {claim.isPending && claim.variables === t.id
+          ? "Taking…"
+          : "Take report"}
       </Button>
     ) : null;
   return (
@@ -167,12 +187,14 @@ export function Reports({ account }: { account: Account }) {
               )}
               {realtime.state === "Connected"
                 ? "Live updates connected"
-                : `${realtime.state} · updates may be delayed`}
+                : realtime.state === "Connecting"
+                  ? "Connecting updates…"
+                  : "Live updates delayed"}
             </span>
             {realtime.state !== "Connected" &&
               realtime.state !== "Connecting" && (
                 <Button variant="ghost" onClick={realtime.retry}>
-                  Retry connection
+                  Reconnect
                 </Button>
               )}
             <Button
@@ -191,29 +213,46 @@ export function Reports({ account }: { account: Account }) {
       {!claimNotice && <FormError error={claim.error} />}
       {!id ? (
         <>
-          <div
-            className="report-summaries"
-            aria-label="Organization-wide report counts"
-          >
-            {[
-              ["Unassigned", queue.data?.summary.unassigned],
-              ["In Progress", queue.data?.summary.inProgress],
-              ["High priority · unresolved", queue.data?.summary.highPriority],
-            ].map(([label, value]) => (
-              <div key={label} className="report-summary">
-                <span className="muted">{label}</span>
-                <strong>
-                  {value === undefined ? (
-                    <span className="report-skeleton" />
-                  ) : (
-                    value
-                  )}
-                </strong>
-              </div>
-            ))}
-          </div>
+          <p className="summary-scope muted">
+            Organization-wide reports · All service areas
+          </p>
+          <MetricStrip
+            label="Organization-wide report counts"
+            items={[
+              { label: "Total reports", value: overview.data?.totalCount },
+              { label: "Unassigned", value: overview.data?.summary.unassigned },
+              {
+                label: "In progress",
+                value: overview.data?.summary.inProgress,
+              },
+              {
+                label: "Resolved",
+                value: overview.data
+                  ? overview.data.totalCount -
+                    overview.data.summary.unassigned -
+                    overview.data.summary.inProgress
+                  : undefined,
+              },
+            ]}
+          />
+          {overview.isError && (
+            <LoadError
+              error={overview.error}
+              retry={() => void overview.refetch()}
+            />
+          )}
+          {overview.data && (
+            <p className="queue-priority-note">
+              <Badge
+                tone={overview.data.summary.highPriority ? "danger" : "neutral"}
+              >
+                {overview.data.summary.highPriority} unresolved High-priority
+                reports
+              </Badge>
+            </p>
+          )}
           <nav className="report-tabs" aria-label="Report views">
-            {tabs.map(([value, label]) => (
+            {visibleTabs.map(([value, label]) => (
               <Button
                 variant="ghost"
                 key={value}
@@ -250,9 +289,14 @@ export function Reports({ account }: { account: Account }) {
               placeholder="Search ticket ID, issue, customer or address"
               maxLength={200}
             />
-            <Button type="submit" variant="secondary">
+            <Button
+              type="submit"
+              variant="secondary"
+              className="report-search-submit"
+              aria-label="Search reports"
+            >
               <FiSearch aria-hidden="true" />
-              Search
+              <span>Search</span>
             </Button>
             <details className="report-filters">
               <summary>
@@ -265,8 +309,8 @@ export function Reports({ account }: { account: Account }) {
                     "status",
                     "Status",
                     [
-                      ["Submitted", "Open"],
-                      ["InProgress", "In Progress"],
+                      ["Submitted", "Submitted"],
+                      ["InProgress", "In progress"],
                       ["Resolved", "Resolved"],
                     ],
                   ],
@@ -333,8 +377,9 @@ export function Reports({ account }: { account: Account }) {
                     <tr>
                       <th>Ticket / issue</th>
                       <th>Customer / location</th>
+                      <th>Status</th>
                       <th>Priority</th>
-                      <th>Status / handler</th>
+                      <th>Handler</th>
                       <th>Submitted</th>
                       <th>
                         <span className="sr-only">Action</span>
@@ -351,7 +396,9 @@ export function Reports({ account }: { account: Account }) {
                           >
                             {t.title}
                           </Link>
-                          <span className="report-id">{t.id}</span>
+                          <span className="report-id" title={t.id}>
+                            {reportReference(t.id)}
+                          </span>
                         </td>
                         <td>
                           <span>{t.customer.name}</span>
@@ -361,18 +408,19 @@ export function Reports({ account }: { account: Account }) {
                           </span>
                         </td>
                         <td>
-                          <span
-                            className={
-                              t.priority === "High" ? "report-high" : ""
-                            }
-                          >
-                            {t.priority}
-                          </span>
+                          <StatusBadge status={t.status} />
                         </td>
                         <td>
-                          {statusName(t.status)}
-                          <span className="muted report-subline">
+                          <PriorityBadge priority={t.priority} />
+                        </td>
+                        <td>
+                          <span
+                            className={`report-handler${!t.assignedStaff ? " muted" : ""}`}
+                          >
                             {t.assignedStaff?.name ?? "Unassigned"}
+                            {t.assignedStaff?.id === account.id && (
+                              <Badge>You</Badge>
+                            )}
                           </span>
                         </td>
                         <td>
@@ -380,7 +428,20 @@ export function Reports({ account }: { account: Account }) {
                             {timestamp(t.createdAt)}
                           </time>
                         </td>
-                        <td>{claimButton(t)}</td>
+                        <td className="report-row-action">
+                          {claimButton(t) ?? (
+                            <Link
+                              className={buttonClassName(
+                                "secondary",
+                                "report-action",
+                              )}
+                              to={link(t.id)}
+                              onClick={() => setPanel("conversation")}
+                            >
+                              Open ticket
+                            </Link>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -467,14 +528,18 @@ export function Reports({ account }: { account: Account }) {
                       <strong>{t.title}</strong>
                       <span>{t.customer.name}</span>
                       <span className="report-id" title={t.id}>
-                        {t.id.slice(0, 8)} ·{" "}
+                        {reportReference(t.id)} ·{" "}
                         {new Date(t.createdAt).toLocaleDateString("en-PH", {
                           month: "short",
                           day: "numeric",
                         })}
                       </span>
+                      <span className="ticket-list-badges">
+                        <StatusBadge status={t.status} />
+                        <PriorityBadge priority={t.priority} />
+                      </span>
                       <span className="muted">
-                        {statusName(t.status)} · {t.priority}
+                        {t.assignedStaff?.name ?? "Unassigned"}
                       </span>
                     </Link>
                   ))}
@@ -619,7 +684,7 @@ function TicketWorkspace({
       : account.role === "Admin"
         ? "Administrator oversight is read-only."
         : !ticket.assignedStaff
-          ? "Claim this report to start the conversation."
+          ? "Take this report to start the conversation."
           : ticket.assignedStaff.id !== account.id
             ? `Only ${ticket.assignedStaff.name}, the assigned handler, can reply or change this ticket.`
             : "";
@@ -627,12 +692,71 @@ function TicketWorkspace({
     <>
       <div className="conversation">
         <header className="conversation-header">
-          <div>
+          <div className="conversation-title">
             <h2>{ticket.title}</h2>
-            <span className="report-id">{ticket.id}</span>
+            <span className="report-id report-id-full">{ticket.id}</span>
           </div>
-          <span>{statusName(ticket.status)}</span>
-          {claimButton}
+          <div className="ticket-toolbar">
+            <StatusBadge status={ticket.status} />
+            <div className="ticket-priority-control">
+              <label htmlFor="ticket-priority">Priority</label>
+              {writable ? (
+                <select
+                  id="ticket-priority"
+                  value={ticket.priority}
+                  disabled={change.isPending}
+                  onChange={(event) =>
+                    change.mutate({ priority: event.target.value })
+                  }
+                >
+                  {["Low", "Normal", "High"].map((p) => (
+                    <option key={p}>{p}</option>
+                  ))}
+                </select>
+              ) : (
+                <PriorityBadge priority={ticket.priority} />
+              )}
+            </div>
+            {claimButton}
+            {writable && (
+              <Button
+                variant="secondary"
+                className="ticket-resolve"
+                disabled={change.isPending || resolveConfirm}
+                onClick={() => setResolveConfirm(true)}
+              >
+                <FiCheck aria-hidden="true" />
+                Resolve ticket
+              </Button>
+            )}
+          </div>
+          {resolveConfirm && writable && (
+            <div
+              className="resolve-confirm"
+              role="group"
+              aria-label="Confirm ticket resolution"
+            >
+              <p>
+                Resolve this ticket? The conversation will become read-only.
+              </p>
+              <div className="resolve-confirm-actions">
+                <Button
+                  disabled={change.isPending}
+                  onClick={() => change.mutate({ status: "Resolved" })}
+                >
+                  {change.isPending ? "Resolving…" : "Confirm resolution"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={change.isPending}
+                  onClick={() => setResolveConfirm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+          <FormError error={change.error} />
         </header>
         <div
           className="conversation-history"
@@ -744,41 +868,25 @@ function TicketWorkspace({
         </form>
       </div>
       <aside className="ticket-details" aria-label="Ticket details">
-        <h2>Ticket details</h2>
-        <div className="ticket-detail-actions">
-          {reason && <p className="muted">{reason}</p>}
-          <FormError error={change.error} />
-          {resolveConfirm ? (
-            <div className="resolve-confirm">
-              <p>
-                Resolve this ticket? The conversation will become read-only.
-              </p>
-              <Button
-                variant="primary"
-                disabled={!writable || change.isPending}
-                onClick={() => change.mutate({ status: "Resolved" })}
-              >
-                Confirm resolution
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={change.isPending}
-                onClick={() => setResolveConfirm(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="secondary"
-              disabled={!writable || change.isPending}
-              onClick={() => setResolveConfirm(true)}
+        <h2>Report details</h2>
+        <h3>Report journey</h3>
+        <ol className="report-journey">
+          {[
+            { label: "Submitted", date: ticket.createdAt },
+            { label: "In progress", date: ticket.claimedAt },
+            { label: "Resolved", date: ticket.resolvedAt },
+          ].map((step) => (
+            <li
+              key={step.label}
+              className={step.date ? "journey-complete" : ""}
             >
-              <FiCheck aria-hidden="true" />
-              Resolve ticket
-            </Button>
-          )}
-        </div>
+              <span>{step.label}</span>
+              <span className="muted report-subline">
+                {step.date ? timestamp(step.date) : "Pending"}
+              </span>
+            </li>
+          ))}
+        </ol>
         <dl>
           <dt>Customer</dt>
           <dd>
@@ -791,7 +899,10 @@ function TicketWorkspace({
           <dd>{ticket.supplierName}</dd>
           <dt>Handler</dt>
           <dd>
-            {ticket.assignedStaff?.name ?? "Unassigned"}
+            <span className="report-handler">
+              {ticket.assignedStaff?.name ?? "Unassigned"}
+              {ticket.assignedStaff?.id === account.id && <Badge>You</Badge>}
+            </span>
             {ticket.claimedAt && (
               <span className="muted report-subline">
                 Claimed {timestamp(ticket.claimedAt)}
@@ -800,30 +911,11 @@ function TicketWorkspace({
           </dd>
           <dt>Priority</dt>
           <dd>
-            <label className="sr-only" htmlFor="ticket-priority">
-              Ticket priority
-            </label>
-            <select
-              id="ticket-priority"
-              value={ticket.priority}
-              disabled={!writable || change.isPending}
-              onChange={(event) =>
-                change.mutate({ priority: event.target.value })
-              }
-            >
-              {["Low", "Normal", "High"].map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
+            <PriorityBadge priority={ticket.priority} />
           </dd>
           <dt>Status</dt>
           <dd>
-            {statusName(ticket.status)}
-            {ticket.resolvedAt && (
-              <span className="muted report-subline">
-                Resolved {timestamp(ticket.resolvedAt)}
-              </span>
-            )}
+            <StatusBadge status={ticket.status} />
           </dd>
           <dt>Address</dt>
           <dd>{addressText(ticket)}</dd>
