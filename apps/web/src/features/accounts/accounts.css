@@ -1,0 +1,132 @@
+@layer components {
+  .accounts-directory > .ui-page-header {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .accounts-directory .ui-metric-strip {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .accounts-directory .ui-metric-strip > div {
+    min-height: 146px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .accounts-directory .ui-metric-strip dt {
+    text-transform: none;
+    letter-spacing: 0.03em;
+  }
+  .accounts-directory .ui-metric-detail {
+    min-height: 32px;
+  }
+  .account-filters {
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--ground);
+    margin-bottom: 20px;
+  }
+  .account-search {
+    position: relative;
+    max-width: 448px;
+    margin-bottom: 8px;
+  }
+  .account-search svg {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    width: 16px;
+    height: 16px;
+    color: var(--muted);
+  }
+  .account-search input {
+    padding-left: 32px;
+  }
+  .account-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .account-filter-row label {
+    margin: 0;
+  }
+  .account-filter-row select {
+    font-size: 13px;
+  }
+  .account-table-panel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .accounts-directory .ui-table td {
+    height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .account-table-email {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 13px !important;
+    color: var(--muted);
+  }
+  .account-access {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .account-access svg {
+    width: 16px;
+    height: 16px;
+    color: var(--muted);
+  }
+  .account-table-panel .ui-badge {
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 11px;
+  }
+  .account-table-panel td:nth-child(3) .ui-badge {
+    text-transform: none;
+    min-width: 76px;
+  }
+  .account-directory-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 16px;
+  }
+  .account-directory-note svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 767px) {
+    .accounts-directory .ui-metric-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: row;
+    }
+    .accounts-directory .ui-metric-strip > div {
+      min-height: 130px;
+    }
+    .accounts-directory .ui-table {
+      min-width: 850px;
+    }
+    .account-filter-row label {
+      width: 100%;
+    }
+    .account-filter-row select {
+      width: 100%;
+    }
+    .account-search {
+      max-width: none;
+    }
+  }
+}

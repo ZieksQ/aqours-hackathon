@@ -1,17 +1,26 @@
-import { Alert, Button, PageHeader, StatePanel } from "@aqours/ui";
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Button,
+  MetricStrip,
+  PageHeader,
+  Pagination,
+  StatePanel,
+  Table,
+  buttonClassName,
+} from "@aqours/ui";
 import {
   FiArrowDown,
   FiArrowLeft,
-  FiCheck,
-  FiChevronLeft,
-  FiChevronRight,
-  FiFilter,
+  FiCheckCircle,
+  FiInfo,
+  FiLock,
   FiRefreshCw,
   FiSearch,
   FiSend,
+  FiSliders,
   FiUserCheck,
-  FiWifi,
-  FiWifiOff,
 } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -26,30 +35,64 @@ import { FormError } from "../../shared/FormError";
 import {
   addressText,
   fetchQueue,
-  statusName,
+  fetchOverview,
   timestamp,
   type History,
   type Ticket,
 } from "./api";
 import { useReportConnection } from "./realtime";
+import { StatusBadge, PriorityBadge } from "./ReportPresentation";
 import "./reports.css";
 
 const tabs = [
+  ["all", "All"],
   ["unassigned", "Unassigned"],
-  ["mine", "My Tickets"],
-  ["in-progress", "In Progress"],
-  ["all", "All Reports"],
+  ["mine", "Mine"],
+  ["in-progress", "In progress"],
 ];
+const shortReference = (id: string) => (id.length > 20 ? id.slice(0, 8) : id);
+const compactDate = (value: string) =>
+  new Date(value).toLocaleString("en-PH", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+const queueDate = (value: string) => {
+  const date = new Date(value);
+  const today = new Date();
+  const time = date.toLocaleTimeString("en-PH", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return date.toDateString() === today.toDateString()
+    ? time
+    : `${date.toLocaleDateString("en-PH", { day: "numeric", month: "short" })}, ${time}`;
+};
 
 export function Reports({ account }: { account: Account }) {
   const id = useParams()["*"] || undefined;
   const [params, setParams] = useSearchParams();
   const query = params.toString();
-  const tab = params.get("tab") ?? "unassigned";
+  const tab = params.get("tab") ?? "all";
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [panel, setPanel] = useState("conversation");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [claimNotice, setClaimNotice] = useState("");
+  const client = useQueryClient();
   const queue = useQuery({
     queryKey: ["reports", "queue", query],
     queryFn: () => fetchQueue(query),
+  });
+  const overview = useQuery({
+    queryKey: ["reports", "overview"],
+    queryFn: fetchOverview,
+  });
+  const mine = useQuery({
+    queryKey: ["reports", "mine-count"],
+    queryFn: () => fetchQueue("tab=mine&pageSize=1"),
+    enabled: account.role === "Staff" && !id,
   });
   const ticket = useQuery({
     queryKey: ["reports", "ticket", id],
@@ -57,9 +100,6 @@ export function Reports({ account }: { account: Account }) {
     enabled: !!id,
   });
   const realtime = useReportConnection(id);
-  const [panel, setPanel] = useState("conversation");
-  const client = useQueryClient();
-  const [claimNotice, setClaimNotice] = useState("");
   const update = (values: Record<string, string>) => {
     const next = new URLSearchParams(params);
     next.delete("page");
@@ -93,39 +133,22 @@ export function Reports({ account }: { account: Account }) {
   const page = queue.data?.page ?? Number(params.get("page") || 1);
   const link = (ticketId: string) =>
     `/reports/${ticketId}${query ? `?${query}` : ""}`;
-  const pager = (
-    <div className="report-pagination">
-      <span>
-        {queue.data
-          ? `${queue.data.totalCount} reports · Page ${page} of ${Math.max(1, Math.ceil(queue.data.totalCount / queue.data.pageSize))}`
-          : "Loading reports…"}
-      </span>
-      <div>
-        <Button
-          variant="secondary"
-          disabled={page <= 1 || queue.isFetching}
-          onClick={() => update({ page: String(page - 1) })}
-        >
-          <FiChevronLeft aria-hidden="true" /> Previous
-        </Button>
-        <Button
-          variant="secondary"
-          disabled={
-            !queue.data ||
-            page * queue.data.pageSize >= queue.data.totalCount ||
-            queue.isFetching
-          }
-          onClick={() => update({ page: String(page + 1) })}
-        >
-          Next <FiChevronRight aria-hidden="true" />
-        </Button>
-      </div>
-    </div>
-  );
-  const claimButton = (t: Ticket) =>
+  const pager = (compact = false) =>
+    queue.data ? (
+      <Pagination
+        compact={compact}
+        page={page}
+        pageSize={queue.data.pageSize}
+        total={queue.data.totalCount}
+        count={queue.data.items.length}
+        noun="reports"
+        disabled={queue.isFetching}
+        onChange={(next) => update({ page: String(next) })}
+      />
+    ) : null;
+  const takeButton = (t: Ticket) =>
     account.role === "Staff" && t.status === "Submitted" && !t.assignedStaff ? (
       <Button
-        variant="secondary"
         className="report-action"
         disabled={claim.isPending}
         onClick={() => {
@@ -134,258 +157,293 @@ export function Reports({ account }: { account: Account }) {
         }}
       >
         <FiUserCheck aria-hidden="true" />
-        {claim.isPending && claim.variables === t.id ? "Claiming…" : "Claim"}
+        {claim.isPending && claim.variables === t.id
+          ? "Taking…"
+          : "Take report"}
       </Button>
     ) : null;
+  const counts: Record<string, number | undefined> = {
+    all: overview.data?.totalCount,
+    unassigned: overview.data?.summary.unassigned,
+    mine: mine.data?.totalCount,
+    "in-progress": overview.data?.summary.inProgress,
+  };
+  const visibleTabs = tabs.filter(
+    ([value]) => account.role === "Staff" || value !== "mine",
+  );
+  const filters = [
+    {
+      key: "status",
+      label: "Status",
+      options: [
+        ["Submitted", "Submitted"],
+        ["InProgress", "In progress"],
+        ["Resolved", "Resolved"],
+      ],
+    },
+    {
+      key: "priority",
+      label: "Priority",
+      options: [
+        ["Low", "Low"],
+        ["Normal", "Normal"],
+        ["High", "High"],
+      ],
+    },
+    {
+      key: "assignment",
+      label: "Assignment",
+      options: [
+        ["unassigned", "Unassigned"],
+        ["mine", "Assigned to me"],
+        ["assigned", "Assigned"],
+      ],
+    },
+  ];
   return (
-    <section className={`reports ${id ? "reports-workspace" : ""}`}>
-      <PageHeader
-        title={id ? "Ticket workspace" : "Reports"}
-        description={
-          id
-            ? "Customer issue, conversation, and response."
-            : "Review water issues and take the next report."
-        }
-        back={
-          id && (
-            <Link
-              className="back-link"
-              to={`/reports${query ? `?${query}` : ""}`}
-            >
-              <FiArrowLeft aria-hidden="true" />
-              Report queue
-            </Link>
-          )
-        }
-        actions={
-          <div className="report-connection">
-            <span role="status" className="connection-status">
-              {realtime.state === "Connected" ? (
-                <FiWifi aria-hidden="true" />
-              ) : (
-                <FiWifiOff aria-hidden="true" />
-              )}
-              {realtime.state === "Connected"
-                ? "Live updates connected"
-                : `${realtime.state} · updates may be delayed`}
-            </span>
-            {realtime.state !== "Connected" &&
-              realtime.state !== "Connecting" && (
-                <Button variant="ghost" onClick={realtime.retry}>
-                  Retry connection
-                </Button>
-              )}
-            <Button
-              variant="secondary"
-              onClick={() =>
-                void client.invalidateQueries({ queryKey: ["reports"] })
-              }
-            >
-              <FiRefreshCw aria-hidden="true" />
-              Refresh
-            </Button>
-          </div>
-        }
-      />
+    <section
+      className={`reports ${id ? `reports-workspace ${ticket.data?.status === "Submitted" && !ticket.data.assignedStaff ? "workspace-unassigned" : ""}` : "reports-queue"}`}
+    >
       {claimNotice && <Alert>{claimNotice}</Alert>}
       {!claimNotice && <FormError error={claim.error} />}
       {!id ? (
         <>
-          <div
-            className="report-summaries"
-            aria-label="Organization-wide report counts"
-          >
-            {[
-              ["Unassigned", queue.data?.summary.unassigned],
-              ["In Progress", queue.data?.summary.inProgress],
-              ["High priority · unresolved", queue.data?.summary.highPriority],
-            ].map(([label, value]) => (
-              <div key={label} className="report-summary">
-                <span className="muted">{label}</span>
-                <strong>
-                  {value === undefined ? (
-                    <span className="report-skeleton" />
-                  ) : (
-                    value
-                  )}
-                </strong>
-              </div>
-            ))}
-          </div>
-          <nav className="report-tabs" aria-label="Report views">
-            {tabs.map(([value, label]) => (
-              <Button
-                variant="ghost"
-                key={value}
-                aria-current={tab === value ? "page" : undefined}
-                onClick={() =>
-                  update({
-                    tab: value,
-                    status: "",
-                    priority: "",
-                    assignment: "",
-                  })
-                }
-              >
-                {label}
-              </Button>
-            ))}
-          </nav>
-          <form
-            className="report-search"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const form = new FormData(event.currentTarget);
-              update({ search: String(form.get("search") ?? "") });
-            }}
-          >
-            <label htmlFor="report-search" className="sr-only">
-              Search reports
-            </label>
-            <input
-              key={params.get("search")}
-              id="report-search"
-              name="search"
-              defaultValue={params.get("search") ?? ""}
-              placeholder="Search ticket ID, issue, customer or address"
-              maxLength={200}
+          <PageHeader
+            title="Reports"
+            description="Customer reports across all service areas."
+          />
+          <MetricStrip
+            label="Organization-wide report counts"
+            items={[
+              { label: "Total reports", value: overview.data?.totalCount },
+              { label: "Unassigned", value: overview.data?.summary.unassigned },
+              {
+                label: "In progress",
+                value: overview.data?.summary.inProgress,
+              },
+              {
+                label: "Resolved",
+                value: overview.data
+                  ? overview.data.totalCount -
+                    overview.data.summary.unassigned -
+                    overview.data.summary.inProgress
+                  : undefined,
+              },
+            ]}
+          />
+          {overview.isError && (
+            <LoadError
+              error={overview.error}
+              retry={() => void overview.refetch()}
             />
-            <Button type="submit" variant="secondary">
-              <FiSearch aria-hidden="true" />
-              Search
-            </Button>
-            <details className="report-filters">
-              <summary>
-                <FiFilter aria-hidden="true" />
+          )}
+          <div className="queue-advisory">
+            <span className="queue-priority-note">
+              <FiInfo aria-hidden="true" />
+              {overview.data?.summary.highPriority ?? "—"} unresolved reports
+              are High priority
+            </span>
+            <span className="queue-freshness">
+              Last refreshed:{" "}
+              {queue.dataUpdatedAt
+                ? new Date(queue.dataUpdatedAt).toLocaleTimeString("en-PH", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "—"}{" "}
+              ·{" "}
+              <span role="status">
+                {realtime.state === "Connected"
+                  ? "Live updates connected"
+                  : "Live updates delayed"}
+              </span>
+            </span>
+          </div>
+          <div className="report-toolbar">
+            <nav className="report-tabs" aria-label="Report views">
+              {visibleTabs.map(([value, label]) => (
+                <Button
+                  variant="ghost"
+                  key={value}
+                  data-view={value}
+                  aria-current={tab === value ? "page" : undefined}
+                  onClick={() =>
+                    update({
+                      tab: value,
+                      status: "",
+                      priority: "",
+                      assignment: "",
+                    })
+                  }
+                >
+                  <span>{label}</span>
+                  <span className="report-tab-count">
+                    ({counts[value] ?? "—"})
+                  </span>
+                </Button>
+              ))}
+            </nav>
+            <form
+              className="report-search"
+              onSubmit={(event) => {
+                event.preventDefault();
+                update({
+                  search: String(
+                    new FormData(event.currentTarget).get("search") ?? "",
+                  ),
+                });
+              }}
+            >
+              <div className="report-search-field">
+                <Button
+                  variant="ghost"
+                  type="submit"
+                  aria-label="Search reports"
+                >
+                  <FiSearch aria-hidden="true" />
+                </Button>
+                <input
+                  key={params.get("search")}
+                  name="search"
+                  aria-label="Search reports"
+                  placeholder="Search report ID, customer, address…"
+                  defaultValue={params.get("search") ?? ""}
+                  maxLength={200}
+                />
+              </div>
+              <Button
+                className="report-filter-toggle"
+                variant="secondary"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen(!filtersOpen)}
+              >
+                <FiSliders aria-hidden="true" />
                 Filters
-              </summary>
-              <div>
-                {[
-                  [
-                    "status",
-                    "Status",
-                    [
-                      ["Submitted", "Open"],
-                      ["InProgress", "In Progress"],
-                      ["Resolved", "Resolved"],
-                    ],
-                  ],
-                  [
-                    "priority",
-                    "Priority",
-                    [
-                      ["Low", "Low"],
-                      ["Normal", "Normal"],
-                      ["High", "High"],
-                    ],
-                  ],
-                  [
-                    "assignment",
-                    "Assignment",
-                    [
-                      ["unassigned", "Unassigned"],
-                      ["mine", "Assigned to me"],
-                      ["assigned", "Assigned"],
-                    ],
-                  ],
-                ].map(([key, label, options]) => (
-                  <label key={String(key)}>
-                    {String(label)}
+              </Button>
+              <div
+                className={`report-filter-fields${filtersOpen ? " filters-open" : ""}`}
+              >
+                {filters.map((filter) => (
+                  <label key={filter.key}>
+                    <span className="sr-only">{filter.label}</span>
                     <select
-                      value={params.get(String(key)) ?? ""}
+                      aria-label={filter.label}
+                      value={params.get(filter.key) ?? ""}
                       onChange={(event) =>
-                        update({ [String(key)]: event.target.value })
+                        update({ [filter.key]: event.target.value })
                       }
                     >
-                      <option value="">Any</option>
-                      {(options as string[][]).map(([value, text]) => (
-                        <option key={value} value={value}>
-                          {text}
-                        </option>
-                      ))}
+                      <option value="">{filter.label}: All</option>
+                      {filter.options
+                        .filter(
+                          ([value]) =>
+                            filter.key !== "assignment" ||
+                            value !== "mine" ||
+                            account.role === "Staff",
+                        )
+                        .map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
                     </select>
                   </label>
                 ))}
-                <Button
-                  variant="ghost"
-                  type="button"
-                  onClick={() => setParams({ tab })}
-                >
-                  Clear filters
-                </Button>
               </div>
-            </details>
-          </form>
+              <Button
+                variant="secondary"
+                aria-label="Refresh reports"
+                title="Refresh reports"
+                onClick={() =>
+                  void client.invalidateQueries({ queryKey: ["reports"] })
+                }
+              >
+                <FiRefreshCw aria-hidden="true" />
+              </Button>
+            </form>
+          </div>
           {queue.isPending ? (
-            <div className="report-loading" role="status">
-              Loading report queue…
-              {Array.from({ length: 5 }, (_, i) => (
-                <div className="report-skeleton" key={i} />
-              ))}
-            </div>
+            <StatePanel title="Loading report queue…" role="status" />
           ) : queue.isError ? (
             <LoadError error={queue.error} retry={() => void queue.refetch()} />
           ) : (
-            <>
-              <div className="report-table-wrap">
-                <table className="report-table">
-                  <thead>
-                    <tr>
-                      <th>Ticket / issue</th>
-                      <th>Customer / location</th>
-                      <th>Priority</th>
-                      <th>Status / handler</th>
-                      <th>Submitted</th>
-                      <th>
-                        <span className="sr-only">Action</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {queue.data.items.map((t) => (
-                      <tr key={t.id}>
-                        <td>
+            <div className="queue-table-panel">
+              <Table label="Reports queue" className="report-table">
+                <thead>
+                  <tr>
+                    <th>Report ID</th>
+                    <th>Issue</th>
+                    <th>Customer</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Handler</th>
+                    <th>Submitted</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {queue.data.items.map((t) => (
+                    <tr key={t.id}>
+                      <td>
+                        <Link
+                          to={link(t.id)}
+                          title={t.id}
+                          onClick={() => setPanel("conversation")}
+                        >
+                          {shortReference(t.id)}
+                        </Link>
+                      </td>
+                      <td>
+                        <span
+                          className={`report-issue issue-${t.title.replaceAll(" ", "-").toLowerCase()}`}
+                        >
+                          {t.title}
+                        </span>
+                      </td>
+                      <td>{t.customer.name}</td>
+                      <td className="muted">{t.address.barangayName}</td>
+                      <td>
+                        <StatusBadge status={t.status} />
+                      </td>
+                      <td>
+                        <PriorityBadge priority={t.priority} />
+                      </td>
+                      <td>
+                        {t.assignedStaff ? (
+                          <span className="report-handler">
+                            <Avatar small name={t.assignedStaff.name} />
+                            <span>{t.assignedStaff.name}</span>
+                          </span>
+                        ) : (
+                          <em className="muted">Unassigned</em>
+                        )}
+                      </td>
+                      <td>
+                        <time dateTime={t.createdAt}>
+                          {queueDate(t.createdAt)}
+                        </time>
+                      </td>
+                      <td className="report-row-action">
+                        {takeButton(t) ?? (
                           <Link
+                            className={buttonClassName(
+                              "secondary",
+                              "report-action",
+                            )}
                             to={link(t.id)}
                             onClick={() => setPanel("conversation")}
                           >
-                            {t.title}
+                            {t.status === "Resolved"
+                              ? "View report"
+                              : "Open conversation"}
                           </Link>
-                          <span className="report-id">{t.id}</span>
-                        </td>
-                        <td>
-                          <span>{t.customer.name}</span>
-                          <span className="muted report-subline">
-                            {t.address.barangayName},{" "}
-                            {t.address.cityMunicipalityName}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={
-                              t.priority === "High" ? "report-high" : ""
-                            }
-                          >
-                            {t.priority}
-                          </span>
-                        </td>
-                        <td>
-                          {statusName(t.status)}
-                          <span className="muted report-subline">
-                            {t.assignedStaff?.name ?? "Unassigned"}
-                          </span>
-                        </td>
-                        <td>
-                          <time dateTime={t.createdAt}>
-                            {timestamp(t.createdAt)}
-                          </time>
-                        </td>
-                        <td>{claimButton(t)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
               {!queue.data.items.length && (
                 <StatePanel
                   title="No reports in this view"
@@ -401,92 +459,130 @@ export function Reports({ account }: { account: Account }) {
                   Try another tab or clear your search and filters.
                 </StatePanel>
               )}
-              {pager}
-            </>
+              {pager()}
+            </div>
           )}
         </>
       ) : (
         <>
+          <h1 className="sr-only">Ticket workspace</h1>
           <div className="workspace-switch">
-            <Button
-              variant="ghost"
-              aria-pressed={panel === "list"}
-              onClick={() =>
-                setPanel(panel === "list" ? "conversation" : "list")
-              }
-            >
-              Ticket list
-            </Button>
-            <Button
-              variant="ghost"
-              aria-pressed={panel === "conversation"}
-              onClick={() => setPanel("conversation")}
-            >
-              Conversation
-            </Button>
-            <Button
-              variant="ghost"
-              aria-pressed={panel === "details"}
-              onClick={() =>
-                setPanel(panel === "details" ? "conversation" : "details")
-              }
-            >
-              Details
-            </Button>
+            {[
+              ["list", "Ticket list"],
+              ["conversation", "Conversation"],
+              ["details", "Details"],
+            ].map(([value, label]) => (
+              <Button
+                key={value}
+                variant="ghost"
+                aria-pressed={panel === value}
+                onClick={() => setPanel(value)}
+              >
+                {label}
+              </Button>
+            ))}
           </div>
           <div className={`workspace-grid show-${panel}`}>
             <aside
               className="ticket-list"
               aria-label="Tickets in current queue"
             >
-              <div className="ticket-list-heading">
-                <h2>
-                  {tabs.find(([value]) => value === tab)?.[1] ?? "Reports"}
-                </h2>
-                <Link to={`/reports${query ? `?${query}` : ""}`}>
-                  Edit filters
-                </Link>
+              <div className="ticket-list-controls">
+                <div className="ticket-list-heading">
+                  <h2>Reports queue</h2>
+                  <Badge>{queue.data?.totalCount ?? "—"} reports</Badge>
+                </div>
+                <form
+                  className="ticket-queue-search"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    update({
+                      search: String(
+                        new FormData(event.currentTarget).get("search") ?? "",
+                      ),
+                    });
+                  }}
+                >
+                  <FiSearch aria-hidden="true" />
+                  <input
+                    name="search"
+                    aria-label="Search current queue"
+                    placeholder="Search reports…"
+                    defaultValue={params.get("search") ?? ""}
+                  />
+                </form>
+                <nav
+                  className="ticket-queue-tabs"
+                  aria-label="Workspace queue views"
+                >
+                  {visibleTabs
+                    .filter(([value]) => value !== "in-progress")
+                    .map(([value, label]) => (
+                      <Button
+                        key={value}
+                        variant="ghost"
+                        aria-current={tab === value ? "page" : undefined}
+                        onClick={() => update({ tab: value, search: "" })}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                </nav>
               </div>
-              {queue.isPending ? (
-                <p role="status">Loading tickets…</p>
-              ) : queue.isError ? (
-                <LoadError
-                  error={queue.error}
-                  retry={() => void queue.refetch()}
-                />
-              ) : (
-                <>
-                  {queue.data.items.map((t) => (
-                    <Link
-                      aria-current={id === t.id ? "page" : undefined}
-                      className="ticket-list-row"
-                      key={t.id}
-                      to={link(t.id)}
-                      onClick={() => setPanel("conversation")}
-                    >
-                      <strong>{t.title}</strong>
-                      <span>{t.customer.name}</span>
-                      <span className="report-id" title={t.id}>
-                        {t.id.slice(0, 8)} ·{" "}
-                        {new Date(t.createdAt).toLocaleDateString("en-PH", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                      <span className="muted">
-                        {statusName(t.status)} · {t.priority}
-                      </span>
-                    </Link>
-                  ))}
-                  {!queue.data.items.length && (
-                    <p className="report-empty">
-                      No tickets match this queue.{" "}
-                      <Link to="/reports?tab=all">View all reports</Link>
-                    </p>
-                  )}
-                  {pager}
-                </>
-              )}
+              <div className="ticket-list-scroll">
+                {queue.isPending ? (
+                  <p role="status" className="report-empty">
+                    Loading tickets…
+                  </p>
+                ) : queue.isError ? (
+                  <LoadError
+                    error={queue.error}
+                    retry={() => void queue.refetch()}
+                  />
+                ) : (
+                  <>
+                    {queue.data.items.map((t) => (
+                      <Link
+                        className="ticket-list-row"
+                        key={t.id}
+                        aria-current={id === t.id ? "page" : undefined}
+                        to={link(t.id)}
+                        onClick={() => setPanel("conversation")}
+                      >
+                        <div className="ticket-row-title">
+                          <strong title={t.id}>{shortReference(t.id)}</strong>
+                          <StatusBadge status={t.status} />
+                        </div>
+                        <strong>{t.customer.name}</strong>
+                        <span className="muted ticket-row-issue">
+                          {t.title} · {t.address.barangayName}
+                        </span>
+                        <div className="ticket-row-bottom">
+                          <PriorityBadge priority={t.priority} />
+                          <span>{t.assignedStaff?.name ?? "Unassigned"}</span>
+                        </div>
+                      </Link>
+                    ))}
+                    {!queue.data.items.length && (
+                      <p className="report-empty">
+                        No matching tickets.{" "}
+                        <Link to="/reports?tab=all">View all reports</Link>
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className="ticket-list-footer">
+                <Link to={`/reports${query ? `?${query}` : ""}`}>
+                  <FiArrowLeft aria-hidden="true" />
+                  Report queue
+                </Link>
+                <span role="status">
+                  {realtime.state === "Connected"
+                    ? "Ticket queue synced"
+                    : "Updates delayed"}
+                </span>
+              </div>
             </aside>
             {ticket.isPending ? (
               <div className="conversation" role="status">
@@ -509,7 +605,7 @@ export function Reports({ account }: { account: Account }) {
                   setDraft={(value) =>
                     setDrafts((previous) => ({ ...previous, [id]: value }))
                   }
-                  claimButton={claimButton(ticket.data)}
+                  claimButton={takeButton(ticket.data)}
                 />
               )
             )}
@@ -531,7 +627,6 @@ function LoadError({ error, retry }: { error: Error; retry: () => void }) {
       }
       action={
         <Button variant="secondary" onClick={retry}>
-          <FiRefreshCw aria-hidden="true" />
           Retry
         </Button>
       }
@@ -619,21 +714,92 @@ function TicketWorkspace({
       : account.role === "Admin"
         ? "Administrator oversight is read-only."
         : !ticket.assignedStaff
-          ? "Claim this report to start the conversation."
+          ? "Take this report to start the conversation."
           : ticket.assignedStaff.id !== account.id
             ? `Only ${ticket.assignedStaff.name}, the assigned handler, can reply or change this ticket.`
             : "";
+  const isUnassigned = !ticket.assignedStaff && ticket.status === "Submitted";
   return (
     <>
       <div className="conversation">
         <header className="conversation-header">
-          <div>
-            <h2>{ticket.title}</h2>
-            <span className="report-id">{ticket.id}</span>
+          <h2 className="conversation-title">
+            <span title={ticket.id}>{shortReference(ticket.id)}</span> —{" "}
+            {ticket.title}
+          </h2>
+          <div className="ticket-toolbar">
+            <StatusBadge status={ticket.status} />
+            <div className="ticket-priority-control">
+              <label htmlFor="ticket-priority">Priority:</label>
+              {writable ? (
+                <select
+                  id="ticket-priority"
+                  value={ticket.priority}
+                  disabled={change.isPending}
+                  onChange={(event) =>
+                    change.mutate({ priority: event.target.value })
+                  }
+                >
+                  {["Low", "Normal", "High"].map((p) => (
+                    <option key={p}>{p}</option>
+                  ))}
+                </select>
+              ) : (
+                <PriorityBadge priority={ticket.priority} />
+              )}
+            </div>
+            {writable && (
+              <Button
+                variant="secondary"
+                className="ticket-resolve"
+                disabled={change.isPending || resolveConfirm}
+                onClick={() => setResolveConfirm(true)}
+              >
+                <FiCheckCircle aria-hidden="true" />
+                Resolve ticket
+              </Button>
+            )}
+            {isUnassigned && (
+              <span className="ticket-handler-state">
+                Handler: <strong>Unassigned</strong>
+              </span>
+            )}
           </div>
-          <span>{statusName(ticket.status)}</span>
-          {claimButton}
         </header>
+        {!isUnassigned && (
+          <div className="conversation-permission">
+            <FiInfo aria-hidden="true" />
+            <p>
+              {reason ||
+                `Only ${ticket.assignedStaff?.name} can update status and send messages.`}
+            </p>
+          </div>
+        )}
+        {resolveConfirm && writable && (
+          <div
+            className="resolve-confirm"
+            role="group"
+            aria-label="Confirm ticket resolution"
+          >
+            <p>Resolve this ticket? The conversation will become read-only.</p>
+            <div>
+              <Button
+                disabled={change.isPending}
+                onClick={() => change.mutate({ status: "Resolved" })}
+              >
+                {change.isPending ? "Resolving…" : "Confirm resolution"}
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={change.isPending}
+                onClick={() => setResolveConfirm(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+        <FormError error={change.error} />
         <div
           className="conversation-history"
           ref={scroll}
@@ -643,17 +809,19 @@ function TicketWorkspace({
               node.scrollHeight - node.scrollTop - node.clientHeight < 80;
           }}
         >
-          <article className="initial-report">
-            <div className="message-meta">
-              <strong>{ticket.customer.name}</strong>
-              <span>Customer · initial report</span>
-              <time dateTime={ticket.createdAt}>
-                {timestamp(ticket.createdAt)}
-              </time>
+          {isUnassigned && (
+            <div className="unassigned-intro">
+              <FiUserCheck aria-hidden="true" />
+              <div>
+                <h3>This report is currently unassigned.</h3>
+                <p>
+                  Taking this report makes you its handler. Messages and updates
+                  will be visible to the reporting customer.
+                </p>
+              </div>
+              {claimButton}
             </div>
-            <p>{ticket.description}</p>
-            <div className="initial-location muted">{addressText(ticket)}</div>
-          </article>
+          )}
           {history.hasNextPage && (
             <Button
               variant="ghost"
@@ -667,7 +835,31 @@ function TicketWorkspace({
               {history.isFetchingNextPage ? "Loading…" : "Load older messages"}
             </Button>
           )}
-          {history.isPending && <p role="status">Loading conversation…</p>}
+          <article className="chat-message message-customer initial-report">
+            <div className="message-meta">
+              <strong>{ticket.customer.name}</strong>
+              <span>Customer</span>
+              <time dateTime={ticket.createdAt}>
+                {compactDate(ticket.createdAt)}
+              </time>
+            </div>
+            <p className="message-bubble">{ticket.description}</p>
+          </article>
+          {ticket.claimedAt && ticket.assignedStaff && (
+            <div className="claim-event">
+              <FiUserCheck aria-hidden="true" />
+              {ticket.assignedStaff.name} took this report. Status changed to In
+              progress.{" "}
+              <time dateTime={ticket.claimedAt}>
+                {compactDate(ticket.claimedAt)}
+              </time>
+            </div>
+          )}
+          {history.isPending && (
+            <p role="status" className="report-empty">
+              Loading conversation…
+            </p>
+          )}
           {history.isError && (
             <LoadError
               error={history.error}
@@ -676,164 +868,175 @@ function TicketWorkspace({
           )}
           {messages.map((message) => (
             <article
-              className={`report-message ${message.senderId === account.id ? "message-own" : ""}`}
               key={message.id}
+              className={`chat-message ${message.senderRole === "Customer" ? "message-customer" : "message-staff"}`}
             >
               <div className="message-meta">
                 <strong>{message.senderName}</strong>
                 <span>{message.senderRole}</span>
                 <time dateTime={message.createdAt}>
-                  {timestamp(message.createdAt)}
+                  {compactDate(message.createdAt)}
                 </time>
               </div>
-              <p>{message.body}</p>
+              <p className="message-bubble">{message.body}</p>
             </article>
           ))}
-          {!history.isPending && !history.isError && !messages.length && (
-            <p className="muted report-empty">No messages yet.</p>
-          )}
         </div>
         <form
-          className="report-composer"
+          className={`report-composer${!writable ? " composer-readonly" : ""}`}
           onSubmit={(event) => {
             event.preventDefault();
             if (writable && draft.trim() && !send.isPending) send.mutate(draft);
           }}
         >
-          {reason && (
-            <p className="muted" id="reply-reason">
-              {reason}
-            </p>
+          {!writable ? (
+            <div className="readonly-composer">
+              <FiLock aria-hidden="true" />
+              <p id="reply-reason">{reason}</p>
+              <textarea
+                className="sr-only"
+                id="reply"
+                aria-label={`Reply to ${ticket.customer.name}`}
+                disabled
+                value={draft}
+                readOnly
+              />
+            </div>
+          ) : (
+            <>
+              <label className="sr-only" htmlFor="reply">
+                Reply to {ticket.customer.name}
+              </label>
+              <textarea
+                id="reply"
+                rows={2}
+                maxLength={2000}
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                disabled={send.isPending}
+                placeholder={`Write a message to ${ticket.customer.name}…`}
+              />
+              <FormError error={send.error} />
+              <div className="composer-actions">
+                <span className="muted">{draft.length} / 2,000 characters</span>
+                <span className="composer-limit muted">Plain text only</span>
+                <Button
+                  variant="ghost"
+                  className="chat-latest"
+                  aria-label="Latest messages"
+                  title="Latest messages"
+                  onClick={() => {
+                    if (scroll.current)
+                      scroll.current.scrollTop = scroll.current.scrollHeight;
+                    stick.current = true;
+                  }}
+                >
+                  <FiArrowDown aria-hidden="true" />
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!draft.trim() || send.isPending}
+                >
+                  {send.isPending ? "Sending…" : "Send message"}
+                  <FiSend aria-hidden="true" />
+                </Button>
+              </div>
+            </>
           )}
-          <label htmlFor="reply">Reply to {ticket.customer.name}</label>
-          <textarea
-            id="reply"
-            rows={3}
-            maxLength={2000}
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            disabled={!writable || send.isPending}
-            aria-describedby={reason ? "reply-reason" : undefined}
-            placeholder={
-              writable ? "Write a message…" : "Conversation is read-only"
-            }
-          />
-          <FormError error={send.error} />
-          <div className="composer-actions">
-            <span className="muted">{draft.length}/2,000</span>
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => {
-                if (scroll.current)
-                  scroll.current.scrollTop = scroll.current.scrollHeight;
-                stick.current = true;
-              }}
-            >
-              Latest messages <FiArrowDown aria-hidden="true" />
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={!writable || !draft.trim() || send.isPending}
-            >
-              <FiSend aria-hidden="true" />
-              {send.isPending ? "Sending…" : "Send message"}
-            </Button>
-          </div>
         </form>
       </div>
       <aside className="ticket-details" aria-label="Ticket details">
-        <h2>Ticket details</h2>
-        <div className="ticket-detail-actions">
-          {reason && <p className="muted">{reason}</p>}
-          <FormError error={change.error} />
-          {resolveConfirm ? (
-            <div className="resolve-confirm">
-              <p>
-                Resolve this ticket? The conversation will become read-only.
-              </p>
-              <Button
-                variant="primary"
-                disabled={!writable || change.isPending}
-                onClick={() => change.mutate({ status: "Resolved" })}
-              >
-                Confirm resolution
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={change.isPending}
-                onClick={() => setResolveConfirm(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="secondary"
-              disabled={!writable || change.isPending}
-              onClick={() => setResolveConfirm(true)}
-            >
-              <FiCheck aria-hidden="true" />
-              Resolve ticket
-            </Button>
-          )}
+        <div className="ticket-details-heading">
+          <h2>Report context</h2>
+          <FiInfo aria-hidden="true" />
         </div>
-        <dl>
-          <dt>Customer</dt>
-          <dd>
-            {ticket.customer.name}
-            <a href={`mailto:${ticket.customer.email}`}>
-              {ticket.customer.email}
-            </a>
-          </dd>
-          <dt>Supplier</dt>
-          <dd>{ticket.supplierName}</dd>
-          <dt>Handler</dt>
-          <dd>
-            {ticket.assignedStaff?.name ?? "Unassigned"}
-            {ticket.claimedAt && (
-              <span className="muted report-subline">
-                Claimed {timestamp(ticket.claimedAt)}
-              </span>
-            )}
-          </dd>
-          <dt>Priority</dt>
-          <dd>
-            <label className="sr-only" htmlFor="ticket-priority">
-              Ticket priority
-            </label>
-            <select
-              id="ticket-priority"
-              value={ticket.priority}
-              disabled={!writable || change.isPending}
-              onChange={(event) =>
-                change.mutate({ priority: event.target.value })
-              }
-            >
-              {["Low", "Normal", "High"].map((p) => (
-                <option key={p}>{p}</option>
+        <div className="ticket-context-scroll">
+          <section className="ticket-context-section">
+            <h3>Report journey</h3>
+            <ol className="report-journey">
+              {[
+                { label: "Submitted", date: ticket.createdAt },
+                { label: "In progress", date: ticket.claimedAt },
+                { label: "Resolved", date: ticket.resolvedAt },
+              ].map((step) => (
+                <li
+                  key={step.label}
+                  className={`${step.date ? "journey-complete" : ""} ${step.label === (ticket.status === "InProgress" ? "In progress" : ticket.status) ? "journey-current" : ""}`}
+                >
+                  <strong>{step.label}</strong>
+                  <span>
+                    {step.date
+                      ? compactDate(step.date)
+                      : step.label === "In progress"
+                        ? "Pending staff assignment"
+                        : "Pending outcome"}
+                  </span>
+                </li>
               ))}
-            </select>
-          </dd>
-          <dt>Status</dt>
-          <dd>
-            {statusName(ticket.status)}
-            {ticket.resolvedAt && (
-              <span className="muted report-subline">
-                Resolved {timestamp(ticket.resolvedAt)}
-              </span>
-            )}
-          </dd>
-          <dt>Address</dt>
-          <dd>{addressText(ticket)}</dd>
-          <dt>Coordinates</dt>
-          <dd>
-            {ticket.latitude}, {ticket.longitude}
-          </dd>
-          <dt>Full description</dt>
-          <dd className="report-description">{ticket.description}</dd>
-        </dl>
+            </ol>
+          </section>
+          {isUnassigned && (
+            <section className="ticket-context-section">
+              <h3>Assignment</h3>
+              <div className="ticket-context-card assignment-card">
+                <strong>Unassigned</strong>
+                <p>Awaiting staff handler</p>
+              </div>
+            </section>
+          )}
+          <section className="ticket-context-section">
+            <h3>Customer info</h3>
+            <div className="ticket-context-card">
+              <strong>{ticket.customer.name}</strong>
+              <p className="muted">Customer</p>
+              <a href={`mailto:${ticket.customer.email}`}>
+                {ticket.customer.email}
+              </a>
+            </div>
+          </section>
+          <section className="ticket-context-section">
+            <h3>Location</h3>
+            <div className="ticket-context-card">
+              <p>{addressText(ticket)}</p>
+              <div className="coordinate-details">
+                <span className="muted">Coordinates</span>
+                <p>
+                  {ticket.latitude.toFixed(3)}° N, {ticket.longitude.toFixed(3)}
+                  ° E
+                </p>
+              </div>
+            </div>
+          </section>
+          {ticket.assignedStaff && (
+            <section className="ticket-context-section">
+              <h3>Assigned handler</h3>
+              <div className="ticket-context-card handler-card">
+                <Avatar name={ticket.assignedStaff.name} />
+                <div>
+                  <strong>{ticket.assignedStaff.name}</strong>
+                  <p>
+                    Staff
+                    {ticket.assignedStaff.id === account.id ? " · You" : ""}
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+          {ticket.claimedAt && (
+            <section className="ticket-context-section">
+              <h3>Claimed</h3>
+              <div className="ticket-context-card">
+                {timestamp(ticket.claimedAt)}
+              </div>
+            </section>
+          )}
+          <section className="ticket-context-section">
+            <h3>Report reference</h3>
+            <div className="ticket-context-card ticket-full-reference">
+              {ticket.id}
+            </div>
+          </section>
+        </div>
       </aside>
     </>
   );

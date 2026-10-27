@@ -22,6 +22,46 @@ export function reportDate(value: string) {
   });
 }
 
+export function ReportProgress({ status }: { status: Report["status"] }) {
+  const current = ["Submitted", "InProgress", "Resolved"].indexOf(status);
+  return (
+    <View
+      style={styles.progress}
+      accessible
+      accessibilityLabel={`Report progress: ${statusLabels[status]}`}
+    >
+      <View style={styles.track} />
+      <View
+        style={[
+          styles.track,
+          styles.activeTrack,
+          { width: `${current * 33.33}%` },
+        ]}
+      />
+      {Object.entries(statusLabels).map(([status, label], index) => (
+        <View key={status} style={styles.step}>
+          <View
+            style={[styles.circle, index <= current && styles.activeCircle]}
+          >
+            {index < current ? (
+              <Icon name="check" size={14} color={colors.white} />
+            ) : (
+              <View
+                style={[styles.dot, index === current && styles.activeDot]}
+              />
+            )}
+          </View>
+          <Text
+            style={[styles.stepText, index <= current && styles.activeText]}
+          >
+            {label}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function ReportCard({
   report,
   message,
@@ -35,9 +75,6 @@ export function ReportCard({
   onRetry: () => void;
   onView: () => void;
 }) {
-  const current = ["Submitted", "InProgress", "Resolved"].indexOf(
-    report.status,
-  );
   return (
     <View style={styles.card}>
       <View style={styles.heading}>
@@ -53,40 +90,7 @@ export function ReportCard({
           {report.address.barangayName}
         </Text>
       </View>
-      <View
-        style={styles.progress}
-        accessible
-        accessibilityLabel={`Report progress: ${statusLabels[report.status]}`}
-      >
-        <View style={styles.track} />
-        <View
-          style={[
-            styles.track,
-            styles.activeTrack,
-            { width: `${current * 33.33}%` },
-          ]}
-        />
-        {Object.entries(statusLabels).map(([status, label], index) => (
-          <View key={status} style={styles.step}>
-            <View
-              style={[styles.circle, index <= current && styles.activeCircle]}
-            >
-              {index < current ? (
-                <Icon name="check" size={14} color={colors.white} />
-              ) : (
-                <View
-                  style={[styles.dot, index === current && styles.activeDot]}
-                />
-              )}
-            </View>
-            <Text
-              style={[styles.stepText, index <= current && styles.activeText]}
-            >
-              {label}
-            </Text>
-          </View>
-        ))}
-      </View>
+      <ReportProgress status={report.status} />
       <View style={styles.response}>
         {message ? (
           <>

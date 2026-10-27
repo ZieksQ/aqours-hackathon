@@ -15,7 +15,7 @@ export function Brand() {
           strokeWidth="2"
         />
       </svg>
-      Aqours
+      <span className="brand-name">Aqours</span>
     </span>
   );
 }

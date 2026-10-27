@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aqours Supplier Portal — Staff Dashboard</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- IBM Plex Sans Typography -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-lowest": "#ffffff",
+            "inverse-surface": "#2d3131",
+            "surface": "#f7faf9",
+            "on-error-container": "#93000a",
+            "secondary-fixed-dim": "#8ad1e7",
+            "on-primary-fixed-variant": "#454748",
+            "tertiary-fixed": "#ebe0de",
+            "on-secondary": "#ffffff",
+            "inverse-on-surface": "#eef1f0",
+            "on-primary-fixed": "#1a1c1d",
+            "on-secondary-container": "#17697d",
+            "tertiary-container": "#231e1d",
+            "surface-variant": "#e0e3e2",
+            "tertiary-fixed-dim": "#cec4c2",
+            "error-container": "#ffdad6",
+            "on-secondary-fixed-variant": "#004e5e",
+            "on-background": "#181c1c",
+            "inverse-primary": "#c6c6c7",
+            "on-tertiary-container": "#8d8583",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed": "#001f27",
+            "primary-fixed": "#e2e2e3",
+            "outline-variant": "#c4c7c9",
+            "on-primary-container": "#858688",
+            "error": "#ba1a1a",
+            "background": "#f7faf9",
+            "tertiary": "#090605",
+            "surface-dim": "#d7dbda",
+            "secondary": "#12677b",
+            "primary-fixed-dim": "#c6c6c7",
+            "surface-tint": "#5d5e60",
+            "on-surface-variant": "#444749",
+            "secondary-fixed": "#b2ebff",
+            "surface-container-highest": "#e0e3e2",
+            "on-tertiary": "#ffffff",
+            "on-tertiary-fixed-variant": "#4c4544",
+            "surface-container-high": "#e6e9e8",
+            "outline": "#747779",
+            "primary-container": "#1d1f20",
+            "on-surface": "#181c1c",
+            "primary": "#050607",
+            "surface-container": "#ebeeed",
+            "surface-bright": "#f7faf9",
+            "on-tertiary-fixed": "#1f1a19",
+            "secondary-container": "#a1e7fe",
+            "surface-container-low": "#f1f4f3",
+            "on-error": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.25rem",
+            "space-base": "1rem",
+            "space-2xl": "2rem",
+            "space-2xs": "0.125rem",
+            "margin": "1rem",
+            "gutter": "1rem",
+            "space-md": "0.75rem",
+            "margin-panel": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-xl": "1.5rem",
+            "gutter-dense": "0.5rem"
+          },
+          "fontFamily": {
+            "kpi-compact": ["IBM Plex Sans", "sans-serif"],
+            "display-kpi": ["IBM Plex Sans", "sans-serif"],
+            "label-default": ["IBM Plex Sans", "sans-serif"],
+            "headline-page": ["IBM Plex Sans", "sans-serif"],
+            "body-default": ["IBM Plex Sans", "sans-serif"],
+            "badge-caption": ["IBM Plex Sans", "sans-serif"],
+            "subhead": ["IBM Plex Sans", "sans-serif"],
+            "body-medium": ["IBM Plex Sans", "sans-serif"],
+            "table-header": ["IBM Plex Sans", "sans-serif"],
+            "headline-section": ["IBM Plex Sans", "sans-serif"],
+            "metadata": ["IBM Plex Sans", "sans-serif"]
+          },
+          "fontSize": {
+            "kpi-compact": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "display-kpi": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "label-default": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "headline-page": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-default": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "badge-caption": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "subhead": ["15px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "body-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "table-header": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-section": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "metadata": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-background text-on-surface antialiased font-body-default min-h-screen selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- ========================================================================= -->
+<!-- SIDE NAVIGATION RAIL (Shared Component JSON anchor: 232px, Staff filter) -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 h-screen w-[232px] flex flex-col z-30 bg-surface border-r border-surface-variant justify-between py-space-base select-none">
+<!-- Top Portion: Header Mark & Scope -->
+<div>
+<div class="px-space-base pb-space-base border-b border-surface-variant flex items-center gap-space-sm">
+<div aria-label="Aqours droplet mark" class="w-8 h-8 rounded bg-secondary flex items-center justify-center text-on-secondary">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+<div class="flex flex-col">
+<span class="text-subhead font-subhead font-semibold text-primary leading-tight">Aqours</span>
+<span class="text-metadata font-metadata text-on-surface-variant">Supplier portal</span>
+</div>
+</div>
+<!-- Navigation Tabs (Filtered: Staff cannot administer accounts, only Dashboard & Reports) -->
+<nav aria-label="Primary Navigation" class="mt-space-base flex flex-col gap-space-2xs px-space-xs">
+<!-- Active Tab: Dashboard -->
+<a class="flex items-center gap-space-sm px-space-base py-space-sm bg-surface-container-high text-primary border-l-2 border-secondary font-medium transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+<span class="text-label-default font-label-default">Dashboard</span>
+</a>
+<!-- Inactive Tab: Reports -->
+<a class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low transition-colors duration-150 font-normal" href="#">
+<span class="material-symbols-outlined text-[18px]">assessment</span>
+<span class="text-label-default font-label-default">Reports</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Portion: Utility Links & Collapse CTA -->
+</aside>
+<!-- ========================================================================= -->
+<!-- TOP NAVIGATION BAR (Fixed 56px, left-[232px] offset)                       -->
+<!-- ========================================================================= -->
+<header class="fixed top-0 left-[232px] right-0 h-[56px] z-20 flex items-center bg-surface border-b border-surface-variant px-space-xl justify-between"><div class="flex items-center gap-space-base"><div class="flex items-center gap-space-xs text-metadata font-metadata text-on-surface-variant"><span class="font-medium text-primary">Aqours</span><span>/</span><span class="text-on-surface">Supplier portal</span></div></div><div class="flex-1 max-w-md mx-space-xl"><div class="relative w-full"><span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</span><input class="w-full h-[34px] pl-9 pr-3 bg-surface-container-lowest border border-surface-variant rounded text-label-default font-label-default placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-0" placeholder="Search reports..." type="text"/></div></div><div class="flex items-center gap-space-base"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded bg-primary-container text-on-primary flex items-center justify-center font-subhead font-semibold text-[13px] tracking-tight">AR</div><div class="flex flex-col text-left"><div class="flex items-center gap-1.5"><span class="text-label-default font-label-default text-primary font-semibold leading-none">Alex Reyes</span><span class="bg-secondary/10 text-secondary border border-secondary/20 rounded px-1.5 py-0 text-[10px] font-semibold leading-tight uppercase tracking-wider">Staff</span></div><span class="text-metadata font-metadata text-on-surface-variant leading-none mt-1">alex.reyes@example.com</span></div></div></div></header>
+<!-- ========================================================================= -->
+<!-- MAIN CONTENT CANVAS (Inset Working Sheet Architecture)                   -->
+<!-- ========================================================================= -->
+<main class="ml-[232px] pt-[56px] min-h-screen p-space-xl bg-background">
+<!-- Inset Working Sheet Container -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-space-xl min-h-[calc(100vh-104px)] flex flex-col gap-space-xl">
+<!-- Canvas Header: Page Title, Operational Context & Timestamps -->
+<header class="flex flex-col md:flex-row md:items-center justify-between pb-space-base border-b border-surface-variant gap-space-sm"><div><h1 class="text-headline-page font-headline-page text-primary tracking-tight">Staff dashboard</h1><p class="text-metadata font-metadata text-on-surface-variant mt-0.5">Tuesday, 27 October 2026</p></div></header>
+<!-- ===================================================================== -->
+<!-- KPI METRIC ROW: Org Totals vs Personal Handler Queue                   -->
+<!-- ===================================================================== -->
+<section aria-label="Incident metrics summary" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-base"><div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-space-base flex flex-col justify-between"><span class="text-table-header font-table-header text-on-surface-variant uppercase tracking-wider">Unassigned</span><div class="my-space-xs flex items-baseline gap-2"><span class="text-display-kpi font-display-kpi text-primary">12</span></div><span class="text-metadata font-metadata text-on-surface-variant">Awaiting handler</span></div><div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-space-base flex flex-col justify-between"><span class="text-table-header font-table-header text-on-surface-variant uppercase tracking-wider">In progress</span><div class="my-space-xs flex items-baseline gap-2"><span class="text-display-kpi font-display-kpi text-primary">18</span></div><span class="text-metadata font-metadata text-on-surface-variant">Active reports across team</span></div><div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-space-base flex flex-col justify-between"><span class="text-table-header font-table-header text-on-surface-variant uppercase tracking-wider">High priority unresolved</span><div class="my-space-xs flex items-baseline gap-2"><span class="text-display-kpi font-display-kpi text-primary">5</span></div><span class="text-metadata font-metadata text-on-surface-variant">Subset of active reports</span></div><div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-space-base flex flex-col justify-between"><span class="text-table-header font-table-header text-on-surface-variant uppercase tracking-wider">My active reports</span><div class="my-space-xs flex items-baseline gap-2"><span class="text-display-kpi font-display-kpi text-primary font-bold">6</span></div><span class="text-metadata font-metadata text-on-surface-variant">Handled by Alex Reyes</span></div></section>
+<!-- ===================================================================== -->
+<!-- MODULAR TWO-COLUMN OPERATIONAL LAYOUT                                 -->
+<!-- ===================================================================== -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- =================================================================== -->
+<!-- LEFT COLUMN: Incoming Unassigned Reports + Submissions Chart (7 cols)-->
+<!-- =================================================================== -->
+<section aria-label="Incoming reports queue and volume chart" class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- Module 1: Incoming Unassigned Reports (12) -->
+<div class="border border-surface-variant rounded-lg overflow-hidden bg-surface-container-lowest">
+<!-- Header Bar -->
+<div class="px-space-base py-space-sm bg-surface-container-low border-b border-surface-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-headline-section font-headline-section text-primary">Incoming unassigned reports</span>
+<span class="px-2 py-0.5 rounded-full text-badge-caption font-badge-caption bg-[#A51D25]/10 text-[#A51D25] border border-[#A51D25]/25">
+                  12 awaiting
+                </span>
+</div>
+<span class="text-metadata font-metadata text-on-surface-variant">Sorted: Newest first</span>
+</div>
+<!-- Table Container -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-[38px] bg-surface-container-low border-b border-surface-variant text-table-header font-table-header text-on-surface-variant"><th class="px-space-base py-1">Ticket</th><th class="px-space-base py-1">Issue</th><th class="px-space-base py-1">Customer / Area</th><th class="px-space-base py-1">Status</th><th class="px-space-base py-1 text-right">Action</th></tr>
+</thead>
+<tbody class="divide-y divide-surface-variant"><tr class="h-[48px] hover:bg-surface-container-low/60 transition-colors"><td class="px-space-base py-2"><span class="font-mono text-body-medium font-body-medium text-primary font-semibold">AQ-1048</span></td><td class="px-space-base py-2"><span class="text-body-medium font-body-medium text-primary">No water</span></td><td class="px-space-base py-2"><span class="text-body-default font-body-default text-primary">Mia Santos</span><span class="text-metadata font-metadata text-on-surface-variant"> · Commonwealth</span></td><td class="px-space-base py-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-[#A51D25]/10 text-[#A51D25] border border-[#A51D25]/25">Submitted</span></td><td class="px-space-base py-2 text-right"><button class="h-[32px] px-3.5 bg-primary-container hover:bg-[#2E3133] active:bg-[#0A0B0B] text-surface-container-lowest text-label-default font-label-default rounded transition-colors inline-flex items-center gap-1.5 shadow-none" type="button"><span class="material-symbols-outlined text-[15px]">input</span><span>Take report</span></button></td></tr><tr class="h-[48px] hover:bg-surface-container-low/60 transition-colors"><td class="px-space-base py-2"><span class="font-mono text-body-medium font-body-medium text-primary font-semibold">AQ-1047</span></td><td class="px-space-base py-2"><span class="text-body-medium font-body-medium text-primary">Low pressure</span></td><td class="px-space-base py-2"><span class="text-body-default font-body-default text-primary">Paolo Garcia</span><span class="text-metadata font-metadata text-on-surface-variant"> · Batasan Hills</span></td><td class="px-space-base py-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-[#A51D25]/10 text-[#A51D25] border border-[#A51D25]/25">Submitted</span></td><td class="px-space-base py-2 text-right"><button class="h-[32px] px-3.5 bg-primary-container hover:bg-[#2E3133] active:bg-[#0A0B0B] text-surface-container-lowest text-label-default font-label-default rounded transition-colors inline-flex items-center gap-1.5 shadow-none" type="button"><span class="material-symbols-outlined text-[15px]">input</span><span>Take report</span></button></td></tr></tbody>
+</table>
+</div>
+<!-- Queue Pagination / Intake Count -->
+<div class="px-space-base py-2.5 bg-surface border-t border-surface-variant flex items-center justify-between text-metadata font-metadata text-on-surface-variant">
+<span>Showing newest 2 of 12 unassigned triage records</span>
+<a class="text-secondary hover:underline font-medium inline-flex items-center gap-1" href="#"><span>Open reports queue</span><span class="material-symbols-outlined text-[14px]">arrow_forward</span></a>
+</div>
+</div>
+<!-- Module 2: Modest 7-Day Submissions Chart (21–27 Oct: 4, 5, 7, 6, 9, 8, 9 total 48) with Teal Bars -->
+<div class="border border-surface-variant rounded-lg p-space-base bg-surface-container-lowest"><div class="flex items-center justify-between mb-space-base"><div><h3 class="text-headline-section font-headline-section text-primary">Submissions volume (21–27 Oct)</h3><p class="text-metadata font-metadata text-on-surface-variant mt-0.5">Total 48 incident intakes</p></div><div class="flex items-center gap-3"><span class="flex items-center gap-1.5 text-metadata font-metadata text-on-surface-variant"><span class="w-2.5 h-2.5 bg-secondary rounded-sm"></span><span>Daily count</span></span><span class="text-table-header font-table-header font-semibold text-primary px-2 py-0.5 bg-surface-container-low border border-surface-variant rounded">Avg: 6.8 / day</span></div></div><div class="pt-4 pb-2"><div class="relative h-44 flex items-end justify-between gap-3 px-2 border-b border-surface-variant"><div class="absolute inset-x-0 top-0 border-t border-dashed border-surface-variant flex justify-between"><span class="text-[10px] font-mono text-outline -translate-y-3">10</span></div><div class="absolute inset-x-0 top-1/2 border-t border-dashed border-surface-variant flex justify-between"><span class="text-[10px] font-mono text-outline -translate-y-3">5</span></div><div class="absolute inset-x-0 bottom-0 border-t border-dashed border-surface-variant flex justify-between"><span class="text-[10px] font-mono text-outline -translate-y-3">0</span></div><div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end z-10 group"><span class="text-[11px] font-mono font-medium text-on-surface">4</span><div class="w-full max-w-[36px] bg-secondary/80 hover:bg-secondary transition-all rounded-t-sm" style="height: 40%;"></div></div><div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end z-10 group"><span class="text-[11px] font-mono font-medium text-on-surface">5</span><div class="w-full max-w-[36px] bg-secondary/80 hover:bg-secondary transition-all rounded-t-sm" style="height: 50%;"></div></div><div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end z-10 group"><span class="text-[11px] font-mono font-medium text-on-surface">7</span><div class="w-full max-w-[36px] bg-secondary/80 hover:bg-secondary transition-all rounded-t-sm" style="height: 70%;"></div></div><div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end z-10 group"><span class="text-[11px] font-mono font-medium text-on-surface">6</span><div class="w-full max-w-[36px] bg-secondary/80 hover:bg-secondary transition-all rounded-t-sm" style="height: 60%;"></div></div><div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end z-10 group"><span class="text-[11px] font-mono font-medium text-on-surface">9</span><div class="w-full max-w-[36px] bg-secondary/80 hover:bg-secondary transition-all rounded-t-sm" style="height: 90%;"></div></div><div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end z-10 group"><span class="text-[11px] font-mono font-medium text-on-surface">8</span><div class="w-full max-w-[36px] bg-secondary/80 hover:bg-secondary transition-all rounded-t-sm" style="height: 80%;"></div></div><div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end z-10 group"><span class="text-[11px] font-mono font-semibold text-secondary">9</span><div class="w-full max-w-[36px] bg-secondary hover:bg-secondary/90 transition-all rounded-t-sm ring-2 ring-secondary/20" style="height: 90%;"></div></div></div><div class="flex justify-between gap-3 px-2 pt-2 text-table-header font-table-header text-on-surface-variant"><span class="flex-1 text-center">21 Oct</span><span class="flex-1 text-center">22 Oct</span><span class="flex-1 text-center">23 Oct</span><span class="flex-1 text-center">24 Oct</span><span class="flex-1 text-center">25 Oct</span><span class="flex-1 text-center">26 Oct</span><span class="flex-1 text-center font-semibold text-primary">Today</span></div></div></div>
+</section>
+<!-- =================================================================== -->
+<!-- RIGHT COLUMN: Alex's Assigned Reports (5 cols)                      -->
+<!-- =================================================================== -->
+<section aria-label="Alex's assigned reports queue" class="lg:col-span-5 flex flex-col gap-space-base">
+<div class="border border-surface-variant rounded-lg bg-surface-container-lowest overflow-hidden flex flex-col">
+<!-- Header -->
+<div class="px-space-base py-space-sm bg-surface-container-low border-b border-surface-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h2 class="text-headline-section font-headline-section text-primary">My assigned reports</h2>
+<span class="px-2 py-0.5 rounded-full text-badge-caption font-badge-caption bg-secondary/15 text-secondary font-semibold">
+                  6 active
+                </span>
+</div>
+<span class="text-metadata font-metadata text-on-surface-variant">Assigned to Alex</span>
+</div>
+<!-- List of Assigned Tickets -->
+<div class="divide-y divide-surface-variant">
+<!-- Assigned Ticket 1: AQ-1046 (High priority) -->
+<div class="p-space-base hover:bg-surface-container-low/50 transition-colors flex flex-col gap-space-sm border-l-4 border-l-[#946300]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-mono text-body-medium font-body-medium font-semibold text-primary">AQ-1046</span>
+<span class="text-metadata font-metadata text-on-surface-variant">·</span>
+<span class="text-body-medium font-body-medium text-primary font-medium">No water</span>
+</div>
+<!-- Status & Priority Badges -->
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-[#946300]/10 text-[#946300] border border-[#946300]/25">
+                      In progress
+                    </span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#A51D25] bg-[#A51D25]/10 border border-[#A51D25]/25">
+                      High priority
+                    </span>
+</div>
+</div>
+<div class="flex items-center justify-between text-metadata font-metadata text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface font-medium">Liza Ramos</span>
+<span>—</span>
+<span>Holy Spirit, QC</span>
+</div>
+<span>Last update: 18m ago</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="text-metadata font-metadata text-on-surface-variant">Field crew: Team Bravo en route</span>
+<button class="h-[32px] px-3 bg-surface-container-lowest hover:bg-surface-container-low border border-surface-variant text-on-surface text-label-default font-label-default rounded transition-colors inline-flex items-center gap-1.5 font-medium cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">chat</span>
+<span>Continue conversation</span>
+</button>
+</div>
+</div>
+<!-- Assigned Ticket 2: AQ-1042 (High priority) -->
+<div class="p-space-base hover:bg-surface-container-low/50 transition-colors flex flex-col gap-space-sm border-l-4 border-l-[#946300]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-mono text-body-medium font-body-medium font-semibold text-primary">AQ-1042</span>
+<span class="text-metadata font-metadata text-on-surface-variant">·</span>
+<span class="text-body-medium font-body-medium text-primary font-medium">No water</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-[#946300]/10 text-[#946300] border border-[#946300]/25">
+                      In progress
+                    </span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold text-[#A51D25] bg-[#A51D25]/10 border border-[#A51D25]/25">
+                      High priority
+                    </span>
+</div>
+</div>
+<div class="flex items-center justify-between text-metadata font-metadata text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface font-medium">Mia Santos</span>
+<span>—</span>
+<span>Commonwealth, QC</span>
+</div>
+<span>Last update: 42m ago</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="text-metadata font-metadata text-on-surface-variant">Awaiting valve pressure read</span>
+<button class="h-[32px] px-3 bg-surface-container-lowest hover:bg-surface-container-low border border-surface-variant text-on-surface text-label-default font-label-default rounded transition-colors inline-flex items-center gap-1.5 font-medium cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">chat</span>
+<span>Continue conversation</span>
+</button>
+</div>
+</div>
+<!-- Assigned Ticket 3: AQ-1039 (Normal priority) -->
+<div class="p-space-base hover:bg-surface-container-low/50 transition-colors flex flex-col gap-space-sm border-l-4 border-l-surface-variant">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-mono text-body-medium font-body-medium font-semibold text-primary">AQ-1039</span>
+<span class="text-metadata font-metadata text-on-surface-variant">·</span>
+<span class="text-body-medium font-body-medium text-primary font-medium">Low pressure</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold tracking-wider uppercase bg-[#946300]/10 text-[#946300] border border-[#946300]/25">
+                      In progress
+                    </span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold text-on-surface-variant bg-surface-container-high border border-surface-variant">
+                      Normal
+                    </span>
+</div>
+</div>
+<div class="flex items-center justify-between text-metadata font-metadata text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface font-medium">Roberto Tan</span>
+<span>—</span>
+<span>Batasan Hills, QC</span>
+</div>
+<span>Last update: 1h ago</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="text-metadata font-metadata text-on-surface-variant">Citizen contacted via SMS triage</span>
+<button class="h-[32px] px-3 bg-surface-container-lowest hover:bg-surface-container-low border border-surface-variant text-on-surface text-label-default font-label-default rounded transition-colors inline-flex items-center gap-1.5 font-medium cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">chat</span>
+<span>Continue conversation</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer summary -->
+<div class="px-space-base py-2.5 bg-surface border-t border-surface-variant flex items-center justify-between text-metadata font-metadata text-on-surface-variant">
+<span>Showing 3 of 6 reports in personal queue</span>
+<a class="text-secondary hover:underline font-medium inline-flex items-center gap-1" href="#"><span>View all active</span><span class="material-symbols-outlined text-[14px]">arrow_forward</span></a>
+</div>
+</div>
+<!-- Quick Triage Guideline Note (Utility Callout) -->
+<div class="p-space-base rounded-lg border border-surface-variant bg-surface-container-low/60 flex items-start gap-space-sm"><span class="material-symbols-outlined text-[20px] text-secondary flex-shrink-0 mt-0.5">info</span><div class="flex flex-col gap-0.5 text-metadata font-metadata"><span class="font-semibold text-primary">Triage protocol notice</span><span class="text-on-surface-variant">Take an unassigned report to become its handler. Messages are visible to the reporting customer.</span></div></div>
+</section>
+</div>
+</div>
+</main>
+<!-- Lightweight Operational Script for Micro-Interactions -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Micro-interaction: Take report button confirmation state
+      const takeButtons = document.querySelectorAll('button:has(span:contains("Take report")), button');
+      takeButtons.forEach(btn => {
+        if (btn.textContent.includes('Take report')) {
+          btn.addEventListener('click', () => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<span class="material-symbols-outlined text-[15px] animate-spin">sync</span><span>Assigning...</span>`;
+            btn.classList.add('opacity-75');
+            setTimeout(() => {
+              btn.innerHTML = `<span class="material-symbols-outlined text-[15px]">check</span><span>Claimed</span>`;
+              btn.classList.remove('bg-primary-container', 'opacity-75');
+              btn.classList.add('bg-[#195B38]', 'text-white');
+            }, 500);
+          });
+        }
+      });
+    });
+  </script>
+</body></html>

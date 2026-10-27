@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#F4F7F6]" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>07 Layout (Collapsed nav) — Aqours</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"IBM Plex Sans"', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+  </style>
+</head>
+<body class="h-full bg-[#F4F7F6] text-[#1D1F20] antialiased select-none overflow-x-hidden">
+<!-- LEFT RAIL: FIXED 64px WIDTH -->
+<aside class="fixed top-0 left-0 h-screen w-16 bg-[#f7faf9] border-r border-[#d7dbda] z-40 flex flex-col justify-between py-4 items-center">
+<!-- Top: Aqours Logo & Nav Icons -->
+<div class="flex flex-col items-center w-full gap-5">
+<!-- Aqours Droplet Logo SVG -->
+<a class="w-10 h-10 rounded-lg flex items-center justify-center text-[#1B6C80] hover:bg-[#e8edeb] transition-colors" href="#" title="Aqours Portal">
+<svg class="w-6 h-6 fill-current text-[#1B6C80]" viewbox="0 0 24 24">
+<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+</svg>
+</a>
+<!-- Primary Navigation (Dashboard & Reports only) -->
+<nav class="flex flex-col items-center w-full gap-1.5 px-2">
+<!-- Dashboard (Inactive) -->
+<a class="w-11 h-10 flex items-center justify-center rounded-md text-[#5d5f60] hover:bg-[#e8edeb] hover:text-[#1D1F20] transition-colors" href="#" title="Dashboard">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+</a>
+<!-- Reports (Active) -->
+<a class="w-11 h-10 flex items-center justify-center rounded-md bg-[#e2e7e5] text-[#1B6C80] relative font-medium" href="#" title="Reports">
+<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-[#1B6C80] rounded-r"></span>
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">assessment</span>
+</a>
+</nav>
+</div>
+<!-- Bottom: Expand Sidebar Button -->
+<div class="flex flex-col items-center w-full px-2">
+<div class="relative group">
+<button aria-label="Expand sidebar" class="w-11 h-10 flex items-center justify-center rounded-md border border-[#d7dbda] bg-white text-[#1D1F20] hover:bg-[#f1f4f3] transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[20px]">keyboard_double_arrow_right</span>
+</button>
+<!-- Tooltip -->
+<div class="absolute left-14 bottom-1 z-50 whitespace-nowrap bg-[#1D1F20] text-white text-xs font-medium px-2.5 py-1 rounded shadow-md pointer-events-none">
+          Expand sidebar
+        </div>
+</div>
+</div>
+</aside>
+<!-- TOPBAR: FIXED 56px HEIGHT -->
+<header class="fixed top-0 left-16 right-0 h-[56px] bg-white border-b border-[#d7dbda] z-30 flex items-center justify-between px-6">
+<!-- Breadcrumb -->
+<nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-sm">
+<span class="text-[#5d5f60]">Supplier portal</span>
+<span class="text-[#8c9190]">/</span>
+<span class="text-[#1D1F20] font-semibold">Reports</span>
+</nav>
+<!-- User Badge & Open Dropdown -->
+<div class="relative">
+<button aria-expanded="true" class="flex items-center gap-2.5 pl-2 pr-2 py-1 rounded-md border border-[#d7dbda] bg-white text-left focus:outline-none" type="button">
+<div class="w-7 h-7 rounded bg-[#1B6C80] text-white text-xs font-semibold flex items-center justify-center">
+          AR
+        </div>
+<div class="hidden sm:block text-left">
+<p class="text-xs font-semibold text-[#1D1F20] leading-tight">Alex Reyes</p>
+<p class="text-[11px] text-[#5d5f60] leading-none">Staff</p>
+</div>
+<span class="material-symbols-outlined text-[18px] text-[#5d5f60] rotate-180">expand_more</span>
+</button>
+<!-- VISIBLY OPEN ACCOUNT DROPDOWN -->
+<div class="absolute right-0 mt-2 w-56 bg-white border border-[#d7dbda] rounded-lg shadow-lg z-50 py-1.5">
+<div class="px-4 py-2 border-b border-[#d7dbda]">
+<p class="text-xs text-[#5d5f60]">Signed in as</p>
+<p class="text-sm font-semibold text-[#1D1F20] truncate">Alex Reyes</p>
+<span class="inline-block mt-0.5 text-[11px] px-1.5 py-0.2 rounded bg-[#e8edeb] text-[#1B6C80] font-medium">Staff</span>
+</div>
+<div class="py-1">
+<a class="flex items-center gap-2.5 px-4 py-2 text-sm text-[#1D1F20] hover:bg-[#F4F7F6] transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px] text-[#5d5f60]">key</span>
+<span>Change password</span>
+</a>
+</div>
+<div class="pt-1 border-t border-[#d7dbda]">
+<a class="flex items-center gap-2.5 px-4 py-2 text-sm text-[#ba1a1a] hover:bg-red-50 transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-[18px] text-[#ba1a1a]">logout</span>
+<span>Sign out</span>
+</a>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT AREA -->
+<main class="fixed top-[56px] left-16 right-0 bottom-0 overflow-y-auto bg-[#F4F7F6] p-6 lg:p-8">
+<div class="max-w-[1360px] mx-auto flex flex-col gap-6">
+<!-- Page Header -->
+<div>
+<h1 class="text-[24px] font-semibold text-[#1D1F20] tracking-tight leading-none">Reports</h1>
+<p class="text-[14px] text-[#5d5f60] mt-1.5">Customer water reports across all service areas</p>
+</div>
+<!-- 4 Simple KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Total -->
+<div class="bg-white border border-[#d7dbda] rounded-lg p-4 flex flex-col justify-between">
+<span class="text-xs font-medium text-[#5d5f60] uppercase tracking-wider">Total</span>
+<span class="text-[32px] font-semibold text-[#1D1F20] tracking-tight mt-1">48</span>
+</div>
+<!-- Unassigned -->
+<div class="bg-white border border-[#d7dbda] rounded-lg p-4 flex flex-col justify-between">
+<span class="text-xs font-medium text-[#5d5f60] uppercase tracking-wider">Unassigned</span>
+<span class="text-[32px] font-semibold text-[#1D1F20] tracking-tight mt-1">12</span>
+</div>
+<!-- In progress -->
+<div class="bg-white border border-[#d7dbda] rounded-lg p-4 flex flex-col justify-between">
+<span class="text-xs font-medium text-[#5d5f60] uppercase tracking-wider">In progress</span>
+<span class="text-[32px] font-semibold text-[#1D1F20] tracking-tight mt-1">18</span>
+</div>
+<!-- Resolved -->
+<div class="bg-white border border-[#d7dbda] rounded-lg p-4 flex flex-col justify-between">
+<span class="text-xs font-medium text-[#5d5f60] uppercase tracking-wider">Resolved</span>
+<span class="text-[32px] font-semibold text-[#1D1F20] tracking-tight mt-1">18</span>
+</div>
+</div>
+<!-- Alert Pill / Warning Bar -->
+<div class="flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-amber-50 border border-amber-200/80 text-amber-900 text-sm font-medium">
+<span class="material-symbols-outlined text-[18px] text-amber-700">warning</span>
+<span>5 unresolved reports are High priority</span>
+</div>
+<!-- Toolbar: Tabs + Search & Filters -->
+<div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 border-b border-[#d7dbda] pb-3">
+<!-- Segmented Tabs -->
+<div class="flex items-center gap-2 overflow-x-auto">
+<button class="px-3.5 py-1.5 text-sm rounded-md font-medium text-[#5d5f60] hover:text-[#1D1F20] hover:bg-[#e8edeb] transition-colors" type="button">
+            Unassigned
+          </button>
+<button class="px-3.5 py-1.5 text-sm rounded-md font-medium text-[#5d5f60] hover:text-[#1D1F20] hover:bg-[#e8edeb] transition-colors" type="button">
+            Mine
+          </button>
+<button class="px-3.5 py-1.5 text-sm rounded-md font-medium text-[#5d5f60] hover:text-[#1D1F20] hover:bg-[#e8edeb] transition-colors" type="button">
+            In progress
+          </button>
+<button class="px-3.5 py-1.5 text-sm rounded-md font-semibold bg-[#1D1F20] text-white" type="button">
+            All
+          </button>
+</div>
+<!-- Search & Filter Controls -->
+<div class="flex flex-wrap items-center gap-2.5">
+<!-- Search input -->
+<div class="relative min-w-[260px] flex-1 sm:flex-initial">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[#8c9190]">search</span>
+<input class="w-full sm:w-72 h-[34px] pl-9 pr-3 text-xs bg-white border border-[#d7dbda] rounded-md text-[#1D1F20] placeholder-[#8c9190] focus:outline-none focus:border-[#1B6C80] focus:ring-1 focus:ring-[#1B6C80]" placeholder="Search report ID, customer, address..." type="text"/>
+</div>
+<!-- Status Filter -->
+<div class="relative">
+<select class="h-[34px] pl-3 pr-8 text-xs font-medium bg-white border border-[#d7dbda] rounded-md text-[#1D1F20] focus:outline-none focus:border-[#1B6C80] appearance-none cursor-pointer">
+<option>Status</option>
+<option>Submitted</option>
+<option>In progress</option>
+<option>Resolved</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[16px] text-[#5d5f60] pointer-events-none">expand_more</span>
+</div>
+<!-- Priority Filter -->
+<div class="relative">
+<select class="h-[34px] pl-3 pr-8 text-xs font-medium bg-white border border-[#d7dbda] rounded-md text-[#1D1F20] focus:outline-none focus:border-[#1B6C80] appearance-none cursor-pointer">
+<option>Priority</option>
+<option>High</option>
+<option>Normal</option>
+<option>Low</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[16px] text-[#5d5f60] pointer-events-none">expand_more</span>
+</div>
+<!-- Assignment Filter -->
+<div class="relative">
+<select class="h-[34px] pl-3 pr-8 text-xs font-medium bg-white border border-[#d7dbda] rounded-md text-[#1D1F20] focus:outline-none focus:border-[#1B6C80] appearance-none cursor-pointer">
+<option>Assignment</option>
+<option>Unassigned</option>
+<option>Assigned</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[16px] text-[#5d5f60] pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Water Reports Table Container -->
+<div class="bg-white border border-[#d7dbda] rounded-lg overflow-hidden shadow-xs">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-sm">
+<thead>
+<tr class="h-10 bg-[#f7faf9] border-b border-[#d7dbda] text-xs font-semibold text-[#5d5f60]">
+<th class="px-4 py-2 font-semibold">Report</th>
+<th class="px-4 py-2 font-semibold">Issue</th>
+<th class="px-4 py-2 font-semibold">Customer</th>
+<th class="px-4 py-2 font-semibold">Location</th>
+<th class="px-4 py-2 font-semibold">Status</th>
+<th class="px-4 py-2 font-semibold">Priority</th>
+<th class="px-4 py-2 font-semibold">Handler</th>
+<th class="px-4 py-2 font-semibold">Submitted</th>
+<th class="px-4 py-2 text-right font-semibold">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#d7dbda]">
+<!-- Row 1: AQ-1048 -->
+<tr class="hover:bg-[#F4F7F6]/70 transition-colors">
+<td class="px-4 py-3 font-semibold text-[#1D1F20] font-mono text-xs">AQ-1048</td>
+<td class="px-4 py-3 text-[#1D1F20]">No water</td>
+<td class="px-4 py-3 text-[#1D1F20]">Mia Santos</td>
+<td class="px-4 py-3 text-[#5d5f60]">Commonwealth</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                    Submitted
+                  </span>
+</td>
+<td class="px-4 py-3 text-[#5d5f60]">Normal</td>
+<td class="px-4 py-3 text-[#8c9190] italic">Unassigned</td>
+<td class="px-4 py-3 text-[#5d5f60] whitespace-nowrap">Today, 09:15</td>
+<td class="px-4 py-3 text-right">
+<button class="h-8 px-3 rounded bg-[#1D1F20] text-white text-xs font-medium hover:bg-black transition-colors" type="button">
+                    Take report
+                  </button>
+</td>
+</tr>
+<!-- Row 2: AQ-1047 -->
+<tr class="hover:bg-[#F4F7F6]/70 transition-colors">
+<td class="px-4 py-3 font-semibold text-[#1D1F20] font-mono text-xs">AQ-1047</td>
+<td class="px-4 py-3 text-[#1D1F20]">Low pressure</td>
+<td class="px-4 py-3 text-[#1D1F20]">Paolo Garcia</td>
+<td class="px-4 py-3 text-[#5d5f60]">Batasan Hills</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                    Submitted
+                  </span>
+</td>
+<td class="px-4 py-3 text-[#5d5f60]">Normal</td>
+<td class="px-4 py-3 text-[#8c9190] italic">Unassigned</td>
+<td class="px-4 py-3 text-[#5d5f60] whitespace-nowrap">Today, 09:05</td>
+<td class="px-4 py-3 text-right">
+<button class="h-8 px-3 rounded bg-[#1D1F20] text-white text-xs font-medium hover:bg-black transition-colors" type="button">
+                    Take report
+                  </button>
+</td>
+</tr>
+<!-- Row 3: AQ-1046 -->
+<tr class="hover:bg-[#F4F7F6]/70 transition-colors">
+<td class="px-4 py-3 font-semibold text-[#1D1F20] font-mono text-xs">AQ-1046</td>
+<td class="px-4 py-3 text-[#1D1F20]">No water</td>
+<td class="px-4 py-3 text-[#1D1F20]">Liza Ramos</td>
+<td class="px-4 py-3 text-[#5d5f60]">Holy Spirit</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    In progress
+                  </span>
+</td>
+<td class="px-4 py-3 font-semibold text-[#ba1a1a]">High</td>
+<td class="px-4 py-3 text-[#1D1F20] font-medium">Alex Reyes</td>
+<td class="px-4 py-3 text-[#5d5f60] whitespace-nowrap">Today, 08:40</td>
+<td class="px-4 py-3 text-right">
+<button class="h-8 px-3 rounded border border-[#d7dbda] bg-white text-[#1D1F20] text-xs font-medium hover:bg-[#F4F7F6] transition-colors" type="button">
+                    Open ticket
+                  </button>
+</td>
+</tr>
+<!-- Row 4: AQ-1045 -->
+<tr class="hover:bg-[#F4F7F6]/70 transition-colors">
+<td class="px-4 py-3 font-semibold text-[#1D1F20] font-mono text-xs">AQ-1045</td>
+<td class="px-4 py-3 text-[#1D1F20]">Dirty water</td>
+<td class="px-4 py-3 text-[#1D1F20]">Tomas Lim</td>
+<td class="px-4 py-3 text-[#5d5f60]">Payatas</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    In progress
+                  </span>
+</td>
+<td class="px-4 py-3 text-[#5d5f60]">Normal</td>
+<td class="px-4 py-3 text-[#1D1F20] font-medium">Bea Navarro</td>
+<td class="px-4 py-3 text-[#5d5f60] whitespace-nowrap">Today, 08:20</td>
+<td class="px-4 py-3 text-right">
+<button class="h-8 px-3 rounded border border-[#d7dbda] bg-white text-[#1D1F20] text-xs font-medium hover:bg-[#F4F7F6] transition-colors" type="button">
+                    Open ticket
+                  </button>
+</td>
+</tr>
+<!-- Row 5: AQ-1044 -->
+<tr class="hover:bg-[#F4F7F6]/70 transition-colors">
+<td class="px-4 py-3 font-semibold text-[#1D1F20] font-mono text-xs">AQ-1044</td>
+<td class="px-4 py-3 text-[#1D1F20]">Low pressure</td>
+<td class="px-4 py-3 text-[#1D1F20]">Nica Cruz</td>
+<td class="px-4 py-3 text-[#5d5f60]">Fairview</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                    Resolved
+                  </span>
+</td>
+<td class="px-4 py-3 text-[#5d5f60]">Low</td>
+<td class="px-4 py-3 text-[#1D1F20] font-medium">Carlo Mendoza</td>
+<td class="px-4 py-3 text-[#5d5f60] whitespace-nowrap">Today, 07:55</td>
+<td class="px-4 py-3 text-right">
+<button class="h-8 px-3 rounded border border-[#d7dbda] bg-white text-[#1D1F20] text-xs font-medium hover:bg-[#F4F7F6] transition-colors" type="button">
+                    Open ticket
+                  </button>
+</td>
+</tr>
+<!-- Row 6: AQ-1042 -->
+<tr class="hover:bg-[#F4F7F6]/70 transition-colors">
+<td class="px-4 py-3 font-semibold text-[#1D1F20] font-mono text-xs">AQ-1042</td>
+<td class="px-4 py-3 text-[#1D1F20]">No water</td>
+<td class="px-4 py-3 text-[#1D1F20]">Mia Santos</td>
+<td class="px-4 py-3 text-[#5d5f60]">Commonwealth</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                    In progress
+                  </span>
+</td>
+<td class="px-4 py-3 font-semibold text-[#ba1a1a]">High</td>
+<td class="px-4 py-3 text-[#1D1F20] font-medium">Alex Reyes</td>
+<td class="px-4 py-3 text-[#5d5f60] whitespace-nowrap">26 Oct, 16:30</td>
+<td class="px-4 py-3 text-right">
+<button class="h-8 px-3 rounded border border-[#d7dbda] bg-white text-[#1D1F20] text-xs font-medium hover:bg-[#F4F7F6] transition-colors" type="button">
+                    Open ticket
+                  </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Clean Pagination -->
+<div class="px-4 py-3 bg-[#f7faf9] border-t border-[#d7dbda] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#5d5f60]">
+<div>
+            Showing <span class="font-medium text-[#1D1F20]">1–6</span> of <span class="font-medium text-[#1D1F20]">48</span> reports
+          </div>
+<div class="flex items-center gap-1">
+<button class="h-8 w-8 rounded border border-[#d7dbda] bg-white flex items-center justify-center text-[#8c9190] cursor-not-allowed" disabled="" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<button class="h-8 w-8 rounded bg-[#1D1F20] text-white font-medium" type="button">1</button>
+<button class="h-8 w-8 rounded border border-transparent hover:border-[#d7dbda] hover:bg-white text-[#1D1F20]" type="button">2</button>
+<button class="h-8 w-8 rounded border border-transparent hover:border-[#d7dbda] hover:bg-white text-[#1D1F20]" type="button">3</button>
+<button class="h-8 w-8 rounded border border-transparent hover:border-[#d7dbda] hover:bg-white text-[#1D1F20]" type="button">4</button>
+<button class="h-8 w-8 rounded border border-[#d7dbda] bg-white flex items-center justify-center text-[#1D1F20] hover:bg-[#e8edeb]" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

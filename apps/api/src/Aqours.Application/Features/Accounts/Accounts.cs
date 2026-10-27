@@ -19,6 +19,7 @@ public interface IAccountStore
 {
     Task<AccountSession?> AuthenticateAsync(string email, string password);
     Task<AccountSession?> FindAsync(string id);
+    Task<IReadOnlyList<Account>> ListAsync(CancellationToken ct = default);
     Task<Outcome<AccountSession>> CreateAsync(CreateAccount account);
     Task<Outcome<AccountSession>> ChangePasswordAsync(string id, string currentPassword, string newPassword);
 }
@@ -47,6 +48,8 @@ public sealed class AccountService(IAccountStore store)
     }
 
     public Task<AccountSession?> FindAsync(string id) => store.FindAsync(id);
+
+    public Task<IReadOnlyList<Account>> ListAsync(CancellationToken ct = default) => store.ListAsync(ct);
 
     public Task<Outcome<AccountSession>> CreateAsync(CreateAccount account)
     {

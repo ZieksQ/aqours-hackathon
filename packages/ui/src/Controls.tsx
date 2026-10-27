@@ -1,5 +1,16 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { FiAlertCircle, FiCheckCircle, FiInfo } from "react-icons/fi";
+import {
+  useState,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
+import {
+  FiAlertCircle,
+  FiCheckCircle,
+  FiEye,
+  FiEyeOff,
+  FiInfo,
+} from "react-icons/fi";
 import { buttonClassName, type ButtonVariant } from "./buttonStyles";
 
 export function Button({
@@ -43,6 +54,75 @@ export function Field({
         </p>
       )}
     </div>
+  );
+}
+
+export function PasswordInput(
+  props: Omit<InputHTMLAttributes<HTMLInputElement>, "type">,
+) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="ui-password-input">
+      <input {...props} type={visible ? "text" : "password"} />
+      <Button
+        variant="ghost"
+        aria-label={visible ? "Hide password" : "Show password"}
+        aria-pressed={visible}
+        onClick={() => setVisible(!visible)}
+      >
+        {visible ? (
+          <FiEyeOff aria-hidden="true" />
+        ) : (
+          <FiEye aria-hidden="true" />
+        )}
+      </Button>
+    </div>
+  );
+}
+
+export function Badge({
+  children,
+  tone = "neutral",
+  className = "",
+}: {
+  className?: string;
+  children: ReactNode;
+  tone?: "neutral" | "info" | "warning" | "success" | "danger";
+}) {
+  return (
+    <span className={`ui-badge ui-badge-${tone} ${className}`}>{children}</span>
+  );
+}
+
+export function MetricStrip({
+  label,
+  items,
+}: {
+  label: string;
+  items: {
+    label: string;
+    value: number | undefined;
+    detail?: string;
+    unit?: string;
+  }[];
+}) {
+  return (
+    <dl className="ui-metric-strip" aria-label={label}>
+      {items.map((item) => (
+        <div key={item.label}>
+          <dt>{item.label}</dt>
+          <dd>
+            {item.value === undefined ? (
+              <span className="ui-metric-loading" aria-label="Loading" />
+            ) : (
+              item.value
+            )}
+            {item.unit && <span className="ui-metric-unit">{item.unit}</span>}
+          </dd>
+          {item.detail && <p className="ui-metric-detail">{item.detail}</p>}
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -112,5 +192,26 @@ export function StatePanel({
       {children && <div className="muted">{children}</div>}
       {action && <div className="ui-state-action">{action}</div>}
     </div>
+  );
+}
+
+export function Avatar({
+  name,
+  small = false,
+}: {
+  name: string;
+  small?: boolean;
+}) {
+  const words = name.trim().split(/\s+/);
+  const initials = (
+    (words[0]?.[0] ?? "") + (words.length > 1 ? (words.at(-1)?.[0] ?? "") : "")
+  ).toUpperCase();
+  return (
+    <span
+      className={`ui-avatar${small ? " ui-avatar-small" : ""}`}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
   );
 }

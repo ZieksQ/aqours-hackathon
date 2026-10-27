@@ -1,5 +1,5 @@
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
-import { FiMenu, FiX } from "react-icons/fi";
+import { FiMenu, FiSidebar, FiX } from "react-icons/fi";
 import { Button } from "./Controls";
 
 const compactQuery = "(max-width: 959px)";
@@ -18,28 +18,36 @@ export function Navbar({
   navigationId,
   menuOpen,
   onMenuToggle,
+  actions,
+  search,
 }: {
   brand: ReactNode;
   context: ReactNode;
   navigationId: string;
   menuOpen: boolean;
   onMenuToggle: () => void;
+  actions?: ReactNode;
+  search?: ReactNode;
 }) {
   return (
-    <header className="ui-navbar">
+    <>
       <div className="ui-navbar-brand">{brand}</div>
-      <div className="ui-navbar-context">{context}</div>
-      <Button
-        variant="ghost"
-        className="ui-menu-toggle"
-        aria-expanded={menuOpen}
-        aria-controls={navigationId}
-        onClick={onMenuToggle}
-      >
-        <FiMenu aria-hidden="true" />
-        Menu
-      </Button>
-    </header>
+      <header className="ui-navbar">
+        <div className="ui-navbar-context">{context}</div>
+        {search && <div className="ui-navbar-search">{search}</div>}
+        {actions && <div className="ui-navbar-actions">{actions}</div>}
+        <Button
+          variant="ghost"
+          className="ui-menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls={navigationId}
+          onClick={onMenuToggle}
+        >
+          <FiMenu aria-hidden="true" />
+          Menu
+        </Button>
+      </header>
+    </>
   );
 }
 
@@ -50,6 +58,8 @@ export function Sidebar({
   children,
   footer,
   label = "Main navigation",
+  collapsed = false,
+  onCollapse,
 }: {
   id: string;
   open: boolean;
@@ -57,6 +67,8 @@ export function Sidebar({
   children: ReactNode;
   footer: ReactNode;
   label?: string;
+  collapsed?: boolean;
+  onCollapse?: () => void;
 }) {
   const compact = useSyncExternalStore(
     subscribeCompact,
@@ -82,7 +94,23 @@ export function Sidebar({
       <nav aria-label={label} className="ui-sidebar-nav">
         {children}
       </nav>
-      <div className="ui-sidebar-footer">{footer}</div>
+      <div className="ui-sidebar-footer">
+        {footer}
+        {!compact && onCollapse && (
+          <Button
+            variant="ghost"
+            className="ui-sidebar-collapse"
+            onClick={onCollapse}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+            aria-controls={id}
+          >
+            <FiSidebar aria-hidden="true" />
+            <span className="ui-nav-label">Collapse sidebar</span>
+          </Button>
+        )}
+      </div>
     </>
   );
   if (!compact)
@@ -130,13 +158,19 @@ export function AppShell({
   navbar,
   sidebar,
   children,
+  collapsed = false,
+  className = "",
 }: {
+  className?: string;
   navbar: ReactNode;
   sidebar: ReactNode;
   children: ReactNode;
+  collapsed?: boolean;
 }) {
   return (
-    <div className="ui-shell">
+    <div
+      className={`ui-shell${collapsed ? " ui-shell-collapsed" : ""} ${className}`}
+    >
       <a className="ui-skip-link" href="#content">
         Skip to content
       </a>

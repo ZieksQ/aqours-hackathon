@@ -41,7 +41,7 @@ export type Message = {
 };
 export type History = { items: Message[]; nextBefore: number | null };
 export const statusName = (status: Ticket["status"]) =>
-  ({ Submitted: "Open", InProgress: "In Progress", Resolved: "Resolved" })[
+  ({ Submitted: "Submitted", InProgress: "In progress", Resolved: "Resolved" })[
     status
   ];
 export const addressText = (ticket: Ticket) =>
@@ -63,5 +63,26 @@ export const timestamp = (value: string) =>
     hour: "2-digit",
     minute: "2-digit",
   });
-export const fetchQueue = (query: string) =>
-  api<Queue>(`/staff/reports?${query}`);
+export const fetchQueue = (query: string) => {
+  const params = new URLSearchParams(query);
+  if (!params.has("tab")) params.set("tab", "all");
+  if (!params.has("pageSize")) params.set("pageSize", "6");
+  return api<Queue>(`/staff/reports?${params}`);
+};
+
+export async function fetchReportAnalytics() {
+  const first = await fetchQueue("tab=all&pageSize=100");
+  const pages = await Promise.all(
+    Array.from(
+      { length: Math.max(0, Math.ceil(first.totalCount / 100) - 1) },
+      (_, index) => fetchQueue(`tab=all&pageSize=100&page=${index + 2}`),
+    ),
+  );
+  return [first, ...pages].flatMap((page) => page.items);
+}
+
+export const fetchOverview = () => fetchQueue("tab=all&pageSize=1");
+
+export function reportReference(id: string) {
+  return id.length > 20 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
+}
