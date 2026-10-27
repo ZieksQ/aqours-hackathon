@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Aqours.Application.Features.Accounts;
-using Aqours.Application.Features.Reports;
-using Aqours.Domain.Features.Reports;
+using Aqours.Application.Locations;
+using Aqours.Domain.Locations;
 
-namespace Aqours.Infrastructure.Features.Reports;
+namespace Aqours.Infrastructure.Locations;
 
 public sealed class PsgcAddresses : IPsgcAddresses
 {
@@ -29,7 +29,7 @@ public sealed class PsgcAddresses : IPsgcAddresses
         foreach (var child in node.GetProperty("children").EnumerateArray()) Read(child, place);
     }
 
-    public Outcome<ReportAddress> Resolve(AddressInput address)
+    public Outcome<PsgcAddress> Resolve(AddressInput address)
     {
         var errors = new Dictionary<string, string[]>();
         var submitted = new Dictionary<string, (string? Code, string[] Levels)>
@@ -58,13 +58,13 @@ public sealed class PsgcAddresses : IPsgcAddresses
             }
         }
         var details = address.Details?.Trim();
-        if (string.IsNullOrEmpty(details) || details.Length > ReportAddress.MaxDetailsLength)
+        if (string.IsNullOrEmpty(details) || details.Length > PsgcAddress.MaxDetailsLength)
             errors["address.details"] = ["Street or landmark details are required (up to 500 characters)."];
         if (errors.Count > 0) return new(null, errors);
         var city = path.GetValueOrDefault("city") ?? path["municipality"];
         var province = path.GetValueOrDefault("province");
         var sub = path.GetValueOrDefault("sub_municipality");
-        return new(new ReportAddress(path["region"].Code, path["region"].Name, province?.Code, province?.Name,
+        return new(new PsgcAddress(path["region"].Code, path["region"].Name, province?.Code, province?.Name,
             city.Code, city.Name, sub?.Code, sub?.Name, path["barangay"].Code, path["barangay"].Name, details!));
     }
 }

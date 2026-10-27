@@ -151,6 +151,49 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                     b.ToTable("report_messages", (string)null);
                 });
 
+            modelBuilder.Entity("Aqours.Domain.Features.SupplySites.SupplySite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("address");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("latitude");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("longitude");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_supply_sites");
+
+                    b.HasIndex("Name", "Id")
+                        .HasDatabaseName("ix_supply_sites_name_id");
+
+                    b.ToTable("supply_sites", (string)null);
+                });
+
             modelBuilder.Entity("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", b =>
                 {
                     b.Property<string>("Id")

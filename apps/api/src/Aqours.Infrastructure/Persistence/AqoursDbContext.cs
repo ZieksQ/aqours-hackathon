@@ -1,5 +1,6 @@
 using Aqours.Infrastructure.Features.Accounts;
 using Aqours.Domain.Features.Reports;
+using Aqours.Domain.Features.SupplySites;
 using Aqours.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -10,6 +11,8 @@ namespace Aqours.Infrastructure.Persistence;
 public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
     : IdentityDbContext<IdentityAccountUser>(options)
 {
+    public DbSet<SupplySite> SupplySites => Set<SupplySite>();
+
     public DbSet<Report> Reports => Set<Report>();
 
     public DbSet<ReportMessage> ReportMessages => Set<ReportMessage>();
@@ -18,6 +21,7 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new ReportConfiguration());
+        builder.ApplyConfiguration(new SupplySiteConfiguration());
         builder.Entity<ReportMessage>(message =>
         {
             message.ToTable("report_messages");

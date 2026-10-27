@@ -1,3 +1,4 @@
+using Aqours.Api.Locations;
 using System.Security.Claims;
 using Aqours.Api.Features.Accounts;
 using Aqours.Application.Features.Reports;
@@ -7,7 +8,7 @@ namespace Aqours.Api.Features.Reports;
 public sealed record PriorityRequest(string? Priority);
 public sealed record StatusRequest(string? Status);
 public sealed record MessageRequest(string? Body);
-public sealed record TicketResponse(Guid Id, string Title, string Description, ReportAddressResponse Address, double Latitude,
+public sealed record TicketResponse(Guid Id, string Title, string Description, AddressResponse Address, double Latitude,
     double Longitude, string Status, string Priority, DateTimeOffset CreatedAt, DateTimeOffset? ClaimedAt,
     DateTimeOffset? ResolvedAt, ReportPerson Customer, ReportPerson? AssignedStaff, string SupplierName)
 {

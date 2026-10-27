@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Aqours.Domain.Features.Reports;
+using Aqours.Domain.Locations;
 using Aqours.Infrastructure.Features.Accounts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,7 +22,7 @@ public sealed class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(r => r.Address).HasColumnType("jsonb").IsRequired().HasConversion(
             address => JsonSerializer.Serialize(address, (JsonSerializerOptions?)null),
-            json => JsonSerializer.Deserialize<ReportAddress>(json, (JsonSerializerOptions?)null)!);
+            json => JsonSerializer.Deserialize<PsgcAddress>(json, (JsonSerializerOptions?)null)!);
         builder.HasOne<IdentityAccountUser>().WithMany().HasForeignKey(r => r.CustomerId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(r => new { r.CustomerId, r.CreatedAt, r.Id }).IsDescending(false, true, true);
     }

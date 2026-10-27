@@ -1,3 +1,7 @@
+using Aqours.Application.Locations;
+using Aqours.Infrastructure.Locations;
+using Aqours.Application.Features.SupplySites;
+using Aqours.Infrastructure.Features.SupplySites;
 using Aqours.Infrastructure.Persistence;
 using Aqours.Infrastructure.Features.Reports;
 using Aqours.Application.Features.Reports;
@@ -41,6 +45,8 @@ public static class DependencyInjection
         services.AddSingleton<IPsgcAddresses, PsgcAddresses>();
         services.AddScoped<IReportStore, PostgresReportStore>();
         services.AddScoped<ReportService>();
+        services.AddScoped<ISupplySiteStore, PostgresSupplySiteStore>();
+        services.AddScoped<SupplySiteService>();
         services.AddScoped<IStaffReportStore, PostgresStaffReportStore>();
         services.AddScoped<StaffReportService>();
         services.AddScoped<IAccountStore, IdentityAccountStore>();
