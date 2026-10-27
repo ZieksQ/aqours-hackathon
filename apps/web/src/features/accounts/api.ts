@@ -27,18 +27,26 @@ export async function csrf() {
     credentials: "same-origin",
     cache: "no-store",
   });
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 401) queryClient.setQueryData(["account"], null);
     throw new ApiError(
       response.status,
-      "Could not secure your request. Please try again.",
+      response.status === 401
+        ? "Your session has expired. Please sign in again."
+        : "Could not secure your request. Please try again.",
     );
+  }
   return ((await response.json()) as { requestToken: string }).requestToken;
 }
-export async function api<T>(path: string, body?: unknown): Promise<T> {
+export async function api<T>(
+  path: string,
+  body?: unknown,
+  method?: "POST" | "PUT",
+): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`/api${path}`, {
-      method: body === undefined ? "GET" : "POST",
+      method: body === undefined ? "GET" : (method ?? "POST"),
       credentials: "same-origin",
       cache: "no-store",
       headers:

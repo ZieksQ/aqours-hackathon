@@ -1,4 +1,54 @@
 @layer components {
+  .ui-required {
+    color: var(--negative);
+  }
+  .ui-field-hint {
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .ui-section-panel {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-width: 0;
+    background: var(--surface);
+  }
+  .ui-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ui-section-heading h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+  }
+  .ui-section-heading h2 svg {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .ui-section-heading > span {
+    font-size: 12px;
+  }
+  .ui-page-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    white-space: nowrap;
+    font-weight: 400;
+    font-size: 12px;
+  }
+  .ui-page-size select {
+    width: auto;
+  }
   .ui-button {
     display: inline-flex;
     align-items: center;

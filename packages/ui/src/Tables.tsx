@@ -29,6 +29,7 @@ export function Pagination({
   onChange,
   disabled = false,
   compact = false,
+  onPageSizeChange,
 }: {
   page: number;
   pageSize: number;
@@ -38,6 +39,7 @@ export function Pagination({
   onChange: (page: number) => void;
   disabled?: boolean;
   compact?: boolean;
+  onPageSizeChange?: (size: number) => void;
 }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const numbers = [
@@ -64,7 +66,26 @@ export function Pagination({
         </strong>{" "}
         of <strong>{total}</strong> {noun}
       </p>
+      {onPageSizeChange && (
+        <label className="ui-page-size">
+          Rows per page
+          <select
+            value={pageSize}
+            disabled={disabled}
+            onChange={(event) => onPageSizeChange(Number(event.target.value))}
+          >
+            {[20, 50, 100].map((size) => (
+              <option key={size}>{size}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <div>
+        {onPageSizeChange && (
+          <span className="muted">
+            Page {page} of {pages}
+          </span>
+        )}
         <Button
           variant="secondary"
           disabled={disabled || page <= 1}

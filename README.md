@@ -1,6 +1,6 @@
 # Aqours
 
-Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, the Admin supplier-site management API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. Supplier-site maps, supply, weather, the Updates inbox, and full Profile remain deferred.
+Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, Admin supplier-site management in the web portal and API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. Customer supplier-site maps, supply, weather, the Updates inbox, and full Profile remain deferred.
 
 ## Prerequisites
 
@@ -61,7 +61,9 @@ This connection string can also be set with `dotnet user-secrets`; see [authenti
 
 ## Web styling
 
-Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, an Admin account directory and creation form, password change, report dashboards with seven-day submission charts and workload summaries, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Admin supplier-site management is available through the API; no site management screen is included. Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; supplier-site maps, supply, weather, an Updates inbox, and full Profile remain deferred.
+Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, an Admin account directory and creation form, password change, report dashboards with seven-day submission charts and workload summaries, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Admins can list, add, view, and edit supply sites at `/supply-sites`, including canonical Philippine addresses and independent map pins. Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; Customer supplier-site maps, supply, weather, an Updates inbox, and full Profile remain deferred.
+
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set `VITE_GEOAPIFY_API_KEY` for supply-site maps. This browser-visible key should be restricted to your application origins. Restart Vite after changing it; builds use the configured value at build time. Map loading failures have a retry action, and an unconfigured map shows a setup notice. The address selectors do not move or verify the map pin.
 
 ## Verification
 

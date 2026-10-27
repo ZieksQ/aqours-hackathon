@@ -1,10 +1,6 @@
 # Progress
 
-- 2026-10-25: Added repository guidance in `AGENTS.md` covering feature branches, CLI-first project operations, MVP simplicity, documentation references, and progress archiving. Git metadata was unavailable, so a branch could not be created or verified.
-
-- 2026-10-25: Initialized the .NET 10 Clean Architecture projects and solution references, React/TypeScript/Vite/ESLint web starter with Tailwind CSS, pnpm workspace, ignore rules, and isolated Docker PostgreSQL 18.6 setup using the installed image; updated architecture, repository guidance, and startup documentation, with mobile creation deferred. Verified the API build and HTTP health response, web production build and lint, compiled Tailwind output, frozen offline dependency installation, and a real PostgreSQL query; persistence/Identity and MVP business features remain unimplemented.
-
-- 2026-10-25: Added root `concurrently` and `pnpm dev` to wait for PostgreSQL readiness and launch the API/web together; documented startup/shutdown behavior, required commits after completed changes in `AGENTS.md`, and generated `apps/api/.gitignore` with the .NET CLI. Verified both applications return HTTP 200 from the unified command and API ignore rules cover build output in all four projects.
+Archived foundation setup: [2026-10-28 archive](memory/progress-2026-10-28-01.md).
 
 - 2026-10-25: Added pinned .NET 10 EF Core PostgreSQL, Identity persistence, design-time tooling, and naming-convention dependencies; registered the Infrastructure context with snake_case naming, including explicit Identity table/index mappings, and documented connection-string setup. Verified the solution builds with zero warnings/errors, PostgreSQL DDL uses snake_case for all 64 table/column/key/index names, missing configuration reports a clear error, and `/health` returns HTTP 200 without database configuration; migrations and account endpoints remain deferred.
 
@@ -45,3 +41,5 @@
 - 2026-10-27: Generated and refined separate iOS and Android Customer report-conversation screens in the existing Aqours Mobile Google Stitch project, adapting sender/time labels, left/right chat bubbles, and status events from the staff ticket workspace. Retrieved PNG and HTML review exports in the locally ignored `design/report-conversation/` folder; no mobile UI implementation changed.
 
 - 2026-10-27: Implemented the separate native report conversation page from the reviewed Stitch designs, with iOS/Android navigation, chronological bubbles, message paging and polling, a keyboard-safe reply composer, and read-only Submitted/Resolved states. The Customer report response does not expose claim actor/time, so live status events use accurate generic copy while preview data matches the named/timed design; mobile TypeScript check passed, no Prettier executable is installed in the workspace, and physical-phone review remains pending.
+
+- 2026-10-28: Implemented Admin supply-site directory, add, details, and edit screens from the reviewed designs using shared UI, canonical PSGC selectors, and independent Leaflet/Geoapify map pins without visible coordinates. Web/shared build, lint, formatting, and responsive screenshot checks passed; browser API checks use fixtures, and live-backend UI verification remains pending.

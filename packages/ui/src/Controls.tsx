@@ -33,27 +33,69 @@ export function Field({
   label,
   optional = false,
   error,
+  required = false,
+  hint,
   children,
 }: {
   id: string;
   label: string;
   optional?: boolean;
   error?: string;
+  required?: boolean;
+  hint?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <div className="ui-field">
       <label htmlFor={id}>
         {label}
+        {required && (
+          <span className="ui-required" aria-hidden="true">
+            {" "}
+            *
+          </span>
+        )}
         {optional && <span className="muted"> (optional)</span>}
       </label>
       {children}
+      {hint && (
+        <p id={`${id}-hint`} className="ui-field-hint muted">
+          {hint}
+        </p>
+      )}
       {error && (
         <p id={`${id}-error`} className="ui-field-error">
           {error}
         </p>
       )}
     </div>
+  );
+}
+
+export function SectionPanel({
+  title,
+  icon,
+  children,
+  className = "",
+  note,
+}: {
+  title: string;
+  icon?: ReactNode;
+  children: ReactNode;
+  className?: string;
+  note?: ReactNode;
+}) {
+  return (
+    <section className={`ui-section-panel ${className}`}>
+      <div className="ui-section-heading">
+        <h2>
+          {icon}
+          {title}
+        </h2>
+        {note && <span className="muted">{note}</span>}
+      </div>
+      {children}
+    </section>
   );
 }
 

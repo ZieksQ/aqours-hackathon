@@ -15,6 +15,7 @@ import {
   FiLogOut,
   FiUsers,
   FiSearch,
+  FiDroplet,
 } from "react-icons/fi";
 import { Brand } from "./shared/Brand";
 import { FormError } from "./shared/FormError";
@@ -44,6 +45,8 @@ import {
 import { Reports } from "./features/reports/Reports";
 import { Accounts } from "./features/accounts/Accounts";
 import { Dashboard } from "./features/dashboard/Dashboard";
+import { SupplySites } from "./features/supply-sites/SupplySites";
+import { readSite } from "./features/supply-sites/api";
 
 function Portal({ account }: { account: Account }) {
   const [menu, setMenu] = useState(false);
@@ -52,6 +55,16 @@ function Portal({ account }: { account: Account }) {
   const closeMenu = useCallback(() => setMenu(false), []);
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const siteId = pathname.match(
+    /^\/supply-sites\/([0-9a-f-]{36})(?:\/edit)?$/i,
+  )?.[1];
+  const breadcrumbSite = useQuery({
+    queryKey: ["supply-site", siteId ?? ""],
+    queryFn: () => readSite(siteId!),
+    enabled:
+      !!siteId && account.role === "Admin" && !account.requiresPasswordChange,
+    retry: false,
+  });
   useEffect(() => {
     document.getElementById("content")?.scrollTo({ top: 0 });
     if (profile.current) profile.current.open = false;
@@ -77,17 +90,23 @@ function Portal({ account }: { account: Account }) {
       document.removeEventListener("keydown", dismiss);
     };
   }, []);
-  const page = pathname.startsWith("/reports/")
-    ? "Ticket workspace"
-    : pathname.startsWith("/reports")
-      ? "Reports"
-      : pathname === "/accounts/new"
-        ? "Create account"
-        : pathname === "/accounts"
-          ? "Accounts"
-          : pathname === "/change-password"
-            ? "Change password"
-            : "Dashboard";
+  const page = pathname.startsWith("/supply-sites")
+    ? pathname === "/supply-sites/new"
+      ? "Add supply site"
+      : pathname.endsWith("/edit")
+        ? "Edit supply site"
+        : "Supply sites"
+    : pathname.startsWith("/reports/")
+      ? "Ticket workspace"
+      : pathname.startsWith("/reports")
+        ? "Reports"
+        : pathname === "/accounts/new"
+          ? "Create account"
+          : pathname === "/accounts"
+            ? "Accounts"
+            : pathname === "/change-password"
+              ? "Change password"
+              : "Dashboard";
   const logout = useMutation({
     mutationFn: () => api("/auth/web/logout", {}),
     onSuccess: async () => {
@@ -117,16 +136,36 @@ function Portal({ account }: { account: Account }) {
             <nav aria-label="Breadcrumb" className="portal-breadcrumb">
               <Link
                 to={
-                  pathname.startsWith("/accounts") ? "/accounts" : "/dashboard"
+                  pathname.startsWith("/supply-sites")
+                    ? "/dashboard"
+                    : pathname.startsWith("/accounts")
+                      ? "/accounts"
+                      : "/dashboard"
                 }
               >
-                {pathname.startsWith("/accounts")
-                  ? "Accounts"
-                  : pathname.startsWith("/reports")
-                    ? "Aqours"
-                    : "Supplier portal"}
+                {pathname.startsWith("/supply-sites")
+                  ? "Aqours"
+                  : pathname.startsWith("/accounts")
+                    ? "Accounts"
+                    : pathname.startsWith("/reports")
+                      ? "Aqours"
+                      : "Supplier portal"}
               </Link>
               <span aria-hidden="true">/</span>
+              {pathname.startsWith("/supply-sites/") && (
+                <>
+                  <Link to="/supply-sites">Supply sites</Link>
+                  <span aria-hidden="true">/</span>
+                </>
+              )}
+              {siteId && pathname.endsWith("/edit") && (
+                <>
+                  <Link to={`/supply-sites/${siteId}`}>
+                    {breadcrumbSite.data?.name ?? "Site details"}
+                  </Link>
+                  <span aria-hidden="true">/</span>
+                </>
+              )}
               {pathname.startsWith("/reports/") && (
                 <>
                   <Link to="/reports">Reports</Link>
@@ -136,7 +175,9 @@ function Portal({ account }: { account: Account }) {
               <span aria-current="page">
                 {pathname.startsWith("/reports/")
                   ? pathname.split("/").at(-1)?.slice(0, 12)
-                  : page}
+                  : siteId && !pathname.endsWith("/edit")
+                    ? (breadcrumbSite.data?.name ?? "Site details")
+                    : page}
               </span>
             </nav>
           }
@@ -242,6 +283,17 @@ function Portal({ account }: { account: Account }) {
               </NavLink>
               {account.role === "Admin" && (
                 <NavLink
+                  to="/supply-sites"
+                  onClick={closeMenu}
+                  aria-label="Supply sites"
+                  title={collapsed ? "Supply sites" : undefined}
+                >
+                  <FiDroplet aria-hidden="true" />
+                  <span className="ui-nav-label">Supply sites</span>
+                </NavLink>
+              )}
+              {account.role === "Admin" && (
+                <NavLink
                   to="/accounts"
                   onClick={closeMenu}
                   aria-label="Accounts"
@@ -336,6 +388,20 @@ function SessionRoutes() {
       <Route element={<Portal account={account} />}>
         <Route path="/reports/*" element={<Reports account={account} />} />
         <Route path="/dashboard" element={<Dashboard account={account} />} />
+        <Route
+          path="/supply-sites/*"
+          element={
+            account.role === "Admin" ? (
+              <SupplySites />
+            ) : (
+              <section>
+                <PageHeader title="Access denied" />
+                <p>Only administrators can manage supply sites.</p>
+                <Link to="/dashboard">Return to dashboard</Link>
+              </section>
+            )
+          }
+        />
         <Route
           path="/change-password"
           element={<ChangePassword required={account.requiresPasswordChange} />}

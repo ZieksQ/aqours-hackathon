@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The API provides Admin-only create, list, read, and full-update operations for supplier supply-site records. It is API support for the MVP's site management workflow; this feature does not add a web or mobile management screen.
+The API provides Admin-only create, list, read, and full-update operations for supplier supply-site records. The supplier web portal implements the Admin directory, create, detail, and edit screens; mobile management remains deferred.
 
 Supplier sites have a persistent GUID, trimmed name, resolved Philippine address, latitude and longitude, and UTC creation and update timestamps. Names are limited to 200 characters. Duplicate names are allowed. The complete address is selected from canonical PSGC codes and includes required trimmed street or landmark details up to 500 characters. The API resolves and snapshots canonical administrative names. Latitude and longitude must be finite numbers in the inclusive ranges -90 to 90 and -180 to 180. Coordinates are submitted independently: the API does not infer them from an address or check that they fall within the selected administrative area.
 
@@ -10,12 +10,12 @@ Supplier sites have a persistent GUID, trimmed name, resolved Philippine address
 
 All routes use the cookie-authenticated Admin policy, which requires a fully onboarded Admin web session. Anonymous requests and Customer bearer sessions receive `401`; Staff web sessions and password-change-restricted Admin sessions receive `403`. JSON uses camelCase and responses are not cacheable under the existing API policy.
 
-| Method and route | Request | Result |
-| --- | --- | --- |
-| `GET /api/admin/supply-sites?page={page}&pageSize={pageSize}` | Optional query values; defaults are page `1`, pageSize `20` | `200` page response |
-| `GET /api/admin/supply-sites/{id}` | GUID | `200` site response or `404` |
-| `POST /api/admin/supply-sites` | Complete site body | `201` site response and `Location: /api/admin/supply-sites/{id}` |
-| `PUT /api/admin/supply-sites/{id}` | Complete replacement site body | `200` updated response or `404` |
+| Method and route                                              | Request                                                     | Result                                                           |
+| ------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------- |
+| `GET /api/admin/supply-sites?page={page}&pageSize={pageSize}` | Optional query values; defaults are page `1`, pageSize `20` | `200` page response                                              |
+| `GET /api/admin/supply-sites/{id}`                            | GUID                                                        | `200` site response or `404`                                     |
+| `POST /api/admin/supply-sites`                                | Complete site body                                          | `201` site response and `Location: /api/admin/supply-sites/{id}` |
+| `PUT /api/admin/supply-sites/{id}`                            | Complete replacement site body                              | `200` updated response or `404`                                  |
 
 The list sorts by name and then ID for a stable order. `page` must be a positive integer. `pageSize` must be an integer from 1 to 100. Invalid query values return `400` validation problems. An out-of-range page returns an empty `items` array with the requested page metadata. The page response is `{ items, page, pageSize, totalCount }`.
 
@@ -67,6 +67,14 @@ Validation failures return `400` with field-keyed validation problems, including
 
 PUT replaces the name, resolved address, and coordinates together. It preserves the record ID and `createdAt`, and sets `updatedAt` to the current UTC time. The last successful write wins; there is no concurrency token or edit conflict response.
 
+## Supplier web frontend
+
+Admin-only routes are `/supply-sites`, `/supply-sites/new`, `/supply-sites/:id`, and `/supply-sites/:id/edit`. The directory uses the API's fixed ordering, page/total metadata, and page sizes 20, 50, or 100; there are no search, filter, delete, or archive controls. Shared controls, panels, tables, and paging come from `@aqours/ui`.
+
+Forms load the canonical PSGC hierarchy on demand, clear descendant selections when an ancestor changes, and handle independent cities, NCR, and sub-municipalities. Region, applicable hierarchy levels, barangay, name, and street/landmark are required. Site location is selected separately by clicking or dragging a Leaflet map pin, or panning with the keyboard and placing the pin at the map center. No numeric location values are displayed. Geoapify requires `VITE_GEOAPIFY_API_KEY` in the web environment; tiles show provider attribution, loading feedback, and failure/retry states. Pin placement does not geocode or validate the address.
+
+Create and complete-replacement update requests include CSRF protection. Validation links focus the matching field; recoverable failures retain the draft, repeated saves are disabled, and dirty cancellation confirms discard. Success opens the updated detail record with confirmation. Session expiry returns to sign-in; forbidden, unavailable-record, and load failures remain explicit. Detail timestamps always use Asia/Manila (PHT).
+
 ## Architecture and persistence
 
 The Domain owns `SupplySite` and its invariants. Application owns the use case, validation, and `ISupplySiteStore`/PSGC resolution interfaces. Infrastructure implements the PostgreSQL store and resolves PSGC codes from the shared `packages/psgc` dataset. API owns the request/response DTOs, routes, Admin policy, CSRF filter, and HTTP result mapping. Shared location types and PSGC resolution are used by both reports and sites; the existing Customer report HTTP and database JSON contracts are preserved.
@@ -80,9 +88,9 @@ dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup
 
 ## Deferred
 
-- Web or mobile site management screens.
+- Mobile site management screens.
 - Supplier organization ownership, site deletion or archiving, and site-to-report/service-area relationships.
-- Supply status monitoring, site maps, weather warnings, geocoding, or deriving coordinates from an address.
+- Supply status monitoring, Customer site maps, operational map directories, weather warnings, geocoding, or deriving coordinates from an address.
 
 ## Verification
 
