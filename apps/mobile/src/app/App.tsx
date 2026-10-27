@@ -21,7 +21,7 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { LoginScreen } from "../features/accounts/LoginScreen";
-import { HomeScreen } from "../features/home/HomeScreen";
+import { CustomerApp } from "./CustomerApp";
 import { previewAccount } from "../features/home/preview";
 import { ApiClient, ApiError } from "../shared/api";
 import { colors } from "../shared/theme";
@@ -102,7 +102,8 @@ export default function App() {
             </View>
           ) : preview ||
             (session && !session.account.requiresPasswordChange) ? (
-            <HomeScreen
+            <CustomerApp
+              key={preview ? "preview" : session!.account.id}
               api={api}
               account={preview ? previewAccount : session!.account}
               preview={preview}

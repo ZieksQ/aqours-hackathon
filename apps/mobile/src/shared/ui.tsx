@@ -44,12 +44,14 @@ export function Button({
   label,
   onPress,
   loading,
+  disabled = false,
   secondary = false,
   icon,
 }: {
   label: string;
   onPress: () => void;
   loading?: boolean;
+  disabled?: boolean;
   secondary?: boolean;
   icon?: ComponentProps<typeof Feather>["name"];
 }) {
@@ -57,14 +59,14 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled: loading, busy: loading }}
-      disabled={loading}
+      accessibilityState={{ disabled: loading || disabled, busy: loading }}
+      disabled={loading || disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         secondary && styles.secondary,
         pressed && styles.pressed,
-        loading && styles.disabled,
+        (loading || disabled) && styles.disabled,
       ]}
     >
       {loading ? (
@@ -90,7 +92,17 @@ export function Button({
 export const Field = forwardRef<
   TextInput,
   ComponentProps<typeof TextInput> & { label: string; password?: boolean }
->(function Field({ label, password = false, style, ...props }, ref) {
+>(function Field(
+  {
+    label,
+    password = false,
+    style,
+    autoCapitalize = "none",
+    autoCorrect = false,
+    ...props
+  },
+  ref,
+) {
   const [revealed, setRevealed] = useState(false);
   const [focused, setFocused] = useState(false);
   return (
@@ -105,8 +117,8 @@ export const Field = forwardRef<
           accessibilityLabel={label}
           accessibilityLabelledBy={`${props.nativeID}-label`}
           placeholderTextColor={colors.muted}
-          autoCapitalize="none"
-          autoCorrect={false}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
           secureTextEntry={password && !revealed}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}

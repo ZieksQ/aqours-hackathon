@@ -15,15 +15,27 @@ export type Session = {
   refreshTokenExpiresAt: string | null;
 };
 
+export type ReportAddress = {
+  regionCode: string;
+  regionName: string;
+  provinceCode: string | null;
+  provinceName: string | null;
+  cityMunicipalityCode: string;
+  cityMunicipalityName: string;
+  subMunicipalityCode: string | null;
+  subMunicipalityName: string | null;
+  barangayCode: string;
+  barangayName: string;
+  details: string;
+};
+
 export type Report = {
   id: string;
   issueType: "NoWater" | "LowPressure" | "DirtyWater";
   description: string;
-  address: {
-    cityMunicipalityName: string;
-    barangayName: string;
-    details: string;
-  };
+  address: ReportAddress;
+  latitude: number;
+  longitude: number;
   status: "Submitted" | "InProgress" | "Resolved";
   createdAt: string;
 };
@@ -38,9 +50,15 @@ export type Message = {
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  errors: Record<string, string[]>;
+  constructor(
+    message: string,
+    status: number,
+    errors: Record<string, string[]> = {},
+  ) {
     super(message);
     this.status = status;
+    this.errors = errors;
   }
 }
 
@@ -206,6 +224,7 @@ export class ApiClient {
                 problem?.detail ||
                 "This request could not be completed. Please try again.",
         response.status,
+        problem?.errors,
       );
     }
     return response.status === 204

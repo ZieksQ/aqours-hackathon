@@ -46,7 +46,7 @@ This tree describes the intended structure; create application projects and pack
 | Weather forecasting | Open-Meteo free forecast API |
 | Client server-data fetching, caching, and refreshing | TanStack Query |
 
-React Leaflet is for the web application. Select any mobile mapping library separately, ensure it supports Expo Go, and obtain approval before adding it. Check mobile behavior on a real phone, including connectivity to the development API.
+React Leaflet is for the web application. Mobile report location selection uses the approved Expo-compatible `react-native-maps` with platform map providers and `expo-location` for optional, single foreground GPS reads. Obtain approval before adding other mobile mapping dependencies. Check mobile behavior on a real phone, including connectivity to the development API.
 
 Use ASP.NET Core Identity for account and password management; do not implement custom password hashing or credential storage. Backend authorization remains mandatory regardless of client-side route or screen restrictions.
 
@@ -62,7 +62,7 @@ The API exposes a process health endpoint at `/health`; it does not report Postg
 
 Tailwind CSS is installed in the web workspace through `tailwindcss` and `@tailwindcss/vite`. Register the plugin in `apps/web/vite.config.ts` and import `tailwindcss` from `apps/web/src/index.css`, following the [official Vite integration](https://tailwindcss.com/docs/installation/using-vite). Use Tailwind utilities for web styling; no separate PostCSS setup or Tailwind configuration file is needed for this initial integration.
 
-The web app includes supplier authentication screens, a dashboard shell, and the implemented Staff report queue and ticket workspace, using React Router and TanStack Query. Shared browser primitives belong in `packages/ui` and are consumed through its public exports; see that package's README for the available components. Customer reporting and messaging have API support; `apps/mobile` implements native Customer login, required password onboarding, and Home with the latest owned report and supplier response using TanStack Query. Mobile sessions remain in memory, with serialized refresh rotation and explicit logout. Mobile submission/history, supply and weather workflows, and maps remain deferred. See `README.md` and `apps/mobile/README.md` for setup and verification commands.
+The web app includes supplier authentication screens, a dashboard shell, and the implemented Staff report queue and ticket workspace, using React Router and TanStack Query. Shared browser primitives belong in `packages/ui` and are consumed through its public exports; see that package's README for the available components. Customer reporting and messaging have API support; `apps/mobile` implements native Customer login, required password onboarding, Home with the latest owned report and supplier response, report submission with canonical PSGC selectors and map/GPS/coordinate location selection, paginated report history, and report details with supplier conversations using TanStack Query. Mobile sessions remain in memory, with serialized refresh rotation and explicit logout. Mobile reporting polls Home/open details while active and supports pull-to-refresh; replies are limited to InProgress reports. Supplier-site maps, supply and weather workflows, an Updates inbox, and full Profile remain deferred. See `README.md` and `apps/mobile/README.md` for setup and verification commands.
 
 ## 3. API: Clean Architecture with feature organization
 
