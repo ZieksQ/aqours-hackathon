@@ -44,6 +44,6 @@ export function validateReport(draft: ReportDraft, barangaySelected: boolean) {
     errors.details = "Keep the address within 500 characters.";
   if (!validCoordinates(draft.coordinates))
     errors.coordinates =
-      "Choose the problem location on the map or enter valid coordinates.";
+      "Choose the problem location on the map or use your current location.";
   return errors;
 }

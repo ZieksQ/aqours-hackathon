@@ -1,24 +1,13 @@
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../../shared/theme";
-import { Button, Field, Icon, Notice, Text } from "../../shared/ui";
-import { validCoordinates, type Coordinates } from "./form";
+import { Button, Icon, Notice, Text } from "../../shared/ui";
+import type { Coordinates } from "./form";
+import { LeafletMap } from "./LeafletMap";
 import { reportStyles as s } from "./styles";
 
-const philippines = {
-  latitude: 12.5,
-  longitude: 122,
-  latitudeDelta: 13,
-  longitudeDelta: 13,
-};
-function regionFor(value: Coordinates | null) {
-  return value
-    ? { ...value, latitudeDelta: 0.008, longitudeDelta: 0.008 }
-    : philippines;
-}
 export function LocationPicker({
   value,
   onChange,
@@ -32,9 +21,7 @@ export function LocationPicker({
   const [candidate, setCandidate] = useState(value);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState("");
-  const [manual, setManual] = useState(false);
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const [pinMapReady, setPinMapReady] = useState(false);
   const mounted = useRef(true);
   const operation = useRef(0);
   useEffect(() => {
@@ -54,7 +41,7 @@ export function LocationPicker({
       if (!mounted.current || operation.current !== current) return;
       if (!permission.granted) {
         setError(
-          "Location access is optional. Place a pin manually or enter coordinates below.",
+          "Location access is optional. Place a pin manually on the map instead.",
         );
         return;
       }
@@ -86,6 +73,7 @@ export function LocationPicker({
     setLocating(false);
     setError("");
     setCandidate(value);
+    setPinMapReady(false);
     setOpen(true);
   }
   return (
@@ -104,26 +92,8 @@ export function LocationPicker({
         onPress={placeManually}
         style={styles.mapFrame}
       >
-        <View pointerEvents="none" style={styles.map}>
-          <MapView
-            key={value ? `${value.latitude},${value.longitude}` : "unselected"}
-            style={StyleSheet.absoluteFill}
-            initialRegion={regionFor(value)}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}
-            pitchEnabled={false}
-            toolbarEnabled={false}
-            showsPointsOfInterests={false}
-          >
-            {value && (
-              <Marker
-                coordinate={value}
-                pinColor={colors.primary}
-                title="Report location"
-              />
-            )}
-          </MapView>
+        <View style={styles.map}>
+          <LeafletMap coordinates={value} />
         </View>
         <View style={styles.caption}>
           <Icon name="map-pin" size={16} />
@@ -155,70 +125,8 @@ export function LocationPicker({
         Choose where the problem is. It can be different from your current
         location. Location access is optional.
       </Text>
-      {value && (
-        <Text selectable style={s.small}>
-          Selected: {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
-        </Text>
-      )}
+      {value && <Text style={s.small}>Problem location selected.</Text>}
       {error ? <Notice>{error}</Notice> : null}
-      <Button
-        label={manual ? "Hide coordinate entry" : "Enter coordinates instead"}
-        secondary
-        disabled={disabled}
-        onPress={() => {
-          setManual(!manual);
-          setLatitude(value?.latitude.toString() ?? "");
-          setLongitude(value?.longitude.toString() ?? "");
-        }}
-      />
-      {manual && (
-        <View style={s.section}>
-          <Field
-            nativeID="latitude"
-            label="Latitude (−90 to 90)"
-            keyboardType="numbers-and-punctuation"
-            value={latitude}
-            onChangeText={setLatitude}
-            editable={!disabled}
-            placeholder="e.g. 14.6760"
-          />
-          <Field
-            nativeID="longitude"
-            label="Longitude (−180 to 180)"
-            keyboardType="numbers-and-punctuation"
-            value={longitude}
-            onChangeText={setLongitude}
-            editable={!disabled}
-            placeholder="e.g. 121.0437"
-          />
-          <Button
-            label="Use these coordinates"
-            secondary
-            disabled={disabled}
-            onPress={() => {
-              const point = {
-                latitude: Number(latitude.trim()),
-                longitude: Number(longitude.trim()),
-              };
-              if (
-                !latitude.trim() ||
-                !longitude.trim() ||
-                !validCoordinates(point)
-              ) {
-                setError(
-                  "Enter a valid latitude (−90 to 90) and longitude (−180 to 180).",
-                );
-                return;
-              }
-              operation.current++;
-              setLocating(false);
-              setError("");
-              onChange(point);
-              setManual(false);
-            }}
-          />
-        </View>
-      )}
       <Modal
         visible={open}
         animationType="slide"
@@ -236,38 +144,27 @@ export function LocationPicker({
             <Button label="Cancel" secondary onPress={() => setOpen(false)} />
           </View>
           {open && (
-            <MapView
-              style={styles.fullMap}
-              initialRegion={regionFor(value)}
-              onPress={(event) => setCandidate(event.nativeEvent.coordinate)}
-              showsPointsOfInterests={false}
-              toolbarEnabled={false}
-            >
-              {candidate && (
-                <Marker
-                  coordinate={candidate}
-                  draggable
-                  pinColor={colors.primary}
-                  title="Report location"
-                  onDragEnd={(event) =>
-                    setCandidate(event.nativeEvent.coordinate)
-                  }
-                />
-              )}
-            </MapView>
+            <View style={styles.fullMap}>
+              <LeafletMap
+                coordinates={value}
+                interactive
+                onSelect={setCandidate}
+                onReadyChange={setPinMapReady}
+              />
+            </View>
           )}
           <View style={styles.modalHeader}>
             <Text style={s.small}>
               {candidate
-                ? `${candidate.latitude.toFixed(6)}, ${candidate.longitude.toFixed(6)}`
+                ? "Pin selected. Confirm this is where the problem is."
                 : "Tap the map to place a pin."}
             </Text>
             <Button
               label="Use this location"
               icon="check"
-              disabled={!candidate}
+              disabled={!candidate || !pinMapReady}
               onPress={() => {
-                if (candidate) {
+                if (candidate && pinMapReady) {
                   onChange(candidate);
                   setOpen(false);
                 }

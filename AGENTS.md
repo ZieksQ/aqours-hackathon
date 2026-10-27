@@ -16,7 +16,7 @@ The repository contains the .NET API layer projects, a React web app with suppli
 - Database: PostgreSQL 18.6 using the locally installed `postgres:18.6-alpine3.23` Docker image. Keep persistence implementations in Infrastructure; EF Core with Npgsql, Identity persistence, snake_case naming, and the initial authentication migration are configured. Apply migrations explicitly; API startup does not modify the schema.
 - Maps and weather: React Leaflet with Geoapify tiles on the web; Open-Meteo behind the API.
 - Tooling: pnpm workspace for JavaScript, NuGet/.NET CLI for .NET, Docker Compose for the local database, and root `concurrently` for running the API and web app together. See `README.md` for startup commands.
-- Mobile: React Native with Expo Go; Customer login, Home, reporting with approved `react-native-maps`/`expo-location`, owned-report history, and supplier conversations live in `apps/mobile`; other feature screens remain deferred. Test by connecting Expo Go on a real mobile phone to the development server. Do not create APKs, native builds, or use emulators/simulators for mobile testing.
+- Mobile: React Native with Expo Go; Customer login, Home, reporting with approved Leaflet/Geoapify in `react-native-webview` and `expo-location`, owned-report history, and supplier conversations live in `apps/mobile`; other feature screens remain deferred. Test by connecting Expo Go on a real mobile phone to the development server. Do not create APKs, native builds, or use emulators/simulators for mobile testing.
 
 ## Important documentation
 
