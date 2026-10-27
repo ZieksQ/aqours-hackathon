@@ -1,0 +1,475 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Supply sites — Empty directory | Aqours Portal</title>
+    <!-- Google Fonts: IBM Plex Sans -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind Config verbatum -->
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-error": "#ffffff",
+              "inverse-primary": "#c6c6c7",
+              surface: "#f7faf9",
+              "primary-container": "#1d1f20",
+              "on-secondary": "#ffffff",
+              "inverse-surface": "#2d3131",
+              "surface-container-highest": "#e0e3e2",
+              "surface-container-high": "#e6e9e8",
+              "primary-fixed-dim": "#c6c6c7",
+              "on-tertiary-container": "#8d8583",
+              "secondary-fixed": "#b2ebff",
+              "on-secondary-fixed-variant": "#004e5e",
+              "on-tertiary-fixed-variant": "#4c4544",
+              primary: "#050607",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#eef1f0",
+              "on-surface-variant": "#444749",
+              "on-primary": "#ffffff",
+              "primary-fixed": "#e2e2e3",
+              "surface-bright": "#f7faf9",
+              "error-container": "#ffdad6",
+              "secondary-container": "#a1e7fe",
+              "on-background": "#181c1c",
+              outline: "#747779",
+              "surface-dim": "#d7dbda",
+              background: "#f7faf9",
+              "on-secondary-fixed": "#001f27",
+              tertiary: "#090605",
+              "surface-container-low": "#f1f4f3",
+              "surface-tint": "#5d5e60",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed": "#1a1c1d",
+              "on-primary-container": "#858688",
+              "on-primary-fixed-variant": "#454748",
+              error: "#ba1a1a",
+              "on-tertiary-fixed": "#1f1a19",
+              secondary: "#12677b",
+              "on-surface": "#181c1c",
+              "on-secondary-container": "#17697d",
+              "surface-variant": "#e0e3e2",
+              "surface-container": "#ebeeed",
+              "tertiary-fixed": "#ebe0de",
+              "secondary-fixed-dim": "#8ad1e7",
+              "on-tertiary": "#ffffff",
+              "tertiary-container": "#231e1d",
+              "tertiary-fixed-dim": "#cec4c2",
+              "outline-variant": "#c4c7c9",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-xs": "0.25rem",
+              "space-lg": "1.25rem",
+              "margin-panel": "1.5rem",
+              "gutter-dense": "0.5rem",
+              gutter: "1rem",
+              "space-base": "1rem",
+              "space-2xl": "2rem",
+              "space-xl": "1.5rem",
+              "space-2xs": "0.125rem",
+              margin: "1rem",
+              "space-sm": "0.5rem",
+              "space-md": "0.75rem",
+            },
+            fontFamily: {
+              "body-default": ["IBM Plex Sans"],
+              "display-kpi": ["IBM Plex Sans"],
+              "headline-page": ["IBM Plex Sans"],
+              "body-medium": ["IBM Plex Sans"],
+              "headline-section": ["IBM Plex Sans"],
+              metadata: ["IBM Plex Sans"],
+              "kpi-compact": ["IBM Plex Sans"],
+              "table-header": ["IBM Plex Sans"],
+              subhead: ["IBM Plex Sans"],
+              "label-default": ["IBM Plex Sans"],
+              "badge-caption": ["IBM Plex Sans"],
+            },
+            fontSize: {
+              "body-default": [
+                "14px",
+                {
+                  lineHeight: "20px",
+                  fontWeight: "400",
+                },
+              ],
+              "display-kpi": [
+                "32px",
+                {
+                  lineHeight: "38px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-page": [
+                "24px",
+                {
+                  lineHeight: "30px",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-medium": [
+                "14px",
+                {
+                  lineHeight: "20px",
+                  fontWeight: "500",
+                },
+              ],
+              "headline-section": [
+                "18px",
+                {
+                  lineHeight: "24px",
+                  letterSpacing: "-0.005em",
+                  fontWeight: "600",
+                },
+              ],
+              metadata: [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  fontWeight: "400",
+                },
+              ],
+              "kpi-compact": [
+                "28px",
+                {
+                  lineHeight: "34px",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "table-header": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.04em",
+                  fontWeight: "600",
+                },
+              ],
+              subhead: [
+                "15px",
+                {
+                  lineHeight: "20px",
+                  fontWeight: "500",
+                },
+              ],
+              "label-default": [
+                "13px",
+                {
+                  lineHeight: "16px",
+                  fontWeight: "500",
+                },
+              ],
+              "badge-caption": [
+                "11px",
+                {
+                  lineHeight: "14px",
+                  letterSpacing: "0.02em",
+                  fontWeight: "600",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 20;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 1;
+      }
+      body {
+        background-color: #f7faf9;
+        color: #181c1c;
+        font-family: "IBM Plex Sans", sans-serif;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+    </style>
+  </head>
+  <body class="bg-surface text-on-surface antialiased min-h-screen">
+    <!-- ========================================================================= -->
+    <!-- SIDE NAVIGATION RAIL (Shared Component JSON anchor)                        -->
+    <!-- Fixed: 232px width, border-r border-outline-variant                        -->
+    <!-- ========================================================================= -->
+    <aside
+      class="fixed top-0 left-0 h-screen w-[232px] bg-surface border-r border-outline-variant z-30 select-none"
+    >
+      <div class="flex flex-col h-full justify-between py-space-base">
+        <!-- Top Rail Cluster -->
+        <div class="flex flex-col">
+          <!-- Logo & Header Identity -->
+          <div class="px-space-base mb-space-lg">
+            <div class="flex items-center gap-space-sm mb-space-2xs">
+              <span
+                class="material-symbols-outlined text-secondary text-[22px]"
+                data-icon="water_drop"
+                >water_drop</span
+              >
+              <span
+                class="text-headline-section font-headline-section font-semibold text-primary tracking-tight"
+                >Aqours Portal</span
+              >
+            </div>
+            <p class="text-metadata font-metadata text-on-surface-variant pl-7">
+              Utility Administration
+            </p>
+          </div>
+          <!-- Primary Navigation Tabs (JSON: Dashboard, Reports, Supply Sites, Accounts) -->
+          <nav class="flex flex-col space-y-0.5">
+            <!-- Dashboard (Inactive) -->
+            <a
+              class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low font-body-default text-body-default transition-colors duration-150"
+              href="#"
+            >
+              <span
+                class="material-symbols-outlined text-[18px]"
+                data-icon="dashboard"
+                >dashboard</span
+              >
+              <span>Dashboard</span>
+            </a>
+            <!-- Reports (Inactive) -->
+            <a
+              class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low font-body-default text-body-default transition-colors duration-150"
+              href="#"
+            >
+              <span
+                class="material-symbols-outlined text-[18px]"
+                data-icon="assessment"
+                >assessment</span
+              >
+              <span>Reports</span>
+            </a>
+            <!-- Supply Sites (ACTIVE per Screen 6 intent) -->
+            <!-- JSON style_active_navigation mapping -->
+            <a
+              class="flex items-center gap-space-sm px-space-base py-space-sm bg-surface-container text-primary font-body-medium text-body-medium"
+              href="#"
+              ><span
+                class="material-symbols-outlined text-[18px]"
+                data-icon="water_drop"
+                >water_drop</span
+              ><span>Supply sites</span></a
+            >
+            <!-- Accounts (Inactive) -->
+            <a
+              class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low font-body-default text-body-default transition-colors duration-150"
+              href="#"
+            >
+              <span
+                class="material-symbols-outlined text-[18px]"
+                data-icon="manage_accounts"
+                >manage_accounts</span
+              >
+              <span>Accounts</span>
+            </a>
+          </nav>
+        </div>
+        <!-- Rail Footer Section (JSON: System Settings, Support Documentation) -->
+      </div>
+    </aside>
+    <!-- ========================================================================= -->
+    <!-- TOP NAVIGATION BAR (Shared Component JSON anchor)                         -->
+    <!-- Fixed: left-[232px], height 56px, border-b border-outline-variant         -->
+    <!-- ========================================================================= -->
+    <header
+      class="fixed top-0 right-0 left-[232px] h-[56px] bg-surface border-b border-outline-variant z-20 select-none"
+    >
+      <div
+        class="flex justify-between items-center h-[56px] px-margin-panel w-full"
+      >
+        <div
+          class="flex items-center gap-1.5 text-metadata font-metadata text-on-surface-variant"
+        >
+          <a class="hover:text-primary transition-colors" href="#">Aqours</a
+          ><span class="text-outline-variant">/</span
+          ><span class="text-primary font-medium">Supply sites</span>
+        </div>
+        <div class="flex items-center gap-space-sm">
+          <img
+            alt="Elena Cruz"
+            class="w-7 h-7 rounded-full object-cover border border-outline-variant"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPHJ3bOItS_g-nULVN8Td7oRzgjf2G39aP1_wd4IH7yVY_wuE949HxO8Luyu9JPUGkKTAz61fQoWSotIShwTaMvoj8XqVUdjmzGKTlE6_eqUiXFcCzKmCOvEi1TI5ULRwxxMijhIUCxgRiacXCiSVwZEe9qopfgMV4OotpTiSZqaAchoSI3CjUYJndYjwNF7pbSj68mgOoNCaU6bcwIdERrGtjT4qaN5HDR87tlaafTeQVq8LQoYvFj0_OybwXbkDccgCH0PMblZU"
+          />
+          <div class="flex flex-col text-left">
+            <span
+              class="text-label-default font-label-default text-primary leading-none"
+              >Elena Cruz</span
+            ><span
+              class="text-metadata font-metadata text-on-surface-variant leading-tight"
+              >Admin</span
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- ========================================================================= -->
+    <!-- MAIN CONTENT CANVAS (Offset for 232px sidebar & 56px top bar)              -->
+    <!-- The Inset Working Sheet Architecture                                       -->
+    <!-- ========================================================================= -->
+    <main
+      class="ml-[232px] pt-[56px] min-h-screen bg-surface p-margin-panel flex flex-col justify-start"
+    >
+      <!-- Breadcrumb & Scope Badge Header Row -->
+      <!-- Section Page Header & Primary Action Button -->
+      <div class="flex items-start justify-between pb-space-lg">
+        <div>
+          <div class="flex items-center gap-space-sm">
+            <h1
+              class="text-headline-page font-headline-page text-primary tracking-tight"
+            >
+              Supply sites
+            </h1>
+            <div
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-outline-variant bg-surface-container font-badge-caption text-badge-caption text-on-surface-variant tracking-wider uppercase"
+            >
+              <span class="w-1.5 h-1.5 rounded-full bg-outline"></span
+              ><span>Design preview · Sample records</span>
+            </div>
+          </div>
+          <p
+            class="text-body-default font-body-default text-on-surface-variant mt-0.5"
+          >
+            Manage recorded supplier facilities and addresses.
+          </p>
+        </div>
+        <div>
+          <button
+            class="inline-flex items-center justify-center gap-space-xs h-[36px] px-3.5 bg-primary-container hover:bg-[#2E3133] active:bg-[#0A0B0B] text-on-primary rounded font-label-default text-label-default transition-colors duration-150"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[16px]" data-icon="add"
+              >add</span
+            ><span>+ Add supply site</span>
+          </button>
+        </div>
+      </div>
+      <!-- ======================================================================= -->
+      <!-- THE INSET WORKING SHEET (Framed Sheet: pure white, 1px outline-variant) -->
+      <!-- Notice strict adherence: Zero search bars, zero filters, zero maps.     -->
+      <!-- ======================================================================= -->
+      <section
+        class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col overflow-hidden shadow-none"
+      >
+        <!-- Table Shell: Header Row -->
+        <!-- Height 38px, bg-surface (#f7faf9 / #F4F7F6), border-bottom hairline -->
+        <div
+          class="grid grid-cols-12 items-center h-[38px] px-margin-panel bg-surface border-b border-outline-variant text-table-header font-table-header text-on-surface-variant uppercase select-none"
+        >
+          <div class="col-span-4 text-left">Site name</div>
+          <div class="col-span-4 text-left">Address</div>
+          <div class="col-span-3 text-left">Last updated</div>
+          <div class="col-span-1 text-right">Actions</div>
+        </div>
+        <!-- Table Body: Clean, Quiet Empty State Container -->
+        <div
+          class="flex flex-col items-center justify-center py-20 px-margin-panel text-center min-h-[380px]"
+        >
+          <!-- Technical Empty State Container -->
+          <div class="max-w-[420px] flex flex-col items-center">
+            <h2
+              class="text-headline-section font-headline-section text-primary mb-space-xs"
+            >
+              No supply sites yet
+            </h2>
+            <p
+              class="text-body-default font-body-default text-on-surface-variant max-w-sm mb-space-lg leading-relaxed"
+            >
+              Get started by recording your first supplier facility location and
+              address.
+            </p>
+            <button
+              class="inline-flex items-center justify-center gap-space-xs h-[36px] px-4 bg-primary-container hover:bg-[#2E3133] active:bg-[#0A0B0B] text-on-primary rounded font-label-default text-label-default transition-colors duration-150"
+              type="button"
+            >
+              <span
+                class="material-symbols-outlined text-[16px]"
+                data-icon="add"
+                >add</span
+              ><span>+ Add supply site</span>
+            </button>
+          </div>
+        </div>
+        <!-- ===================================================================== -->
+        <!-- PAGINATION FOOTER: Strictly Honest First-Run State (0-0 of 0)         -->
+        <!-- ===================================================================== -->
+        <div
+          class="flex items-center justify-between h-[48px] px-margin-panel bg-surface-container-lowest border-t border-outline-variant text-metadata font-metadata text-on-surface-variant select-none"
+        >
+          <div class="flex items-center gap-space-base">
+            <span>Showing 0 of 0 supply sites</span>
+            <div class="h-3 w-px bg-outline-variant"></div>
+            <div
+              class="flex items-center gap-1.5 opacity-60 cursor-not-allowed"
+            >
+              <span>Rows per page:</span>
+              <div
+                class="flex items-center justify-between px-2 py-0.5 bg-surface border border-outline-variant rounded text-on-surface-variant font-medium"
+              >
+                <span>20</span
+                ><span
+                  class="material-symbols-outlined text-[14px] ml-1"
+                  data-icon="arrow_drop_down"
+                  >arrow_drop_down</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              class="px-2.5 py-1 text-outline-variant bg-surface border border-outline-variant rounded font-label-default text-[12px] opacity-50 cursor-not-allowed"
+              disabled=""
+              type="button"
+            >
+              &lt; Previous</button
+            ><span class="text-metadata font-metadata text-on-surface-variant"
+              >Page 1 of 1</span
+            ><button
+              class="px-2.5 py-1 text-outline-variant bg-surface border border-outline-variant rounded font-label-default text-[12px] opacity-50 cursor-not-allowed"
+              disabled=""
+              type="button"
+            >
+              Next &gt;
+            </button>
+          </div>
+        </div>
+      </section>
+      <!-- System Status & Ground Metadata Bar -->
+    </main>
+  </body>
+</html>

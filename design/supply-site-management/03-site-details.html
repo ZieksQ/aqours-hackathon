@@ -1,0 +1,714 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Aqours Supplier Portal - Supply Sites</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-error": "#ffffff",
+              "inverse-primary": "#c6c6c7",
+              surface: "#f7faf9",
+              "primary-container": "#1d1f20",
+              "on-secondary": "#ffffff",
+              "inverse-surface": "#2d3131",
+              "surface-container-highest": "#e0e3e2",
+              "surface-container-high": "#e6e9e8",
+              "primary-fixed-dim": "#c6c6c7",
+              "on-tertiary-container": "#8d8583",
+              "secondary-fixed": "#b2ebff",
+              "on-secondary-fixed-variant": "#004e5e",
+              "on-tertiary-fixed-variant": "#4c4544",
+              primary: "#050607",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#eef1f0",
+              "on-surface-variant": "#444749",
+              "on-primary": "#ffffff",
+              "primary-fixed": "#e2e2e3",
+              "surface-bright": "#f7faf9",
+              "error-container": "#ffdad6",
+              "secondary-container": "#a1e7fe",
+              "on-background": "#181c1c",
+              outline: "#747779",
+              "surface-dim": "#d7dbda",
+              background: "#f7faf9",
+              "on-secondary-fixed": "#001f27",
+              tertiary: "#090605",
+              "surface-container-low": "#f1f4f3",
+              "surface-tint": "#5d5e60",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed": "#1a1c1d",
+              "on-primary-container": "#858688",
+              "on-primary-fixed-variant": "#454748",
+              error: "#ba1a1a",
+              "on-tertiary-fixed": "#1f1a19",
+              secondary: "#12677b",
+              "on-surface": "#181c1c",
+              "on-secondary-container": "#17697d",
+              "surface-variant": "#e0e3e2",
+              "surface-container": "#ebeeed",
+              "tertiary-fixed": "#ebe0de",
+              "secondary-fixed-dim": "#8ad1e7",
+              "on-tertiary": "#ffffff",
+              "tertiary-container": "#231e1d",
+              "tertiary-fixed-dim": "#cec4c2",
+              "outline-variant": "#c4c7c9",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-xs": "0.25rem",
+              "space-lg": "1.25rem",
+              "margin-panel": "1.5rem",
+              "gutter-dense": "0.5rem",
+              gutter: "1rem",
+              "space-base": "1rem",
+              "space-2xl": "2rem",
+              "space-xl": "1.5rem",
+              "space-2xs": "0.125rem",
+              margin: "1rem",
+              "space-sm": "0.5rem",
+              "space-md": "0.75rem",
+            },
+            fontFamily: {
+              "body-default": ["IBM Plex Sans"],
+              "display-kpi": ["IBM Plex Sans"],
+              "headline-page": ["IBM Plex Sans"],
+              "body-medium": ["IBM Plex Sans"],
+              "headline-section": ["IBM Plex Sans"],
+              metadata: ["IBM Plex Sans"],
+              "kpi-compact": ["IBM Plex Sans"],
+              "table-header": ["IBM Plex Sans"],
+              subhead: ["IBM Plex Sans"],
+              "label-default": ["IBM Plex Sans"],
+              "badge-caption": ["IBM Plex Sans"],
+            },
+            fontSize: {
+              "body-default": [
+                "14px",
+                { lineHeight: "20px", fontWeight: "400" },
+              ],
+              "display-kpi": [
+                "32px",
+                {
+                  lineHeight: "38px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-page": [
+                "24px",
+                {
+                  lineHeight: "30px",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-medium": [
+                "14px",
+                { lineHeight: "20px", fontWeight: "500" },
+              ],
+              "headline-section": [
+                "18px",
+                {
+                  lineHeight: "24px",
+                  letterSpacing: "-0.005em",
+                  fontWeight: "600",
+                },
+              ],
+              metadata: ["12px", { lineHeight: "16px", fontWeight: "400" }],
+              "kpi-compact": [
+                "28px",
+                {
+                  lineHeight: "34px",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "table-header": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.04em",
+                  fontWeight: "600",
+                },
+              ],
+              subhead: ["15px", { lineHeight: "20px", fontWeight: "500" }],
+              "label-default": [
+                "13px",
+                { lineHeight: "16px", fontWeight: "500" },
+              ],
+              "badge-caption": [
+                "11px",
+                {
+                  lineHeight: "14px",
+                  letterSpacing: "0.02em",
+                  fontWeight: "600",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-background text-on-surface antialiased min-h-screen">
+    <!-- SideNavBar -->
+    <aside
+      class="fixed top-0 left-0 h-screen w-[232px] bg-surface dark:bg-inverse-surface border-r border-outline-variant dark:border-outline z-30"
+    >
+      <div class="flex flex-col h-full justify-between py-space-base">
+        <div class="flex flex-col">
+          <div class="px-space-base pb-space-lg">
+            <div class="flex items-center gap-space-sm mb-space-2xs">
+              <span
+                class="material-symbols-outlined text-secondary"
+                data-icon="water_drop"
+                >water_drop</span
+              ><span
+                class="text-headline-section font-headline-section font-semibold text-primary dark:text-inverse-primary tracking-tight"
+                >Aqours Portal</span
+              >
+            </div>
+            <p class="text-metadata font-metadata text-on-surface-variant">
+              Utility Administration
+            </p>
+          </div>
+          <nav class="flex flex-col space-y-space-2xs">
+            <a
+              class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant dark:text-inverse-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container font-body-default text-body-default transition-colors duration-150"
+              href="#"
+              ><span class="material-symbols-outlined" data-icon="dashboard"
+                >dashboard</span
+              ><span>Dashboard</span></a
+            ><a
+              class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant dark:text-inverse-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container font-body-default text-body-default transition-colors duration-150"
+              href="#"
+              ><span class="material-symbols-outlined" data-icon="assessment"
+                >assessment</span
+              ><span>Reports</span></a
+            ><a
+              class="flex items-center gap-space-sm px-space-base py-space-sm bg-surface-container dark:bg-surface-container-high text-secondary dark:text-secondary-fixed border-l-2 border-secondary font-body-medium text-body-medium"
+              href="#"
+              ><span
+                class="material-symbols-outlined"
+                data-icon="water_drop"
+                data-weight="fill"
+                style="font-variation-settings: &quot;FILL&quot; 1"
+                >water_drop</span
+              ><span>Supply Sites</span></a
+            ><a
+              class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant dark:text-inverse-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container font-body-default text-body-default transition-colors duration-150"
+              href="#"
+              ><span
+                class="material-symbols-outlined"
+                data-icon="manage_accounts"
+                >manage_accounts</span
+              ><span>Accounts</span></a
+            >
+          </nav>
+        </div>
+      </div>
+    </aside>
+    <!-- TopNavBar -->
+    <header
+      class="fixed top-0 right-0 left-[232px] h-[56px] bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline z-20"
+    >
+      <div
+        class="flex justify-between items-center h-[56px] px-margin-panel w-full"
+      >
+        <nav
+          class="flex items-center gap-space-xs text-metadata font-metadata text-on-surface-variant"
+        >
+          <span class="text-on-surface-variant">Aqours</span
+          ><span class="text-outline">/</span
+          ><a class="hover:text-primary transition-colors" href="#"
+            >Supply sites</a
+          ><span class="text-outline">/</span
+          ><span class="text-primary font-body-medium">North Reservoir</span>
+        </nav>
+        <div class="flex items-center gap-space-sm">
+          <div
+            class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center text-label-default font-label-default"
+          >
+            EC
+          </div>
+          <div class="flex flex-col text-left">
+            <span
+              class="text-label-default font-label-default text-primary leading-tight"
+              >Elena Cruz</span
+            ><span
+              class="text-metadata font-metadata text-on-surface-variant leading-tight"
+              >System Admin</span
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- Main Canvas Sheet Area -->
+    <main
+      class="ml-[232px] pt-[56px] min-h-screen bg-background p-margin-panel"
+    >
+      <div
+        class="max-w-[1200px] mx-auto bg-surface-container-lowest border border-outline-variant rounded-lg p-space-xl flex flex-col gap-space-xl"
+      >
+        <div
+          class="flex flex-col md:flex-row justify-between items-start md:items-center gap-space-base pb-space-base border-b border-outline-variant"
+        >
+          <div>
+            <div class="flex items-center gap-space-sm mb-space-2xs">
+              <h1
+                class="text-headline-page font-headline-page text-primary tracking-tight"
+              >
+                North Reservoir
+              </h1>
+              <div
+                class="flex items-center gap-space-xs px-2.5 py-0.5 bg-surface-container text-on-surface-variant border border-outline-variant rounded-[4px] text-badge-caption font-badge-caption tracking-wider uppercase"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-outline"></span
+                ><span>Design preview · Sample records</span>
+              </div>
+            </div>
+            <p
+              class="text-body-default font-body-default text-on-surface-variant"
+            >
+              Supplier site record and Philippine administrative address.
+            </p>
+          </div>
+          <div class="flex items-center gap-space-sm">
+            <button
+              class="flex items-center gap-space-xs h-[36px] px-3.5 bg-surface-container-lowest hover:bg-surface-container-low text-primary border border-outline-variant rounded-[6px] text-label-default font-label-default transition-colors"
+            >
+              <span
+                class="material-symbols-outlined text-[18px]"
+                data-icon="arrow_back"
+                >arrow_back</span
+              ><span>Back to supply sites</span></button
+            ><button
+              class="flex items-center gap-space-xs h-[36px] px-3.5 bg-primary-container hover:bg-[#2E3133] active:bg-[#0A0B0B] text-on-primary border border-transparent rounded-[6px] text-label-default font-label-default transition-colors"
+            >
+              <span
+                class="material-symbols-outlined text-[18px]"
+                data-icon="edit"
+                >edit</span
+              ><span>Edit site</span>
+            </button>
+          </div>
+        </div>
+        <section
+          class="border border-outline-variant rounded-[8px] p-space-base bg-surface-container-lowest"
+        >
+          <div
+            class="flex items-center justify-between pb-space-sm mb-space-base border-b border-outline-variant"
+          >
+            <div class="flex items-center gap-space-xs">
+              <span
+                class="material-symbols-outlined text-secondary text-[20px]"
+                data-icon="info"
+                >info</span
+              >
+              <h2
+                class="text-headline-section font-headline-section text-primary"
+              >
+                Site details
+              </h2>
+            </div>
+          </div>
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-base"
+          >
+            <div class="flex flex-col gap-space-2xs">
+              <span
+                class="text-table-header font-table-header text-on-surface-variant tracking-wider uppercase"
+                >Site name</span
+              >
+              <div class="text-body-medium font-body-medium text-primary">
+                North Reservoir
+              </div>
+            </div>
+            <div class="flex flex-col gap-space-2xs">
+              <span
+                class="text-table-header font-table-header text-on-surface-variant tracking-wider uppercase"
+                >Site ID (GUID)</span
+              >
+              <div
+                class="flex items-center gap-space-xs bg-surface-container-low border border-outline-variant px-2.5 py-1.5 rounded-[4px]"
+              >
+                <code
+                  class="text-metadata font-mono text-primary select-all truncate"
+                  >b561e448-49d0-4f4a-ab82-7d074f8c61e7</code
+                ><button
+                  class="text-on-surface-variant hover:text-primary transition-colors"
+                  onclick="
+                    navigator.clipboard.writeText(
+                      'b561e448-49d0-4f4a-ab82-7d074f8c61e7',
+                    )
+                  "
+                  title="Copy GUID"
+                >
+                  <span
+                    class="material-symbols-outlined text-[16px]"
+                    data-icon="content_copy"
+                    >content_copy</span
+                  >
+                </button>
+              </div>
+            </div>
+            <div class="flex flex-col gap-space-2xs">
+              <span
+                class="text-table-header font-table-header text-on-surface-variant tracking-wider uppercase"
+                >Created</span
+              >
+              <div class="text-body-default font-body-default text-primary">
+                27 Oct 2026, 16:30 PHT
+              </div>
+            </div>
+            <div class="flex flex-col gap-space-2xs">
+              <span
+                class="text-table-header font-table-header text-on-surface-variant tracking-wider uppercase"
+                >Last updated</span
+              >
+              <div class="text-body-default font-body-default text-primary">
+                27 Oct 2026, 17:15 PHT
+              </div>
+            </div>
+          </div>
+          <div
+            class="mt-space-base pt-space-sm border-t border-outline-variant text-metadata font-metadata text-on-surface-variant"
+          >
+            Times shown in Asia/Manila
+          </div>
+        </section>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl">
+          <section
+            class="lg:col-span-8 border border-outline-variant rounded-[8px] p-space-base bg-surface-container-lowest flex flex-col justify-between"
+          >
+            <div>
+              <div
+                class="flex items-center justify-between pb-space-sm mb-space-base border-b border-outline-variant"
+              >
+                <div class="flex items-center gap-space-xs">
+                  <span
+                    class="material-symbols-outlined text-secondary text-[20px]"
+                    data-icon="location_on"
+                    >location_on</span
+                  >
+                  <h2
+                    class="text-headline-section font-headline-section text-primary"
+                  >
+                    Address
+                  </h2>
+                </div>
+              </div>
+              <div
+                class="mb-space-lg p-space-base bg-surface-container-low border border-outline-variant rounded-[6px]"
+              >
+                <span
+                  class="text-table-header font-table-header text-on-surface-variant tracking-wider uppercase block mb-1"
+                  >Canonical address</span
+                >
+                <p class="text-body-medium font-body-medium text-primary">
+                  Near the old bridge, Barangay Adams, Adams, Ilocos Norte,
+                  Region I (Ilocos Region)
+                </p>
+              </div>
+              <div
+                class="border border-outline-variant rounded-[6px] overflow-hidden"
+              >
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr
+                      class="bg-surface border-b border-outline-variant h-[38px]"
+                    >
+                      <th
+                        class="px-space-base text-table-header font-table-header text-on-surface-variant uppercase tracking-wider w-1/3"
+                      >
+                        Level
+                      </th>
+                      <th
+                        class="px-space-base text-table-header font-table-header text-on-surface-variant uppercase tracking-wider"
+                      >
+                        Details
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="divide-y divide-outline-variant font-body-default text-body-default"
+                  >
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors h-[40px]"
+                    >
+                      <td
+                        class="px-space-base text-on-surface-variant font-medium"
+                      >
+                        Region
+                      </td>
+                      <td class="px-space-base text-primary font-medium">
+                        Region I (Ilocos Region)
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors h-[40px]"
+                    >
+                      <td
+                        class="px-space-base text-on-surface-variant font-medium"
+                      >
+                        Province
+                      </td>
+                      <td class="px-space-base text-primary font-medium">
+                        Ilocos Norte
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors h-[40px]"
+                    >
+                      <td
+                        class="px-space-base text-on-surface-variant font-medium"
+                      >
+                        City / Municipality
+                      </td>
+                      <td class="px-space-base text-primary font-medium">
+                        Adams
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors h-[40px]"
+                    >
+                      <td
+                        class="px-space-base text-on-surface-variant font-medium"
+                      >
+                        Sub-municipality
+                      </td>
+                      <td class="px-space-base text-outline italic">
+                        Not applicable for this location
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors h-[40px]"
+                    >
+                      <td
+                        class="px-space-base text-on-surface-variant font-medium"
+                      >
+                        Barangay
+                      </td>
+                      <td class="px-space-base text-primary font-medium">
+                        Adams
+                      </td>
+                    </tr>
+                    <tr
+                      class="hover:bg-surface-container-low transition-colors h-[40px]"
+                    >
+                      <td
+                        class="px-space-base text-on-surface-variant font-medium"
+                      >
+                        Street or landmark
+                      </td>
+                      <td class="px-space-base text-primary font-medium">
+                        Near the old bridge
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+          <section
+            class="lg:col-span-4 border border-outline-variant rounded-[8px] p-space-base bg-surface-container-lowest flex flex-col justify-between"
+          >
+            <div>
+              <div
+                class="flex items-center justify-between pb-space-sm mb-space-base border-b border-outline-variant"
+              >
+                <div class="flex items-center gap-space-xs">
+                  <span
+                    class="material-symbols-outlined text-secondary text-[20px]"
+                    data-icon="map"
+                    >map</span
+                  >
+                  <h2
+                    class="text-headline-section font-headline-section text-primary"
+                  >
+                    Site location
+                  </h2>
+                </div>
+              </div>
+              <div class="space-y-space-base">
+                <div
+                  class="relative w-full h-[220px] rounded-[6px] border border-outline-variant overflow-hidden bg-surface-container"
+                >
+                  <svg
+                    class="w-full h-full object-cover"
+                    fill="none"
+                    viewbox="0 0 320 220"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect fill="#e8ece9" height="220" width="320"></rect>
+                    <path
+                      d="M0 45 Q 90 60 160 30 T 320 50"
+                      fill="none"
+                      stroke="#d3dbd7"
+                      stroke-width="12"
+                    ></path>
+                    <path
+                      d="M-20 150 Q 80 120 180 160 T 340 130"
+                      fill="none"
+                      stroke="#d3dbd7"
+                      stroke-width="16"
+                    ></path>
+                    <path
+                      d="M110 -10 Q 140 90 130 230"
+                      fill="none"
+                      stroke="#cdd5d1"
+                      stroke-width="9"
+                    ></path>
+                    <path
+                      d="M220 -10 Q 200 100 240 230"
+                      fill="none"
+                      stroke="#cdd5d1"
+                      stroke-width="8"
+                    ></path>
+                    <path
+                      d="M-10 180 C 60 170 110 140 170 125 C 230 110 270 115 330 90"
+                      fill="none"
+                      stroke="#a1e7fe"
+                      stroke-linecap="round"
+                      stroke-width="8"
+                    ></path>
+                    <path
+                      d="M-10 180 C 60 170 110 140 170 125 C 230 110 270 115 330 90"
+                      fill="none"
+                      stroke="#12677b"
+                      stroke-opacity="0.35"
+                      stroke-width="2"
+                    ></path>
+                    <path
+                      d="M 40 70 L 100 60 L 95 105 L 35 110 Z"
+                      fill="#dde3e0"
+                      stroke="#c4ccc7"
+                      stroke-width="1"
+                    ></path>
+                    <path
+                      d="M 205 40 L 270 30 L 285 75 L 220 85 Z"
+                      fill="#dde3e0"
+                      stroke="#c4ccc7"
+                      stroke-width="1"
+                    ></path>
+                    <g transform="translate(160, 110)">
+                      <ellipse
+                        cx="0"
+                        cy="12"
+                        fill="#050607"
+                        fill-opacity="0.2"
+                        rx="9"
+                        ry="4"
+                      ></ellipse>
+                      <path
+                        d="M0 -22 C -8.5 -22 -14 -16.5 -14 -8 C -14 3.5 0 14 0 14 C 0 14 14 3.5 14 -8 C 14 -16.5 8.5 -22 0 -22 Z"
+                        fill="#12677b"
+                        stroke="#ffffff"
+                        stroke-width="1.5"
+                      ></path>
+                      <circle cx="0" cy="-9" fill="#ffffff" r="4"></circle>
+                      <g transform="translate(0, -32)">
+                        <rect
+                          fill="#1d1f20"
+                          fill-opacity="0.9"
+                          height="20"
+                          rx="4"
+                          width="92"
+                          x="-46"
+                          y="-11"
+                        ></rect>
+                        <text
+                          fill="#ffffff"
+                          font-family="IBM Plex Sans"
+                          font-size="10"
+                          font-weight="600"
+                          text-anchor="middle"
+                          x="0"
+                          y="3"
+                        >
+                          North Reservoir
+                        </text>
+                      </g>
+                    </g>
+                  </svg>
+                  <div
+                    class="absolute top-2 right-2 flex flex-col gap-1 shadow-sm"
+                  >
+                    <button
+                      class="w-6 h-6 bg-surface-container-lowest hover:bg-surface-container-low border border-outline-variant rounded-[4px] flex items-center justify-center text-primary text-body-medium font-semibold"
+                      title="Zoom in"
+                    >
+                      +</button
+                    ><button
+                      class="w-6 h-6 bg-surface-container-lowest hover:bg-surface-container-low border border-outline-variant rounded-[4px] flex items-center justify-center text-primary text-body-medium font-semibold"
+                      title="Zoom out"
+                    >
+                      −
+                    </button>
+                  </div>
+                  <div
+                    class="absolute bottom-1 right-2 bg-surface-container-lowest/80 px-1.5 py-0.5 rounded text-[10px] text-on-surface-variant font-metadata"
+                  >
+                    © OpenStreetMap contributors
+                  </div>
+                </div>
+                <div
+                  class="p-space-base bg-surface border border-outline-variant rounded-[6px]"
+                >
+                  <span
+                    class="text-table-header font-table-header text-on-surface-variant tracking-wider uppercase block mb-1"
+                    >Location</span
+                  >
+                  <div class="text-body-medium font-body-medium text-primary">
+                    Near the old bridge · Adams, Ilocos Norte
+                  </div>
+                </div>
+                <div
+                  class="p-space-sm bg-surface-container-low border border-outline-variant rounded-[6px] flex items-start gap-space-xs"
+                >
+                  <span
+                    class="material-symbols-outlined text-outline text-[18px] shrink-0 mt-0.5"
+                    data-icon="info"
+                    >info</span
+                  >
+                  <p
+                    class="text-metadata font-metadata text-on-surface-variant leading-relaxed"
+                  >
+                    Site location marked on map. Addresses and map locations are
+                    stored independently.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

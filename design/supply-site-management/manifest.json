@@ -1,0 +1,133 @@
+{
+  "projectId": "5821335657238034680",
+  "projectUrl": "https://stitch.withgoogle.com/projects/5821335657238034680",
+  "designSystem": "assets/19401ab19fd7432bbcc42f76bbeb75da",
+  "date": "2026-10-27",
+  "status": "Six desktop map/address proposals saved for user review; responsive issues documented; no application implementation",
+  "generationSession": "13412464834541501841",
+  "style": "framed-sheet",
+  "seed": 1021459911,
+  "sources": [
+    "docs/features/supply-site-management/spec.md",
+    "apps/api/src/Aqours.Api/Features/SupplySites/SupplySiteEndpoints.cs",
+    "apps/api/src/Aqours.Application/Features/SupplySites/SupplySites.cs",
+    "docs/context.md",
+    "docs/architecture.md",
+    "design/aqours-web-stitch/design-brief.md"
+  ],
+  "screens": [
+    {
+      "name": "projects/5821335657238034680/screens/df68fd3557674f3388012e3065c2c939",
+      "title": "Supply sites — Directory",
+      "width": "2560",
+      "height": "2048",
+      "htmlResource": "projects/5821335657238034680/files/e6183be3fab743db8488c2d62628d4a6",
+      "screenshotResource": "projects/5821335657238034680/files/ffcc98d6adeb423c99000703d49b10a7",
+      "localPreview": "01-directory.png",
+      "localExport": "01-directory.html",
+      "imageMetadata": {
+        "mimeType": "png"
+      },
+      "imageDimensions": [2560, 2048],
+      "sha256": {
+        "png": "47843d92c58558ebc5a0b39a99ecc655b8f638d565e86d5d95a5e46ddd1e4a11",
+        "html": "fcd47682e90b0fdd52428971d723a70a0aaa9624fcaa15bcc8472b6245790f27"
+      }
+    },
+    {
+      "name": "projects/5821335657238034680/screens/f413a9bf4a494bb885317b588598414a",
+      "title": "Supply sites — Add site",
+      "width": "2560",
+      "height": "2860",
+      "htmlResource": "projects/5821335657238034680/files/401f58ce29c8452c97e8ae4538f94ad1",
+      "screenshotResource": "projects/5821335657238034680/files/33f352edae2c4d9a84c47589f52d1a27",
+      "localPreview": "02-add-site.png",
+      "localExport": "02-add-site.html",
+      "imageMetadata": {
+        "mimeType": "png"
+      },
+      "imageDimensions": [2560, 2860],
+      "sha256": {
+        "png": "fcbc301154a33437f524e6488498307ae42f5a4674d92b379a58aace9eca0a48",
+        "html": "c39a6ab717704334b3a5b367c47780990bac187de24343608100d35adc58cd78"
+      }
+    },
+    {
+      "name": "projects/5821335657238034680/screens/420027d1fe5b44f3bc98163b2ac03d08",
+      "title": "Supply sites — Site details",
+      "width": "2560",
+      "height": "2048",
+      "htmlResource": "projects/5821335657238034680/files/f0f72afafb934c9b975a76bbecfa63c3",
+      "screenshotResource": "projects/5821335657238034680/files/1e0568aec22046eb82fdfb17a6418ecd",
+      "localPreview": "03-site-details.png",
+      "localExport": "03-site-details.html",
+      "imageMetadata": {
+        "mimeType": "png"
+      },
+      "imageDimensions": [2560, 2048],
+      "sha256": {
+        "png": "1c8cae3909393ef8205dae84adcc27eed84f93a61b15d54ae771c914145bd091",
+        "html": "21b60e397a927281b0ebecf8cb6f12c29a5dd05dc3257725ab4913947b5ab4d3"
+      }
+    },
+    {
+      "name": "projects/5821335657238034680/screens/748813b50bf642ba96c258fd67642e8b",
+      "title": "Supply sites — Edit site",
+      "width": "2560",
+      "height": "2894",
+      "htmlResource": "projects/5821335657238034680/files/e7b1a6f70b27463e90edcaa63666f960",
+      "screenshotResource": "projects/5821335657238034680/files/b72451bcd4a84612af81e534668d69ad",
+      "localPreview": "04-edit-site.png",
+      "localExport": "04-edit-site.html",
+      "imageMetadata": {
+        "mimeType": "png"
+      },
+      "imageDimensions": [2560, 2894],
+      "sha256": {
+        "png": "5af37e8aa6315aa50b38e436aa4d5ce0cc6fde5e48d1bb2f882b4e2b8c272377",
+        "html": "81cd262642fe1c19bcef7f6b533c61f41384eecbf5f5731d75b93ffd1cb7aa77"
+      }
+    },
+    {
+      "name": "projects/5821335657238034680/screens/a1e7fbdeab324eeb983672727295e828",
+      "title": "Supply sites — Validation",
+      "width": "2560",
+      "height": "2702",
+      "htmlResource": "projects/5821335657238034680/files/dd2621b3853a411d909ef9652f268b26",
+      "screenshotResource": "projects/5821335657238034680/files/d23424dfe5a840a89aa065ce00b104e8",
+      "localPreview": "05-validation.png",
+      "localExport": "05-validation.html",
+      "imageMetadata": {
+        "mimeType": "png"
+      },
+      "imageDimensions": [2560, 2702],
+      "sha256": {
+        "png": "236e68e6c9cab497510faf492db312632bf4fc5c417f4ea0413c0fe72f7f5b22",
+        "html": "ffb8f2254302168f7d612bbbd55b2507239fe109e920123d96c3dc2eb307b1f5"
+      }
+    },
+    {
+      "name": "projects/5821335657238034680/screens/5d6aba460f8e4184bfeeabd555343d10",
+      "title": "Supply sites — Empty directory",
+      "width": "2560",
+      "height": "2048",
+      "htmlResource": "projects/5821335657238034680/files/187917dff1bc4d028265298bc6139e1a",
+      "screenshotResource": "projects/5821335657238034680/files/575fb186f74542d89e15b8023fb70887",
+      "localPreview": "06-empty-directory.png",
+      "localExport": "06-empty-directory.html",
+      "imageMetadata": {
+        "mimeType": "png"
+      },
+      "imageDimensions": [2560, 2048],
+      "sha256": {
+        "png": "b1f050e59b2bf96c9060655f00bf636f0fb8b802065b48bc105576319c2737d1",
+        "html": "ff191c5717065afd74f4c1b6855105ae559494a224baccfa88e78aeaf0addf1a"
+      }
+    }
+  ],
+  "locationPresentation": "Addresses and map pins only; latitude/longitude retained internally by API, never displayed",
+  "revision": "User-requested map/address presentation after initial generation and accuracy pass",
+  "exportFormatting": "Prettier 3.9.10; original Stitch layout/styles retained",
+  "mapRevisionRequest": "map-revision-request.json",
+  "cleanupRequest": "cleanup-request.json"
+}

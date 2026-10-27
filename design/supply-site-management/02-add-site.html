@@ -1,0 +1,825 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Supply Sites — Add Site | Aqours Portal</title>
+    <!-- Material Symbols Outlined -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- IBM Plex Sans Typography -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-error": "#ffffff",
+              "inverse-primary": "#c6c6c7",
+              surface: "#f7faf9",
+              "primary-container": "#1d1f20",
+              "on-secondary": "#ffffff",
+              "inverse-surface": "#2d3131",
+              "surface-container-highest": "#e0e3e2",
+              "surface-container-high": "#e6e9e8",
+              "primary-fixed-dim": "#c6c6c7",
+              "on-tertiary-container": "#8d8583",
+              "secondary-fixed": "#b2ebff",
+              "on-secondary-fixed-variant": "#004e5e",
+              "on-tertiary-fixed-variant": "#4c4544",
+              primary: "#050607",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#eef1f0",
+              "on-surface-variant": "#444749",
+              "on-primary": "#ffffff",
+              "primary-fixed": "#e2e2e3",
+              "surface-bright": "#f7faf9",
+              "error-container": "#ffdad6",
+              "secondary-container": "#a1e7fe",
+              "on-background": "#181c1c",
+              outline: "#747779",
+              "surface-dim": "#d7dbda",
+              background: "#f7faf9",
+              "on-secondary-fixed": "#001f27",
+              tertiary: "#090605",
+              "surface-container-low": "#f1f4f3",
+              "surface-tint": "#5d5e60",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed": "#1a1c1d",
+              "on-primary-container": "#858688",
+              "on-primary-fixed-variant": "#454748",
+              error: "#ba1a1a",
+              "on-tertiary-fixed": "#1f1a19",
+              secondary: "#12677b",
+              "on-surface": "#181c1c",
+              "on-secondary-container": "#17697d",
+              "surface-variant": "#e0e3e2",
+              "surface-container": "#ebeeed",
+              "tertiary-fixed": "#ebe0de",
+              "secondary-fixed-dim": "#8ad1e7",
+              "on-tertiary": "#ffffff",
+              "tertiary-container": "#231e1d",
+              "tertiary-fixed-dim": "#cec4c2",
+              "outline-variant": "#c4c7c9",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-xs": "0.25rem",
+              "space-lg": "1.25rem",
+              "margin-panel": "1.5rem",
+              "gutter-dense": "0.5rem",
+              gutter: "1rem",
+              "space-base": "1rem",
+              "space-2xl": "2rem",
+              "space-xl": "1.5rem",
+              "space-2xs": "0.125rem",
+              margin: "1rem",
+              "space-sm": "0.5rem",
+              "space-md": "0.75rem",
+            },
+            fontFamily: {
+              "body-default": ["IBM Plex Sans"],
+              "display-kpi": ["IBM Plex Sans"],
+              "headline-page": ["IBM Plex Sans"],
+              "body-medium": ["IBM Plex Sans"],
+              "headline-section": ["IBM Plex Sans"],
+              metadata: ["IBM Plex Sans"],
+              "kpi-compact": ["IBM Plex Sans"],
+              "table-header": ["IBM Plex Sans"],
+              subhead: ["IBM Plex Sans"],
+              "label-default": ["IBM Plex Sans"],
+              "badge-caption": ["IBM Plex Sans"],
+            },
+            fontSize: {
+              "body-default": [
+                "14px",
+                { lineHeight: "20px", fontWeight: "400" },
+              ],
+              "display-kpi": [
+                "32px",
+                {
+                  lineHeight: "38px",
+                  letterSpacing: "-0.02em",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-page": [
+                "24px",
+                {
+                  lineHeight: "30px",
+                  letterSpacing: "-0.01em",
+                  fontWeight: "600",
+                },
+              ],
+              "body-medium": [
+                "14px",
+                { lineHeight: "20px", fontWeight: "500" },
+              ],
+              "headline-section": [
+                "18px",
+                {
+                  lineHeight: "24px",
+                  letterSpacing: "-0.005em",
+                  fontWeight: "600",
+                },
+              ],
+              metadata: ["12px", { lineHeight: "16px", fontWeight: "400" }],
+              "kpi-compact": [
+                "28px",
+                {
+                  lineHeight: "34px",
+                  letterSpacing: "-0.015em",
+                  fontWeight: "600",
+                },
+              ],
+              "table-header": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  letterSpacing: "0.04em",
+                  fontWeight: "600",
+                },
+              ],
+              subhead: ["15px", { lineHeight: "20px", fontWeight: "500" }],
+              "label-default": [
+                "13px",
+                { lineHeight: "16px", fontWeight: "500" },
+              ],
+              "badge-caption": [
+                "11px",
+                {
+                  lineHeight: "14px",
+                  letterSpacing: "0.02em",
+                  fontWeight: "600",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-background text-on-surface antialiased selection:bg-secondary selection:text-on-secondary min-h-screen"
+  >
+    <!-- ========================================================================= -->
+    <!-- SIDE NAVIGATION (Shared Component: SideNavBar)                            -->
+    <!-- ========================================================================= -->
+    <aside
+      class="fixed top-0 left-0 h-screen w-[232px] bg-surface border-r border-outline-variant flex flex-col justify-between py-space-base z-30 select-none"
+    >
+      <!-- Top Block: Brand Header & Main Nav Tabs -->
+      <div class="flex flex-col">
+        <!-- Portal Brand Anchor -->
+        <div
+          class="px-space-base pb-space-lg border-b border-outline-variant/60 mb-space-base"
+        >
+          <div class="flex items-center gap-space-sm">
+            <div
+              class="w-8 h-8 rounded bg-secondary flex items-center justify-center text-on-secondary shrink-0"
+            >
+              <span
+                class="material-symbols-outlined text-[20px]"
+                data-icon="water_drop"
+                data-weight="fill"
+                style="font-variation-settings: &quot;FILL&quot; 1"
+                >water_drop</span
+              >
+            </div>
+            <div class="flex flex-col overflow-hidden">
+              <span
+                class="font-headline-section text-headline-section font-semibold text-primary tracking-tight truncate leading-tight"
+                >Aqours Portal</span
+              >
+              <span
+                class="font-metadata text-metadata text-on-surface-variant truncate"
+                >Utility Administration</span
+              >
+            </div>
+          </div>
+        </div>
+        <!-- Navigation Tabs Cluster -->
+        <nav class="flex flex-col gap-0.5">
+          <!-- 1. Dashboard -->
+          <a
+            class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low font-body-default text-body-default transition-colors duration-150 active:bg-surface-container-high"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="dashboard"
+              >dashboard</span
+            >
+            <span>Dashboard</span>
+          </a>
+          <!-- 2. Reports -->
+          <a
+            class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low font-body-default text-body-default transition-colors duration-150 active:bg-surface-container-high"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="assessment"
+              >assessment</span
+            >
+            <span>Reports</span>
+          </a>
+          <!-- 3. Supply Sites (ACTIVE: strict authority match) -->
+          <a
+            class="flex items-center gap-space-sm px-space-base py-space-sm bg-surface-container text-secondary border-l-2 border-secondary font-body-medium text-body-medium transition-colors duration-150 active:bg-surface-container-high"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="water_drop"
+              data-weight="fill"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >water_drop</span
+            >
+            <span>Supply Sites</span>
+          </a>
+          <!-- 4. Accounts -->
+          <a
+            class="flex items-center gap-space-sm px-space-base py-space-sm text-on-surface-variant hover:bg-surface-container-low font-body-default text-body-default transition-colors duration-150 active:bg-surface-container-high"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px]"
+              data-icon="manage_accounts"
+              >manage_accounts</span
+            >
+            <span>Accounts</span>
+          </a>
+        </nav>
+        <!-- Sidebar CTA Button -->
+      </div>
+      <!-- Bottom Block: Utility and Help Tabs -->
+    </aside>
+    <!-- ========================================================================= -->
+    <!-- TOP NAVIGATION BAR (Shared Component: TopNavBar)                          -->
+    <!-- ========================================================================= -->
+    <header
+      class="fixed top-0 right-0 left-[232px] h-[56px] bg-surface border-b border-outline-variant flex justify-between items-center px-margin-panel w-[calc(100%-232px)] z-20 select-none"
+    >
+      <div
+        class="flex items-center gap-2 font-label-default text-label-default"
+      >
+        <span class="text-on-surface-variant font-medium">Aqours</span
+        ><span class="material-symbols-outlined text-outline text-[14px]"
+          >chevron_right</span
+        ><a
+          class="text-on-surface-variant hover:text-primary transition-colors"
+          href="#"
+          >Supply sites</a
+        ><span class="material-symbols-outlined text-outline text-[14px]"
+          >chevron_right</span
+        ><span class="font-body-medium text-primary font-semibold"
+          >Add site</span
+        >
+      </div>
+      <div class="flex items-center gap-space-sm">
+        <img
+          alt="Elena Cruz Admin Profile Avatar"
+          class="w-8 h-8 rounded-full border border-outline-variant object-cover bg-surface-container-high"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp9Q7cddChDhAL_xJFi7cIU15g83T1bpNh2umfrzUM7niahnoa9fVAqFk16oXmcdDlX64QyXH7v198QMId_qMoLX-qx3nzcy8LaSKiuN89Dsi6YSXsHoQ-y4x4czZS0WueHWuywoeWroj5BV4yYisiiRcOBFVFDOn78m72p17kCZgay_UBZvTRqvKhHAoYWUd3iSdjkPRWjXDxSWv-9LdZU37Y4v27R495jU-W3N9UKlWI9dRt1liPXt6IIY2dkEH4GkaI7wjeuIQ"
+        />
+        <div class="flex flex-col text-left">
+          <span
+            class="font-label-default text-label-default font-medium text-primary leading-tight"
+            >Elena Cruz</span
+          ><span class="font-metadata text-metadata text-outline leading-tight"
+            >Admin</span
+          >
+        </div>
+      </div>
+    </header>
+    <!-- ========================================================================= -->
+    <!-- MAIN WORKSPACE CANVAS (The Inset Working Sheet Architecture)             -->
+    <!-- ========================================================================= -->
+    <main class="ml-[232px] pt-[56px] min-h-screen bg-background">
+      <div class="p-margin-panel max-w-[1440px] mx-auto">
+        <!-- Top Meta Row: Breadcrumbs & Scope Indicator -->
+        <div
+          class="flex flex-wrap items-center justify-between gap-space-sm mb-space-base"
+        >
+          <!-- Breadcrumbs -->
+          <!-- Scope Badge -->
+          <div
+            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-outline-variant bg-surface-container-low font-badge-caption text-badge-caption text-on-surface-variant uppercase tracking-wider"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            <span>Design preview · Sample records</span>
+          </div>
+        </div>
+        <!-- Page Headline & Subtitle -->
+        <div class="mb-space-lg">
+          <h1
+            class="font-headline-page text-headline-page font-semibold text-primary tracking-tight"
+          >
+            Add supply site
+          </h1>
+          <p
+            class="font-body-default text-body-default text-on-surface-variant mt-0.5"
+          >
+            Record a supplier facility and its location.
+          </p>
+        </div>
+        <!-- THE INSET WORKING SHEET (Pure #FFFFFF card, 1px solid hairline) -->
+        <div
+          class="bg-surface-container-lowest rounded-lg border border-outline-variant overflow-hidden shadow-none"
+        >
+          <!-- Two-Column Form Layout -->
+          <form
+            class="p-space-xl flex flex-col justify-between max-w-4xl mx-auto w-full"
+            onsubmit="event.preventDefault()"
+          >
+            <div class="flex flex-col gap-space-2xl">
+              <section class="flex flex-col gap-space-base">
+                <div
+                  class="flex items-center justify-between pb-space-xs border-b border-outline-variant/60"
+                >
+                  <h3
+                    class="font-headline-section text-headline-section font-semibold text-primary flex items-center gap-2"
+                  >
+                    <span
+                      class="w-5 h-5 rounded-full bg-primary text-on-primary text-badge-caption font-badge-caption flex items-center justify-center"
+                      >1</span
+                    >Site details
+                  </h3>
+                  <span class="font-metadata text-metadata text-outline"
+                    >* Required field</span
+                  >
+                </div>
+                <div class="flex flex-col gap-1.5 max-w-xl">
+                  <label
+                    class="font-label-default text-label-default text-primary flex items-center gap-1"
+                    for="site-name"
+                    ><span>Site name</span
+                    ><span class="text-error font-bold">*</span></label
+                  ><input
+                    class="h-9 px-3 bg-surface-container-lowest border border-outline-variant rounded font-body-default text-body-default text-primary placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                    id="site-name"
+                    maxlength="200"
+                    placeholder="e.g. North Reservoir"
+                    required=""
+                    type="text"
+                  /><span class="font-metadata text-metadata text-outline"
+                    >Up to 200 characters. Duplicate names are allowed.</span
+                  >
+                </div>
+              </section>
+              <section class="flex flex-col gap-space-base">
+                <div
+                  class="flex items-center justify-between pb-space-xs border-b border-outline-variant/60"
+                >
+                  <h3
+                    class="font-headline-section text-headline-section font-semibold text-primary flex items-center gap-2"
+                  >
+                    <span
+                      class="w-5 h-5 rounded-full bg-primary text-on-primary text-badge-caption font-badge-caption flex items-center justify-center"
+                      >2</span
+                    >Canonical address
+                  </h3>
+                </div>
+                <div
+                  class="grid grid-cols-1 md:grid-cols-2 gap-x-space-lg gap-y-space-base"
+                >
+                  <div class="flex flex-col gap-1.5">
+                    <label
+                      class="font-label-default text-label-default text-primary flex items-center gap-1"
+                      for="psgc-region"
+                      ><span>Region</span
+                      ><span class="text-error font-bold">*</span></label
+                    >
+                    <div class="relative">
+                      <select
+                        class="w-full h-9 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded font-body-default text-body-default text-primary appearance-none focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                        id="psgc-region"
+                        required=""
+                      >
+                        <option value="">Select region</option>
+                        <option selected="" value="0100000000">
+                          Region I (Ilocos Region)
+                        </option>
+                        <option value="0200000000">
+                          Region II (Cagayan Valley)
+                        </option>
+                        <option value="0300000000">
+                          Region III (Central Luzon)
+                        </option>
+                        <option value="1300000000">
+                          National Capital Region (NCR)
+                        </option></select
+                      ><span
+                        class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]"
+                        >arrow_drop_down</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label
+                      class="font-label-default text-label-default text-primary flex items-center justify-between"
+                      for="psgc-province"
+                      ><span class="flex items-center gap-1"
+                        ><span>Province</span
+                        ><span class="text-error font-bold">*</span></span
+                      ></label
+                    >
+                    <div class="relative">
+                      <select
+                        class="w-full h-9 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded font-body-default text-body-default text-primary appearance-none focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                        id="psgc-province"
+                        required=""
+                      >
+                        <option selected="" value="Ilocos Norte">
+                          Ilocos Norte
+                        </option>
+                        <option value="Ilocos Sur">Ilocos Sur</option>
+                        <option value="La Union">La Union</option>
+                        <option value="Pangasinan">Pangasinan</option></select
+                      ><span
+                        class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]"
+                        >arrow_drop_down</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label
+                      class="font-label-default text-label-default text-primary flex items-center gap-1"
+                      for="psgc-city"
+                      ><span>City / municipality</span
+                      ><span class="text-error font-bold">*</span></label
+                    >
+                    <div class="relative">
+                      <select
+                        class="w-full h-9 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded font-body-default text-body-default text-primary appearance-none focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                        id="psgc-city"
+                        required=""
+                      >
+                        <option selected="" value="Adams">Adams</option>
+                        <option value="Bacarra">Bacarra</option>
+                        <option value="Badoc">Badoc</option>
+                        <option value="Bangui">Bangui</option></select
+                      ><span
+                        class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]"
+                        >arrow_drop_down</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label
+                      class="font-label-default text-label-default text-outline flex items-center gap-1"
+                      for="psgc-submuni"
+                      ><span>Sub-municipality</span
+                      ><span
+                        class="font-metadata text-metadata text-outline font-normal"
+                        >(conditionally applicable)</span
+                      ></label
+                    >
+                    <div class="relative">
+                      <input
+                        class="w-full h-9 pl-3 pr-8 bg-surface-container-low border border-outline-variant/60 rounded font-body-default text-body-default text-outline cursor-not-allowed"
+                        disabled=""
+                        id="psgc-submuni"
+                        type="text"
+                        value="Not applicable for this location"
+                      /><span
+                        class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline/50 pointer-events-none text-[18px]"
+                        >lock</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1.5 md:col-span-2">
+                    <label
+                      class="font-label-default text-label-default text-primary flex items-center gap-1"
+                      for="psgc-barangay"
+                      ><span>Barangay</span
+                      ><span class="text-error font-bold">*</span></label
+                    >
+                    <div class="relative">
+                      <select
+                        class="w-full h-9 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded font-body-default text-body-default text-primary appearance-none focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                        id="psgc-barangay"
+                        required=""
+                      >
+                        <option selected="" value="Adams">Adams</option>
+                        <option value="Bolo">Bolo (Poblacion)</option></select
+                      ><span
+                        class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]"
+                        >arrow_drop_down</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1.5 md:col-span-2">
+                    <label
+                      class="font-label-default text-label-default text-primary flex items-center justify-between"
+                      for="street-details"
+                      ><span class="flex items-center gap-1"
+                        ><span>Street or landmark details</span
+                        ><span class="text-error font-bold">*</span></span
+                      ><span class="font-metadata text-metadata text-outline"
+                        >Required, up to 500 characters.</span
+                      ></label
+                    ><textarea
+                      class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded font-body-default text-body-default text-primary placeholder:text-outline focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary resize-none"
+                      id="street-details"
+                      maxlength="500"
+                      placeholder="Enter street or landmark details..."
+                      required=""
+                      rows="3"
+                    ></textarea>
+                  </div>
+                </div>
+              </section>
+              <section class="flex flex-col gap-space-base">
+                <div
+                  class="flex items-center justify-between pb-space-xs border-b border-outline-variant/60"
+                >
+                  <h3
+                    class="font-headline-section text-headline-section font-semibold text-primary flex items-center gap-2"
+                  >
+                    <span
+                      class="w-5 h-5 rounded-full bg-primary text-on-primary text-badge-caption font-badge-caption flex items-center justify-center"
+                      >3</span
+                    >Site location
+                  </h3>
+                  <span class="font-metadata text-metadata text-outline"
+                    >* Required</span
+                  >
+                </div>
+                <div class="flex flex-col gap-1">
+                  <p
+                    class="font-body-default text-body-default text-primary font-medium"
+                  >
+                    Select the site's location on the map. Drag the pin to
+                    adjust it.
+                  </p>
+                  <p
+                    class="font-metadata text-metadata text-on-surface-variant"
+                  >
+                    The address and map location are selected separately.
+                  </p>
+                </div>
+                <div
+                  class="flex items-center justify-between bg-surface-container-low px-3 py-2 rounded border border-outline-variant/60"
+                >
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="material-symbols-outlined text-secondary text-[20px]"
+                      >place</span
+                    ><span
+                      class="font-body-medium text-body-medium text-primary"
+                      >Pin placed:
+                      <span class="font-normal text-on-surface-variant"
+                        >Near the old bridge · Adams, Ilocos Norte</span
+                      ></span
+                    >
+                  </div>
+                  <button
+                    class="font-metadata text-metadata font-medium text-secondary hover:underline"
+                    type="button"
+                  >
+                    Reset pin
+                  </button>
+                </div>
+                <div
+                  class="relative w-full h-[360px] rounded-lg border border-outline-variant overflow-hidden bg-[#e8ece9] select-none"
+                >
+                  <svg
+                    class="w-full h-full object-cover"
+                    preserveaspectratio="xMidYMid slice"
+                    viewbox="0 0 800 400"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <lineargradient
+                        id="waterGrad"
+                        x1="0%"
+                        x2="100%"
+                        y1="0%"
+                        y2="100%"
+                      >
+                        <stop offset="0%" stop-color="#b2ebff"></stop>
+                        <stop offset="100%" stop-color="#8ad1e7"></stop>
+                      </lineargradient>
+                    </defs>
+                    <rect fill="#e5eae6" height="400" width="800"></rect>
+                    <path
+                      d="M-20,110 Q140,80 260,140 T520,110 T820,130 L820,210 Q600,180 430,220 T150,170 T-20,200 Z"
+                      fill="url(#waterGrad)"
+                      opacity="0.85"
+                    ></path>
+                    <path
+                      d="M260,140 Q310,240 370,320 T410,420 L380,420 Q340,320 280,240 T240,140 Z"
+                      fill="url(#waterGrad)"
+                      opacity="0.7"
+                    ></path>
+                    <path
+                      d="M0,280 Q210,230 400,260 T800,240"
+                      fill="none"
+                      stroke="#d3ded6"
+                      stroke-width="16"
+                    ></path>
+                    <path
+                      d="M110,-20 Q160,140 230,240 T460,420"
+                      fill="none"
+                      stroke="#fcfdfd"
+                      stroke-width="10"
+                    ></path>
+                    <path
+                      d="M100,-20 Q150,140 220,240 T450,420"
+                      fill="none"
+                      stroke="#c2cbc5"
+                      stroke-width="1"
+                    ></path>
+                    <path
+                      d="M120,-20 Q170,140 240,240 T470,420"
+                      fill="none"
+                      stroke="#c2cbc5"
+                      stroke-width="1"
+                    ></path>
+                    <path
+                      d="M-20,180 Q320,170 540,220 T820,280"
+                      fill="none"
+                      stroke="#fffcfa"
+                      stroke-width="8"
+                    ></path>
+                    <path
+                      d="M-20,180 Q320,170 540,220 T820,280"
+                      fill="none"
+                      stroke="#d7d1cb"
+                      stroke-width="1"
+                    ></path>
+                    <path
+                      d="M380,10 Q400,110 510,180 T760,260"
+                      fill="none"
+                      stroke="#fcfdfd"
+                      stroke-width="6"
+                    ></path>
+                    <path
+                      d="M480,160 Q560,150 640,100"
+                      fill="none"
+                      stroke="#fcfdfd"
+                      stroke-width="5"
+                    ></path>
+                    <path
+                      d="M40,220 Q120,290 200,380"
+                      fill="none"
+                      stroke="#ffffff"
+                      stroke-width="5"
+                    ></path>
+                    <rect
+                      fill="#747779"
+                      height="12"
+                      rx="2"
+                      transform="rotate(18 236 156)"
+                      width="32"
+                      x="220"
+                      y="150"
+                    ></rect>
+                    <text
+                      fill="#444749"
+                      font-family="IBM Plex Sans"
+                      font-size="10"
+                      font-weight="500"
+                      x="240"
+                      y="145"
+                    >
+                      Old Bridge
+                    </text>
+                    <rect
+                      fill="#d2ded5"
+                      height="45"
+                      opacity="0.6"
+                      rx="4"
+                      width="65"
+                      x="440"
+                      y="200"
+                    ></rect>
+                    <rect
+                      fill="#d2ded5"
+                      height="35"
+                      opacity="0.6"
+                      rx="4"
+                      width="50"
+                      x="160"
+                      y="90"
+                    ></rect>
+                    <text
+                      fill="#5d5e60"
+                      font-family="IBM Plex Sans"
+                      font-size="11"
+                      font-weight="600"
+                      x="165"
+                      y="112"
+                    >
+                      Adams River
+                    </text>
+                    <text
+                      fill="#444749"
+                      font-family="IBM Plex Sans"
+                      font-size="12"
+                      font-weight="600"
+                      x="540"
+                      y="260"
+                    >
+                      Poblacion, Adams
+                    </text>
+                  </svg>
+                  <div
+                    class="absolute left-3 top-3 flex flex-col bg-surface-container-lowest border border-outline-variant rounded shadow-sm overflow-hidden z-10"
+                  >
+                    <button
+                      class="w-7 h-7 flex items-center justify-center font-bold text-primary hover:bg-surface-container-low border-b border-outline-variant text-[16px]"
+                      title="Zoom in"
+                      type="button"
+                    >
+                      +</button
+                    ><button
+                      class="w-7 h-7 flex items-center justify-center font-bold text-primary hover:bg-surface-container-low text-[16px]"
+                      title="Zoom out"
+                      type="button"
+                    >
+                      −
+                    </button>
+                  </div>
+                  <div
+                    class="absolute right-3 top-3 flex items-center gap-1.5 bg-surface-container-lowest/90 backdrop-blur-sm border border-outline-variant rounded px-2.5 py-1 text-metadata font-metadata text-primary shadow-sm"
+                  >
+                    <span class="w-2 h-2 rounded-full bg-secondary"></span
+                    ><span>Adams Facility Area</span>
+                  </div>
+                  <div
+                    class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full pointer-events-none flex flex-col items-center"
+                  >
+                    <div
+                      class="bg-primary text-on-primary text-[11px] font-badge-caption font-semibold px-2 py-0.5 rounded shadow whitespace-nowrap mb-1 flex items-center gap-1"
+                    >
+                      <span class="material-symbols-outlined text-[12px]"
+                        >drag_indicator</span
+                      ><span>Site marker (drag to reposition)</span>
+                    </div>
+                    <div class="relative flex items-center justify-center">
+                      <span
+                        class="material-symbols-outlined text-secondary text-[44px] filter drop-shadow-md"
+                        style="font-variation-settings: &quot;FILL&quot; 1"
+                        >location_on</span
+                      >
+                    </div>
+                    <div
+                      class="w-2 h-1 bg-primary/40 rounded-full blur-[1px] -mt-1"
+                    ></div>
+                  </div>
+                  <div
+                    class="absolute bottom-2 right-2 bg-surface-container-lowest/80 backdrop-blur-xs px-2 py-0.5 rounded text-[11px] font-metadata text-on-surface-variant border border-outline-variant/40"
+                  >
+                    <span class="text-outline"
+                      >© OpenStreetMap contributors</span
+                    >
+                  </div>
+                </div>
+              </section>
+            </div>
+            <div
+              class="mt-space-2xl pt-space-lg border-t border-outline-variant flex items-center justify-end gap-space-sm"
+            >
+              <a
+                class="h-9 px-space-base bg-surface-container-lowest border border-outline-variant rounded text-on-surface hover:bg-surface-container-low hover:border-outline font-label-default text-label-default inline-flex items-center justify-center transition-colors duration-150 active:bg-surface-container-high"
+                href="#"
+                >Cancel</a
+              ><button
+                class="h-9 px-space-lg bg-primary text-on-primary border border-transparent rounded font-label-default text-label-default inline-flex items-center gap-1.5 hover:bg-[#2E3133] transition-colors duration-150 active:bg-[#0A0B0B]"
+                type="submit"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >add_circle</span
+                ><span>Create supply site</span>
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Compact Technical Footer Metadata -->
+      </div>
+    </main>
+  </body>
+</html>
