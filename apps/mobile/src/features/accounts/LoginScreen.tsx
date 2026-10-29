@@ -16,11 +16,17 @@ import { Brand, Button, Field, Notice, Text } from "../../shared/ui";
 export function LoginScreen({
   api,
   passwordChange = false,
+  voluntaryPasswordChange = false,
+  preview = false,
+  onPasswordChanged,
   onCancel,
   onPreview,
 }: {
   api: ApiClient;
   passwordChange?: boolean;
+  voluntaryPasswordChange?: boolean;
+  preview?: boolean;
+  onPasswordChanged?: () => void;
   onCancel: () => void;
   onPreview: () => void;
 }) {
@@ -42,12 +48,19 @@ export function LoginScreen({
       setPassword("");
       setNewPassword("");
       setConfirmation("");
+      onPasswordChanged?.();
     },
   });
 
   function submit() {
     if (mutation.isPending) return;
     mutation.reset();
+    if (preview && voluntaryPasswordChange) {
+      setValidation(
+        "Password changes are unavailable in the design preview. Sign in to change your password.",
+      );
+      return;
+    }
     const message =
       !passwordChange && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
         ? "Enter a valid email address."
@@ -78,14 +91,18 @@ export function LoginScreen({
         <View style={styles.center}>
           <View style={styles.intro}>
             <Text accessibilityRole="header" style={styles.title}>
-              {passwordChange
-                ? "Make your account yours."
-                : "Water concerns, heard."}
+              {voluntaryPasswordChange
+                ? "Change password"
+                : passwordChange
+                  ? "Make your account yours."
+                  : "Water concerns, heard."}
             </Text>
             <Text style={styles.subtitle}>
-              {passwordChange
-                ? "Choose a new password before you continue. Your supplier provided a temporary one."
-                : "Report a water issue and follow your supplier’s response."}
+              {voluntaryPasswordChange
+                ? "Choose a new password to keep your account secure."
+                : passwordChange
+                  ? "Choose a new password before you continue. Your supplier provided a temporary one."
+                  : "Report a water issue and follow your supplier’s response."}
             </Text>
           </View>
           <View style={styles.card}>
@@ -109,7 +126,13 @@ export function LoginScreen({
             <Field
               ref={passwordRef}
               nativeID="password"
-              label={passwordChange ? "Temporary password" : "Password"}
+              label={
+                voluntaryPasswordChange
+                  ? "Current password"
+                  : passwordChange
+                    ? "Temporary password"
+                    : "Password"
+              }
               password
               value={password}
               onChangeText={setPassword}
@@ -164,19 +187,31 @@ export function LoginScreen({
             )}
             <View style={styles.action}>
               <Button
-                label={passwordChange ? "Save password & continue" : "Sign in"}
+                label={
+                  voluntaryPasswordChange
+                    ? "Save password"
+                    : passwordChange
+                      ? "Save password & continue"
+                      : "Sign in"
+                }
                 onPress={submit}
                 loading={mutation.isPending}
               />
             </View>
             <Text style={styles.hint}>
               {passwordChange
-                ? "Your new password replaces your temporary password."
+                ? voluntaryPasswordChange
+                  ? "Use your new password the next time you sign in."
+                  : "Your new password replaces your temporary password."
                 : "Use the account provided by your supplier."}
             </Text>
             {passwordChange && (
               <Button
-                label="Back to sign in"
+                label={
+                  voluntaryPasswordChange
+                    ? "Back to Profile"
+                    : "Back to sign in"
+                }
                 secondary
                 onPress={onCancel}
                 loading={mutation.isPending}

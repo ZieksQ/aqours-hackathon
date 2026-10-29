@@ -1,7 +1,6 @@
 import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   BackHandler,
   Modal,
   Pressable,
@@ -10,6 +9,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ProfileScreen } from "../features/accounts/ProfileScreen";
+import { UpdatesScreen } from "../features/updates/UpdatesScreen";
+import { useUpdates } from "../features/updates/useUpdates";
+import { unreadActivity } from "../features/updates/activity";
 import { HomeScreen } from "../features/home/HomeScreen";
 import { reportDate } from "../features/home/ReportCard";
 import { reportKeys } from "../features/reports/api";
@@ -24,7 +27,7 @@ import type { Account, ApiClient, Report } from "../shared/api";
 import { colors, fonts } from "../shared/theme";
 import { Brand, Button, Icon, Text } from "../shared/ui";
 
-type Screen = "Home" | "Report" | "Reports";
+type Screen = "Home" | "Report" | "Reports" | "Updates" | "Profile";
 export function CustomerApp({
   api,
   account,
@@ -40,6 +43,12 @@ export function CustomerApp({
   const submitting =
     useIsMutating({ mutationKey: ["submit-report", account.id] }) > 0;
   const [screen, setScreen] = useState<Screen>("Home");
+  const updates = useUpdates(api, account.id, preview);
+  const [readIds, setReadIds] = useState<ReadonlySet<string>>(() => new Set());
+  const unreadCount = unreadActivity(updates.items, readIds).length;
+  function markRead(ids: string[]) {
+    setReadIds((current) => new Set([...current, ...ids]));
+  }
   const [draft, setDraft] = useState(emptyDraft);
   const [receipt, setReceipt] = useState<Report | null>(null);
   const [reportId, setReportId] = useState<string | null>(null);
@@ -63,28 +72,14 @@ export function CustomerApp({
     setReceipt(null);
     setScreen("Report");
   }
-  function viewReport(report: Report) {
-    setReportPage("details");
+  function viewReport(report: Report, conversation = false) {
+    setReportPage(conversation ? "conversation" : "details");
     if (!preview)
       queryClient.setQueryData(
         reportKeys.detail(account.id, report.id),
         report,
       );
     setReportId(report.id);
-  }
-  function accountInfo() {
-    Alert.alert(
-      `${account.firstName} ${account.lastName}`,
-      `${account.email}\nCustomer account${preview ? " · Design preview" : ""}`,
-      [
-        { text: "Close", style: "cancel" },
-        {
-          text: preview ? "Exit preview" : "Sign out",
-          style: "destructive",
-          onPress: onSignOut,
-        },
-      ],
-    );
   }
   return (
     <View style={s.page}>
@@ -100,20 +95,23 @@ export function CustomerApp({
           </Pressable>
         </View>
       )}
-      <View style={styles.header}>
+      <View
+        style={[styles.header, screen === "Profile" && styles.profileHeader]}
+      >
         <Brand />
-        <Pressable
-          disabled={submitting}
-          accessibilityState={{ disabled: submitting }}
-          accessibilityRole="button"
-          accessibilityLabel={`Account for ${account.firstName} ${account.lastName}`}
-          onPress={accountInfo}
-          style={({ pressed }) => [styles.avatar, pressed && s.pressed]}
-        >
-          <Text style={styles.initials}>
-            {`${account.firstName[0] ?? ""}${account.lastName[0] ?? ""}`.toUpperCase()}
-          </Text>
-        </Pressable>
+        {screen !== "Profile" && (
+          <Pressable
+            disabled={submitting}
+            accessibilityState={{ disabled: submitting }}
+            accessibilityRole="button"
+            accessibilityLabel={`Account for ${account.firstName} ${account.lastName}`}
+            hitSlop={6}
+            onPress={() => setScreen("Profile")}
+            style={({ pressed }) => [styles.avatar, pressed && s.pressed]}
+          >
+            <Icon name="user" color="#3F484C" size={20} />
+          </Pressable>
+        )}
       </View>
       {screen === "Home" ? (
         <HomeScreen
@@ -123,6 +121,22 @@ export function CustomerApp({
           onCreate={openReport}
           onReports={() => setScreen("Reports")}
           onView={viewReport}
+        />
+      ) : screen === "Updates" ? (
+        <UpdatesScreen
+          updates={updates}
+          preview={preview}
+          readIds={readIds}
+          onRead={markRead}
+          onView={viewReport}
+          onReports={() => setScreen("Reports")}
+        />
+      ) : screen === "Profile" ? (
+        <ProfileScreen
+          api={api}
+          account={account}
+          preview={preview}
+          onSignOut={onSignOut}
         />
       ) : screen === "Reports" ? (
         <ReportsScreen
@@ -197,36 +211,32 @@ export function CustomerApp({
               key={label}
               disabled={submitting}
               accessibilityRole="tab"
-              accessibilityLabel={label}
+              accessibilityLabel={
+                label === "Updates" && unreadCount
+                  ? `Updates, ${unreadCount} unread`
+                  : label
+              }
               accessibilityState={{ selected, disabled: submitting }}
               onPress={() => {
-                if (label === "Profile") accountInfo();
-                else if (label === "Updates")
-                  Alert.alert(
-                    "Updates",
-                    "Open My reports to read supplier responses and follow " +
-                      "report progress. An updates inbox is coming later.",
-                    [
-                      { text: "Close", style: "cancel" },
-                      {
-                        text: "My reports",
-                        onPress: () => setScreen("Reports"),
-                      },
-                    ],
-                  );
-                else if (label === "Report") openReport();
+                if (label === "Report") openReport();
                 else setScreen(label);
               }}
-              style={({ pressed }) => [
-                styles.tab,
-                selected && styles.activeTab,
-                pressed && s.pressed,
-              ]}
+              style={({ pressed }) => [styles.tab, pressed && s.pressed]}
             >
-              <Icon
-                name={icon}
-                color={selected ? colors.primary : colors.muted}
-              />
+              <View style={styles.tabIcon}>
+                {selected && <View style={styles.activeTab} />}
+                <Icon
+                  name={icon}
+                  color={selected ? colors.primary : "#3F484C"}
+                />
+                {label === "Updates" && unreadCount > 0 && (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadBadgeText}>
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text style={[styles.tabLabel, selected && styles.activeLabel]}>
                 {label}
               </Text>
@@ -245,13 +255,11 @@ export function CustomerApp({
       >
         <SafeAreaView
           style={
-            reportPage === "conversation"
-              ? conversationStyles.safePage
-              : s.page
+            reportPage === "conversation" ? conversationStyles.safePage : s.page
           }
         >
-          {reportId && (
-            reportPage === "conversation" ? (
+          {reportId &&
+            (reportPage === "conversation" ? (
               <ReportConversationScreen
                 key={`${reportId}-conversation`}
                 api={api}
@@ -277,13 +285,14 @@ export function CustomerApp({
                     ? "Back to My reports"
                     : screen === "Home"
                       ? "Back to Home"
-                      : "Back to confirmation"
+                      : screen === "Updates"
+                        ? "Back to Updates"
+                        : "Back to confirmation"
                 }
                 onBack={() => setReportId(null)}
                 onOpenConversation={() => setReportPage("conversation")}
               />
-            )
-          )}
+            ))}
         </SafeAreaView>
       </Modal>
     </View>
@@ -291,7 +300,7 @@ export function CustomerApp({
 }
 const styles = StyleSheet.create({
   header: {
-    minHeight: 68,
+    minHeight: 64,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -302,14 +311,32 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#D5EDF3",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#EFEDF0",
     alignItems: "center",
     justifyContent: "center",
   },
-  initials: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 14 },
+  profileHeader: { minHeight: 56 },
+  unreadBadge: {
+    position: "absolute",
+    top: -5,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  unreadBadgeText: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: fonts.bold,
+    color: colors.white,
+  },
   previewBanner: {
     paddingLeft: 24,
     paddingRight: 12,
@@ -343,7 +370,15 @@ const styles = StyleSheet.create({
     borderTopColor: "transparent",
     paddingVertical: 8,
   },
-  activeTab: { borderTopColor: colors.primary },
+  activeTab: {
+    position: "absolute",
+    top: -8,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: colors.primary,
+  },
+  tabIcon: { width: 44, alignItems: "center" },
   tabLabel: {
     fontSize: 12,
     lineHeight: 18,

@@ -4,7 +4,7 @@
 
 Aqours is a water reporting and supplier response system with a customer mobile app, supplier web portal, manual supply monitoring, and weather-based warnings. Keep work focused on the one-week MVP.
 
-The repository contains the .NET API layer projects, a React web app with supplier account screens, Docker PostgreSQL configuration, product and architecture documents, and the shared Philippine location dataset. Account authentication, the Customer reporting API, and the supplier personnel manual supply monitoring API are implemented. The Staff report queue and ticket workspace and Customer mobile login/Home, report submission with location selection, owned-report history, and supplier conversations are implemented; supplier supply monitoring UI, Customer supply display and site maps, weather, Updates, and full Profile remain deferred.
+The repository contains the .NET API layer projects, a React web app with supplier account screens, Docker PostgreSQL configuration, product and architecture documents, and the shared Philippine location dataset. Account authentication, the Customer reporting API, and the supplier personnel manual supply monitoring API are implemented. The Staff report queue and ticket workspace and Customer mobile login/Home, report submission with location selection, owned-report history, supplier conversations, Updates, and Profile are implemented; Customer supply display and site maps, weather, push notifications, and server-persisted notification read state remain deferred.
 
 ## Basic technology stack
 
