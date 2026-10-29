@@ -62,7 +62,7 @@ public static class SupplySiteEndpoints
         }).AddEndpointFilter<CsrfFilter>();
     }
 
-    private static int ParsePagination(string? value, int fallback, string field, Dictionary<string, string[]> errors)
+    internal static int ParsePagination(string? value, int fallback, string field, Dictionary<string, string[]> errors)
     {
         if (value is null) return fallback;
         if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number)) return number;

@@ -47,6 +47,8 @@ public static class DependencyInjection
         services.AddScoped<ReportService>();
         services.AddScoped<ISupplySiteStore, PostgresSupplySiteStore>();
         services.AddScoped<SupplySiteService>();
+        services.AddScoped<ISupplyMonitoringStore, PostgresSupplyMonitoringStore>();
+        services.AddScoped<SupplyMonitoringService>();
         services.AddScoped<IStaffReportStore, PostgresStaffReportStore>();
         services.AddScoped<StaffReportService>();
         services.AddScoped<IAccountStore, IdentityAccountStore>();

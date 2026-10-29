@@ -194,6 +194,59 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                     b.ToTable("supply_sites", (string)null);
                 });
 
+            modelBuilder.Entity("Aqours.Domain.Features.SupplySites.SupplyUpdate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<long>("Sequence")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("sequence");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Sequence"));
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("site_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedById")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by_id");
+
+                    b.Property<string>("UpdatedByName")
+                        .IsRequired()
+                        .HasMaxLength(201)
+                        .HasColumnType("character varying(201)")
+                        .HasColumnName("updated_by_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_supply_updates");
+
+                    b.HasIndex("UpdatedById")
+                        .HasDatabaseName("ix_supply_updates_updated_by_id");
+
+                    b.HasIndex("SiteId", "Sequence")
+                        .IsUnique()
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_supply_updates_site_id_sequence");
+
+                    b.ToTable("supply_updates", (string)null);
+                });
+
             modelBuilder.Entity("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", b =>
                 {
                     b.Property<string>("Id")
@@ -553,6 +606,23 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_report_messages_asp_net_users_sender_id");
+                });
+
+            modelBuilder.Entity("Aqours.Domain.Features.SupplySites.SupplyUpdate", b =>
+                {
+                    b.HasOne("Aqours.Domain.Features.SupplySites.SupplySite", null)
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_supply_updates_supply_sites_site_id");
+
+                    b.HasOne("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", null)
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_supply_updates_asp_net_users_updated_by_id");
                 });
 
             modelBuilder.Entity("Aqours.Infrastructure.Features.Accounts.RefreshFamily", b =>

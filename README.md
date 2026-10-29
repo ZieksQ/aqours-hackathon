@@ -1,6 +1,6 @@
 # Aqours
 
-Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, Admin supplier-site management in the web portal and API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. Customer supplier-site maps, supply, weather, the Updates inbox, and full Profile remain deferred.
+Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, Admin supplier-site management in the web portal and API, the supplier personnel manual supply monitoring API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. Customer supplier-site maps and supply display, weather, the Updates inbox, and full Profile remain deferred.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ cp .env.example .env
 
 Skip the copy if `.env` already exists. Set your own `POSTGRES_PASSWORD` in `.env` before starting PostgreSQL. Initial setup on the original development device created an ignored `.env` with a random local password. Configure the API's connection string, JWT key, and initial administrator through user secrets or environment variables as described in [authentication setup](docs/authentication.md).
 
-Before the first API start, restore the pinned EF tool and apply all committed migrations after configuring the connection string (including `InitialAccounts`, `CustomerReports`, `StaffReportWorkspace`, and `SupplySiteManagement`):
+Before the first API start, restore the pinned EF tool and apply all committed migrations after configuring the connection string (including `InitialAccounts`, `CustomerReports`, `StaffReportWorkspace`, `SupplySiteManagement`, and `20261029071543_ManualSupplyMonitoring`):
 
 ```sh
 pnpm db:up
@@ -29,7 +29,7 @@ dotnet tool restore
 dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup-project apps/api/src/Aqours.Api
 ```
 
-Startup checks for pending migrations and seeds the supported roles and configured first administrator. It does not apply migrations automatically. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), and [Supply Site Management spec](docs/features/supply-site-management/spec.md) for their contracts and migration details.
+Startup checks for pending migrations and seeds the supported roles and configured first administrator. It does not apply migrations automatically. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), [Supply Site Management spec](docs/features/supply-site-management/spec.md), and [Manual Supply Monitoring API spec](docs/features/manual-supply-monitoring/spec.md) for their contracts and migration details.
 
 ```sh
 pnpm dev
@@ -61,7 +61,7 @@ This connection string can also be set with `dotnet user-secrets`; see [authenti
 
 ## Web styling
 
-Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, an Admin account directory and creation form, password change, report dashboards with seven-day submission charts and workload summaries, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Admins can list, add, view, and edit supply sites at `/supply-sites`, including canonical Philippine addresses and independent map pins. Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; Customer supplier-site maps, supply, weather, an Updates inbox, and full Profile remain deferred.
+Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, an Admin account directory and creation form, password change, report dashboards with seven-day submission charts and workload summaries, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Admins can list, add, view, and edit supply sites at `/supply-sites`, including canonical Philippine addresses and independent map pins. Supplier personnel can use the manual supply monitoring API; a supplier supply interface is not implemented. Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; Customer supplier-site maps and supply display, weather, an Updates inbox, and full Profile remain deferred.
 
 Copy `apps/web/.env.example` to `apps/web/.env.local` and set `VITE_GEOAPIFY_API_KEY` for supply-site maps. This browser-visible key should be restricted to your application origins. Restart Vite after changing it; builds use the configured value at build time. Map loading failures have a retry action, and an unconfigured map shows a setup notice. The address selectors do not move or verify the map pin.
 

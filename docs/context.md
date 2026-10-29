@@ -1,6 +1,6 @@
 # Water Reporting and Response System — App Context & MVP
 
-> This document defines the hackathon MVP. Account authentication, the Customer reporting API, the Staff report queue and ticket workspace, and mobile Customer login, Home, reporting, history, and supplier conversations have been implemented; other workflows below describe product scope and are not implied to be implemented.
+> This document defines the hackathon MVP. Account authentication, the Customer reporting API, the Staff report queue and ticket workspace, manual supply monitoring API, and mobile Customer login, Home, reporting, history, and supplier conversations have been implemented; other workflows below describe product scope and are not implied to be implemented.
 
 ## 1. App context
 
@@ -29,7 +29,7 @@ A simple water reporting, supplier response, and manual water supply monitoring 
 - Customers can access only their own reports.
 - Only authorized supplier personnel can access customer report locations.
 
-**Implemented account and Customer reporting slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. Admins can manage supplier site records through the Supply Site Management API and the web directory, address forms, and map-pin picker. The web portal also includes an Admin-only account directory and report dashboards with seven-day submission charts, issue breakdown, and Staff workload derived from report data. The mobile app implements Customer sign-in, initial password change, Home with the latest owned report, report submission with address and location selection, owned-report history, and details with progress and supplier conversations. Customer supplier-site maps, supply monitoring, weather warnings, an Updates inbox, and full Profile remain deferred. See [the authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), [Staff report workspace spec](features/staff-report-workspace/spec.md), and [Supply Site Management spec](features/supply-site-management/spec.md).
+**Implemented account and reporting slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. Admins can manage supplier site records through the Supply Site Management API and web directory, address forms, and map-pin picker. Supplier personnel can read site supply summaries and history through the Manual Supply Monitoring API; Staff can append manual supply updates. The web portal also includes an Admin-only account directory and report dashboards with seven-day submission charts, issue breakdown, and Staff workload derived from report data. The mobile app implements Customer sign-in, initial password change, Home with the latest owned report, report submission with address and location selection, owned-report history, and details with progress and supplier conversations. Customer supplier-site maps, mobile supply display, weather warnings, an Updates inbox, and full Profile remain deferred. See the [authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), [Staff report workspace spec](features/staff-report-workspace/spec.md), [Supply Site Management spec](features/supply-site-management/spec.md), and [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md).
 
 ### 3.2 Customer water reporting
 
@@ -61,6 +61,8 @@ The report location represents where the problem occurs. It may differ from the 
 - Keep the report status consistent between the mobile app and supplier portal.
 
 ### 3.5 Manual supply monitoring
+
+The supplier personnel API for manual site supply readings is implemented; customer-facing site supply displays and weather warnings are still deferred. See the [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md).
 
 - Record supply availability per site: **Normal**, **Low**, or **Unavailable**.
 - Record who updated the site and when.
@@ -185,7 +187,7 @@ If time gets tight, simplify styling and extra screens first.
 - [ ] The handler can add responses and mark the report Resolved.
 - [ ] Admin can manage users and configuration and monitor reports through overview dashboards.
 - [ ] Customer can view the report status and supplier responses in the mobile app.
-- [ ] Staff can update a site's supply status, with updater and timestamp recorded.
+- [x] Staff can record a site's supply status through the supplier API, with updater and timestamp recorded.
 - [ ] Customer can locate supplier sites and inspect their supply information.
 - [ ] Authorized staff can locate reports on the portal map.
 - [ ] Heat forecast plus recorded low supply triggers a clearly labeled warning.
@@ -206,7 +208,7 @@ If time gets tight, simplify styling and extra screens first.
 
 ## 9. Implementation context and open choices
 
-The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication and the Customer API for report submission, customer-owned listing, and detail retrieval are implemented. The Staff report queue and ticket workspace are implemented. The mobile client implements Customer login/Home, report submission with location selection, owned-report history, and supplier conversations. Customer supplier-site maps, supply monitoring, weather warnings, an Updates inbox, and full Profile remain deferred.
+The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication, Customer reporting, the Staff report queue and ticket workspace, Admin site management, and the supplier personnel Manual Supply Monitoring API are implemented. The mobile client implements Customer login/Home, report submission with location selection, owned-report history, and supplier conversations. Customer supplier-site maps and supply display, weather warnings, an Updates inbox, and full Profile remain deferred.
 
 Before implementing the remaining workflow slices, settle:
 

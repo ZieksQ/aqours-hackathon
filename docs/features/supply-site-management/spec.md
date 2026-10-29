@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The API provides Admin-only create, list, read, and full-update operations for supplier supply-site records. The supplier web portal implements the Admin directory, create, detail, and edit screens; mobile management remains deferred.
+The API provides Admin-only create, list, read, and full-update operations for supplier supply-site records. The supplier web portal implements the Admin directory, create, detail, and edit screens; mobile management remains deferred. Manual supply readings use a separate API; see the [Manual Supply Monitoring API spec](../manual-supply-monitoring/spec.md).
 
 Supplier sites have a persistent GUID, trimmed name, resolved Philippine address, latitude and longitude, and UTC creation and update timestamps. Names are limited to 200 characters. Duplicate names are allowed. The complete address is selected from canonical PSGC codes and includes required trimmed street or landmark details up to 500 characters. The API resolves and snapshots canonical administrative names. Latitude and longitude must be finite numbers in the inclusive ranges -90 to 90 and -180 to 180. Coordinates are submitted independently: the API does not infer them from an address or check that they fall within the selected administrative area.
 
@@ -90,7 +90,7 @@ dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup
 
 - Mobile site management screens.
 - Supplier organization ownership, site deletion or archiving, and site-to-report/service-area relationships.
-- Supply status monitoring, Customer site maps, operational map directories, weather warnings, geocoding, or deriving coordinates from an address.
+- Customer site maps and supply display, supplier supply dashboards, weather warnings, geocoding, or deriving coordinates from an address. Manual supply reading and history APIs are documented in the [Manual Supply Monitoring API spec](../manual-supply-monitoring/spec.md).
 
 ## Verification
 

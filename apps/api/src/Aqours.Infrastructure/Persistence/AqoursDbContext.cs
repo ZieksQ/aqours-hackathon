@@ -13,6 +13,8 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
 {
     public DbSet<SupplySite> SupplySites => Set<SupplySite>();
 
+    public DbSet<SupplyUpdate> SupplyUpdates => Set<SupplyUpdate>();
+
     public DbSet<Report> Reports => Set<Report>();
 
     public DbSet<ReportMessage> ReportMessages => Set<ReportMessage>();
@@ -22,6 +24,7 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new ReportConfiguration());
         builder.ApplyConfiguration(new SupplySiteConfiguration());
+        builder.ApplyConfiguration(new SupplyUpdateConfiguration());
         builder.Entity<ReportMessage>(message =>
         {
             message.ToTable("report_messages");

@@ -58,6 +58,7 @@ app.MapAccountEndpoints();
 app.MapReportEndpoints();
 app.MapStaffReportEndpoints();
 app.MapSupplySiteEndpoints();
+app.MapSupplyMonitoringEndpoints();
 app.MapHub<ReportsHub>("/api/hubs/reports", options => options.CloseOnAuthenticationExpiration = true);
 app.Run();
 
