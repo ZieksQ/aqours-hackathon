@@ -2,7 +2,9 @@
 
 ## Status and scope
 
-The supplier API records manual supply availability readings for existing sites. Admin and Staff can read the site list, site details, latest reading, and reading history through a supplier personnel cookie session. Only Staff can record readings. This is an API capability; the customer app’s supplier-site map and supply display, supplier supply dashboard, and weather warnings remain deferred. Readings are manually entered observations, not live sensor data.
+The supplier API and Admin/Staff web interface support manual supply availability readings for existing sites. Admin and Staff can browse the paginated site directory and read site details, latest readings, and reading history through a supplier personnel cookie session. Only Staff can record readings. The customer app’s supplier-site map and supply display, a supplier supply dashboard, and weather warnings remain deferred. Readings are manually entered observations, not live sensor data.
+
+The web interface is available at `/supply-monitoring`. Staff can open a recording dialog and append a status; Admin has read-only access. The directory and history use API pagination, and the UI displays exact Asia/Manila recording times with named attribution. A site with no readings is shown as unrecorded, with an empty history. See the reviewed [Stitch design proposal](../../../design/manual-supply-monitoring/README.md) for the visual references; the design folder is locally ignored.
 
 Each reading has one of three exact statuses: `Normal`, `Low`, or `Unavailable`. Repeating the current status is allowed and creates a new history entry with fresh updater attribution and time. A reading stores the site, status, authenticated Staff account ID, a snapshot of that account’s first and last name joined by one space, and a UTC timestamp. The timestamp comes from `TimeProvider` and is truncated to PostgreSQL microsecond precision; clients cannot backdate readings. Readings are append-only through this API; no edit or delete operation is exposed. A database-generated sequence orders readings, including when timestamps tie, and determines both the latest reading and history order. Concurrent accepted inserts are preserved as separate readings. Site metadata edits do not change supply history, and supply readings do not modify the site's `updatedAt` metadata timestamp.
 
@@ -10,12 +12,12 @@ Each reading has one of three exact statuses: `Normal`, `Low`, or `Unavailable`.
 
 All routes return camelCase JSON and follow the API’s non-cacheable response policy. List and history responses use `{ items, page, pageSize, totalCount }`.
 
-| Method and route | Access | Result |
-| --- | --- | --- |
-| `GET /api/staff/supply-sites?page={page}&pageSize={pageSize}` | Fully onboarded Admin or Staff personnel cookie session | `200` monitored site page |
-| `GET /api/staff/supply-sites/{id}` | Fully onboarded Admin or Staff personnel cookie session | `200` monitored site or `404` |
-| `GET /api/staff/supply-sites/{id}/supply-updates?page={page}&pageSize={pageSize}` | Fully onboarded Admin or Staff personnel cookie session | `200` history page or `404` site |
-| `POST /api/staff/supply-sites/{id}/supply-updates` | Fully onboarded Staff cookie session and CSRF token | `201` recorded reading, `403` Admin, or `404` site |
+| Method and route                                                                  | Access                                                  | Result                                             |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------- |
+| `GET /api/staff/supply-sites?page={page}&pageSize={pageSize}`                     | Fully onboarded Admin or Staff personnel cookie session | `200` monitored site page                          |
+| `GET /api/staff/supply-sites/{id}`                                                | Fully onboarded Admin or Staff personnel cookie session | `200` monitored site or `404`                      |
+| `GET /api/staff/supply-sites/{id}/supply-updates?page={page}&pageSize={pageSize}` | Fully onboarded Admin or Staff personnel cookie session | `200` history page or `404` site                   |
+| `POST /api/staff/supply-sites/{id}/supply-updates`                                | Fully onboarded Staff cookie session and CSRF token     | `201` recorded reading, `403` Admin, or `404` site |
 
 Page defaults to `1` and pageSize to `20`; page must be positive and pageSize must be from `1` through `100`. Invalid values return `400` validation problems. An out-of-range page returns an empty `items` list with the requested pagination metadata. The monitored-site list sorts by site name and then site ID. History sorts by descending database sequence, newest first. A known site with no readings has `latestSupply: null`; its history endpoint returns an empty `items` array and `totalCount: 0`. An unknown valid GUID site ID returns `404` from the detail and history endpoints.
 

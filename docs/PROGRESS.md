@@ -1,10 +1,7 @@
 # Progress
 
 Archived foundation setup: [2026-10-28 archive](memory/progress-2026-10-28-01.md).
-
-- 2026-10-25: Added pinned .NET 10 EF Core PostgreSQL, Identity persistence, design-time tooling, and naming-convention dependencies; registered the Infrastructure context with snake_case naming, including explicit Identity table/index mappings, and documented connection-string setup. Verified the solution builds with zero warnings/errors, PostgreSQL DDL uses snake_case for all 64 table/column/key/index names, missing configuration reports a clear error, and `/health` returns HTTP 200 without database configuration; migrations and account endpoints remain deferred.
-
-- 2026-10-25: Implemented role-based Admin, Staff, and Customer authentication with web cookie/CSRF sessions, mobile JWT and rotating refresh sessions, forced initial password changes, an explicit PostgreSQL migration and safe startup seeding; added web account screens and documented contracts, secrets, migration/setup, and deferred scope. Verified the solution build and formatting, EF model snapshot, PostgreSQL integration suite (12/12), web build/lint/Prettier, and browser auth flows; visual inspection found zero failures with two accepted layout warnings.
+Archived early implementation: [2026-10-25 archive](memory/progress-2026-10-25-01.md).
 
 - 2026-10-25: Added the initial Admin configuration section to API appsettings with nonsecret development defaults and a password supplied through user secrets; configured the missing local JWT/database/Admin secrets and explicitly applied the authentication migration. Verified normal development startup, health HTTP 200, seeded Admin sign-in with mandatory password change, and logout HTTP 204; no credentials were committed.
 
@@ -47,3 +44,5 @@ Archived foundation setup: [2026-10-28 archive](memory/progress-2026-10-28-01.md
 - 2026-10-29: Implemented Staff-only manual supply readings with personnel reads, latest status, permanent attributed history, deterministic ordering, and an additive EF migration; documented contracts and setup. Verified the solution build, C# formatting, EF model consistency, explicit migration to the dedicated test database, and all 36 PostgreSQL integration tests; the development database was not migrated.
 
 - 2026-10-29: Generated and refined six manual supply monitoring designs in the existing Aqours web Stitch project; saved PNG/HTML exports, feature context, prompts, and metadata in ignored `design/manual-supply-monitoring/`. Validated export pairs and role/content constraints; recorded responsive and style issues from browser inspection, with no frontend implementation changes.
+
+- 2026-10-29: Implemented the Admin/Staff `/supply-monitoring` directory, paginated site history, Staff-only reading dialog, and read-only Admin view from the reviewed designs. Updated product/API documentation; web build, lint, and formatting passed, and fixture-backed browser checks covered role access, save/retry, keyboard focus, pagination, and narrow-screen overflow. Live-backend UI verification remains pending.

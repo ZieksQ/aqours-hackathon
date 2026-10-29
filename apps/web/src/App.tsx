@@ -16,6 +16,7 @@ import {
   FiUsers,
   FiSearch,
   FiDroplet,
+  FiActivity,
 } from "react-icons/fi";
 import { Brand } from "./shared/Brand";
 import { FormError } from "./shared/FormError";
@@ -46,7 +47,9 @@ import { Reports } from "./features/reports/Reports";
 import { Accounts } from "./features/accounts/Accounts";
 import { Dashboard } from "./features/dashboard/Dashboard";
 import { SupplySites } from "./features/supply-sites/SupplySites";
+import { SupplyMonitoring } from "./features/supply-monitoring/SupplyMonitoring";
 import { readSite } from "./features/supply-sites/api";
+import { readMonitoredSite } from "./features/supply-monitoring/api";
 
 function Portal({ account }: { account: Account }) {
   const [menu, setMenu] = useState(false);
@@ -55,14 +58,20 @@ function Portal({ account }: { account: Account }) {
   const closeMenu = useCallback(() => setMenu(false), []);
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const monitoring = pathname.startsWith("/supply-monitoring");
   const siteId = pathname.match(
-    /^\/supply-sites\/([0-9a-f-]{36})(?:\/edit)?$/i,
+    /^\/(?:supply-sites|supply-monitoring)\/([0-9a-f-]{36})(?:\/edit)?$/i,
   )?.[1];
   const breadcrumbSite = useQuery({
-    queryKey: ["supply-site", siteId ?? ""],
-    queryFn: () => readSite(siteId!),
+    queryKey: monitoring
+      ? ["supply-monitoring", "site", siteId ?? ""]
+      : ["supply-site", siteId ?? ""],
+    queryFn: () =>
+      monitoring ? readMonitoredSite(siteId!) : readSite(siteId!),
     enabled:
-      !!siteId && account.role === "Admin" && !account.requiresPasswordChange,
+      !!siteId &&
+      (monitoring || account.role === "Admin") &&
+      !account.requiresPasswordChange,
     retry: false,
   });
   useEffect(() => {
@@ -90,23 +99,25 @@ function Portal({ account }: { account: Account }) {
       document.removeEventListener("keydown", dismiss);
     };
   }, []);
-  const page = pathname.startsWith("/supply-sites")
-    ? pathname === "/supply-sites/new"
-      ? "Add supply site"
-      : pathname.endsWith("/edit")
-        ? "Edit supply site"
-        : "Supply sites"
-    : pathname.startsWith("/reports/")
-      ? "Ticket workspace"
-      : pathname.startsWith("/reports")
-        ? "Reports"
-        : pathname === "/accounts/new"
-          ? "Create account"
-          : pathname === "/accounts"
-            ? "Accounts"
-            : pathname === "/change-password"
-              ? "Change password"
-              : "Dashboard";
+  const page = pathname.startsWith("/supply-monitoring")
+    ? "Supply monitoring"
+    : pathname.startsWith("/supply-sites")
+      ? pathname === "/supply-sites/new"
+        ? "Add supply site"
+        : pathname.endsWith("/edit")
+          ? "Edit supply site"
+          : "Supply sites"
+      : pathname.startsWith("/reports/")
+        ? "Ticket workspace"
+        : pathname.startsWith("/reports")
+          ? "Reports"
+          : pathname === "/accounts/new"
+            ? "Create account"
+            : pathname === "/accounts"
+              ? "Accounts"
+              : pathname === "/change-password"
+                ? "Change password"
+                : "Dashboard";
   const logout = useMutation({
     mutationFn: () => api("/auth/web/logout", {}),
     onSuccess: async () => {
@@ -143,7 +154,7 @@ function Portal({ account }: { account: Account }) {
                       : "/dashboard"
                 }
               >
-                {pathname.startsWith("/supply-sites")
+                {pathname.startsWith("/supply-sites") || monitoring
                   ? "Aqours"
                   : pathname.startsWith("/accounts")
                     ? "Accounts"
@@ -152,6 +163,12 @@ function Portal({ account }: { account: Account }) {
                       : "Supplier portal"}
               </Link>
               <span aria-hidden="true">/</span>
+              {monitoring && siteId && (
+                <>
+                  <Link to="/supply-monitoring">Supply monitoring</Link>
+                  <span aria-hidden="true">/</span>
+                </>
+              )}
               {pathname.startsWith("/supply-sites/") && (
                 <>
                   <Link to="/supply-sites">Supply sites</Link>
@@ -281,6 +298,15 @@ function Portal({ account }: { account: Account }) {
                 <FiInbox aria-hidden="true" />
                 <span className="ui-nav-label">Reports</span>
               </NavLink>
+              <NavLink
+                to="/supply-monitoring"
+                onClick={closeMenu}
+                aria-label="Supply monitoring"
+                title={collapsed ? "Supply monitoring" : undefined}
+              >
+                <FiActivity aria-hidden="true" />
+                <span className="ui-nav-label">Supply monitoring</span>
+              </NavLink>
               {account.role === "Admin" && (
                 <NavLink
                   to="/supply-sites"
@@ -387,6 +413,10 @@ function SessionRoutes() {
     <Routes>
       <Route element={<Portal account={account} />}>
         <Route path="/reports/*" element={<Reports account={account} />} />
+        <Route
+          path="/supply-monitoring/*"
+          element={<SupplyMonitoring account={account} />}
+        />
         <Route path="/dashboard" element={<Dashboard account={account} />} />
         <Route
           path="/supply-sites/*"

@@ -13,3 +13,4 @@ export {
 export { AppShell, Navbar, Sidebar } from "./Navigation";
 export { buttonClassName, type ButtonVariant } from "./buttonStyles";
 export { Pagination, Table } from "./Tables";
+export { Dialog } from "./Dialog";
