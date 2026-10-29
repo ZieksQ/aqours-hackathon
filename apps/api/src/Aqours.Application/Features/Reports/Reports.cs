@@ -1,17 +1,12 @@
+using Aqours.Application.Locations;
+using Aqours.Domain.Locations;
 using Aqours.Application.Features.Accounts;
 using Aqours.Domain.Features.Reports;
 
 namespace Aqours.Application.Features.Reports;
 
-public sealed record AddressInput(string? RegionCode, string? ProvinceCode, string? CityMunicipalityCode,
-    string? SubMunicipalityCode, string? BarangayCode, string? Details);
 public sealed record SubmitReport(string? IssueType, string? Description, AddressInput? Address, double? Latitude, double? Longitude);
 public sealed record ReportPage(IReadOnlyList<Report> Items, int Page, int PageSize, int TotalCount);
-
-public interface IPsgcAddresses
-{
-    Outcome<ReportAddress> Resolve(AddressInput address);
-}
 
 public interface IReportStore
 {
@@ -32,11 +27,11 @@ public sealed class ReportService(IReportStore store, IPsgcAddresses addresses, 
         var description = input.Description?.Trim();
         if (string.IsNullOrEmpty(description) || description.Length > Report.MaxDescriptionLength)
             errors["description"] = ["Description is required (up to 2,000 characters)."];
-        if (input.Latitude is not { } latitude || !Report.ValidLatitude(latitude))
+        if (input.Latitude is not { } latitude || !Coordinates.ValidLatitude(latitude))
             errors["latitude"] = ["Latitude is required and must be a finite number between -90 and 90."];
-        if (input.Longitude is not { } longitude || !Report.ValidLongitude(longitude))
+        if (input.Longitude is not { } longitude || !Coordinates.ValidLongitude(longitude))
             errors["longitude"] = ["Longitude is required and must be a finite number between -180 and 180."];
-        ReportAddress? address = null;
+        PsgcAddress? address = null;
         if (input.Address is null) errors["address"] = ["Address is required."];
         else
         {

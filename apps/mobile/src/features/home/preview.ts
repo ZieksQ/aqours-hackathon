@@ -38,3 +38,11 @@ export const previewMessage: Message = {
   body: "Our team is checking the pressure in your area.",
   createdAt: "2026-10-27T09:10:00+08:00",
 };
+export const previewClaimedAt = "2026-10-27T08:42:00+08:00";
+export const previewCustomerReply: Message = {
+  id: "preview-customer-reply",
+  senderName: "Mia Santos",
+  senderRole: "Customer",
+  body: "Thank you. Please let me know when the pressure is back to normal.",
+  createdAt: "2026-10-27T09:18:00+08:00",
+};

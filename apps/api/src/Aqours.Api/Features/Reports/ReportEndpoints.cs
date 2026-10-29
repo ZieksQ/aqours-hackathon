@@ -1,3 +1,4 @@
+using Aqours.Api.Locations;
 using System.Security.Claims;
 using System.Globalization;
 using Aqours.Application.Features.Reports;
@@ -5,13 +6,8 @@ using Aqours.Domain.Features.Reports;
 
 namespace Aqours.Api.Features.Reports;
 
-public sealed record ReportAddressRequest(string? RegionCode, string? ProvinceCode, string? CityMunicipalityCode,
-    string? SubMunicipalityCode, string? BarangayCode, string? Details);
-public sealed record SubmitReportRequest(string? IssueType, string? Description, ReportAddressRequest? Address, double? Latitude, double? Longitude);
-public sealed record ReportAddressResponse(string RegionCode, string RegionName, string? ProvinceCode, string? ProvinceName,
-    string CityMunicipalityCode, string CityMunicipalityName, string? SubMunicipalityCode, string? SubMunicipalityName,
-    string BarangayCode, string BarangayName, string Details);
-public sealed record ReportResponse(Guid Id, string IssueType, string Description, ReportAddressResponse Address,
+public sealed record SubmitReportRequest(string? IssueType, string? Description, AddressRequest? Address, double? Latitude, double? Longitude);
+public sealed record ReportResponse(Guid Id, string IssueType, string Description, AddressResponse Address,
     double Latitude, double Longitude, string Status, DateTimeOffset CreatedAt)
 {
     public static ReportResponse From(Report report)

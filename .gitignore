@@ -492,4 +492,4 @@ coverage/
 .taste-skill/
 
 # Local Stitch design exports for review
-/design/aqours-mobile-stitch/
+/design/*/

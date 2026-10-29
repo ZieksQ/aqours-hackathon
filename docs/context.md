@@ -1,6 +1,6 @@
 # Water Reporting and Response System — App Context & MVP
 
-> This document defines the hackathon MVP. Account authentication, the Customer reporting API, the Staff report queue and ticket workspace, and mobile Customer login, Home, reporting, history, and supplier conversations have been implemented; other workflows below describe product scope and are not implied to be implemented.
+> This document defines the hackathon MVP. Account authentication, the Customer reporting API, the Staff report queue and ticket workspace, manual supply monitoring API and Admin/Staff web interface, and mobile Customer login, Home, reporting, history, and supplier conversations have been implemented; other workflows below describe product scope and are not implied to be implemented.
 
 ## 1. App context
 
@@ -14,11 +14,11 @@ A simple water reporting, supplier response, and manual water supply monitoring 
 
 ## 2. Users and responsibilities
 
-| Role | Interface | MVP responsibilities |
-| --- | --- | --- |
-| Supplier admin | Web portal | Create staff accounts, manage sites and service areas, configure warning thresholds, view overview dashboards |
+| Role           | Interface  | MVP responsibilities                                                                                                |
+| -------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- |
+| Supplier admin | Web portal | Create staff accounts, manage sites and service areas, configure warning thresholds, view overview dashboards       |
 | Supplier staff | Web portal | View the shared report queue, take reports, add response notes, update report statuses, manually update site supply |
-| Customer | Mobile app | View supplier sites, submit reports with locations, track their own reports and responses |
+| Customer       | Mobile app | View supplier sites, submit reports with locations, track their own reports and responses                           |
 
 ## 3. MVP features
 
@@ -29,7 +29,7 @@ A simple water reporting, supplier response, and manual water supply monitoring 
 - Customers can access only their own reports.
 - Only authorized supplier personnel can access customer report locations.
 
-**Implemented account and Customer reporting slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. The web portal also includes an Admin-only account directory and report dashboards with seven-day submission charts, issue breakdown, and Staff workload derived from report data. The mobile app implements Customer sign-in, initial password change, Home with the latest owned report, report submission with address and location selection, owned-report history, and details with progress and supplier conversations. Supplier-site maps, supply monitoring, weather warnings, an Updates inbox, and full Profile remain deferred. See [the authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), and [Staff report workspace spec](features/staff-report-workspace/spec.md).
+**Implemented account and reporting slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. Admins can manage supplier site records through the Supply Site Management API and web directory, address forms, and map-pin picker. The supplier portal includes a paginated manual supply monitoring directory and site history for Admin and Staff, with Staff-only recording. The web portal also includes an Admin-only account directory and report dashboards with seven-day submission charts, issue breakdown, and Staff workload derived from report data. The mobile app implements Customer sign-in, initial password change, Home with the latest owned report, report submission with address and location selection, owned-report history, and details with progress and supplier conversations. Customer supplier-site maps and mobile supply display, weather warnings, an Updates inbox, and full Profile remain deferred. See the [authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), [Staff report workspace spec](features/staff-report-workspace/spec.md), [Supply Site Management spec](features/supply-site-management/spec.md), and [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md).
 
 ### 3.2 Customer water reporting
 
@@ -62,6 +62,8 @@ The report location represents where the problem occurs. It may differ from the 
 
 ### 3.5 Manual supply monitoring
 
+The supplier personnel API and Admin/Staff web interface for manual site supply readings are implemented; customer-facing site supply displays and weather warnings are still deferred. The portal shows paginated site summaries and exact local recording times, and site details retain attributed reading history. Staff can append a Normal, Low, or Unavailable reading; Admin can inspect without recording. These are manual observations, not live sensor data. See the [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md).
+
 - Record supply availability per site: **Normal**, **Low**, or **Unavailable**.
 - Record who updated the site and when.
 - Display the latest recorded supply status and update time.
@@ -70,11 +72,11 @@ The report location represents where the problem occurs. It may differ from the 
 
 ### 3.6 Maps
 
-| Map view | Information shown | Interaction |
-| --- | --- | --- |
-| Customer app | Supplier site pins and the customer's location with permission | Tap a site to see its name, address, supply status, and last update |
-| Customer report form | Location of the reported problem | Use current location or manually drop a pin |
-| Supplier portal | Supplier sites and authorized report locations | Tap reports to view issue, handler, status, and location |
+| Map view             | Information shown                                              | Interaction                                                         |
+| -------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Customer app         | Supplier site pins and the customer's location with permission | Tap a site to see its name, address, supply status, and last update |
+| Customer report form | Location of the reported problem                               | Use current location or manually drop a pin                         |
+| Supplier portal      | Supplier sites and authorized report locations                 | Tap reports to view issue, handler, status, and location            |
 
 Customers see supplier sites and their own reports. Do not expose other customers' report locations. Live tracking and route navigation are outside scope.
 
@@ -164,15 +166,15 @@ Combine screens where useful to keep implementation small.
 
 ## 6. One-week delivery plan
 
-| Day | Focus | Expected output |
-| --- | --- | --- |
-| 1 | Foundation | Database, role-based access, seeded demo accounts and sites |
-| 2 | Customer reporting | Submission, report list, and report details |
-| 3 | Supplier response | Shared queue, staff claiming, response notes, and status tracking |
-| 4 | Supply and maps | Manual site updates, supplier pins, and report pins |
-| 5 | Weather warnings | Forecast integration, configurable rule, and warning display |
-| 6 | Integration and testing | Verify permissions, locations, status changes, and missing-data behavior |
-| 7 | Demo buffer | Fix issues, polish screens, and rehearse the demonstration |
+| Day | Focus                   | Expected output                                                          |
+| --- | ----------------------- | ------------------------------------------------------------------------ |
+| 1   | Foundation              | Database, role-based access, seeded demo accounts and sites              |
+| 2   | Customer reporting      | Submission, report list, and report details                              |
+| 3   | Supplier response       | Shared queue, staff claiming, response notes, and status tracking        |
+| 4   | Supply and maps         | Manual site updates, supplier pins, and report pins                      |
+| 5   | Weather warnings        | Forecast integration, configurable rule, and warning display             |
+| 6   | Integration and testing | Verify permissions, locations, status changes, and missing-data behavior |
+| 7   | Demo buffer             | Fix issues, polish screens, and rehearse the demonstration               |
 
 If time gets tight, simplify styling and extra screens first.
 
@@ -185,7 +187,7 @@ If time gets tight, simplify styling and extra screens first.
 - [ ] The handler can add responses and mark the report Resolved.
 - [ ] Admin can manage users and configuration and monitor reports through overview dashboards.
 - [ ] Customer can view the report status and supplier responses in the mobile app.
-- [ ] Staff can update a site's supply status, with updater and timestamp recorded.
+- [x] Staff can record a site's supply status through the supplier API, with updater and timestamp recorded.
 - [ ] Customer can locate supplier sites and inspect their supply information.
 - [ ] Authorized staff can locate reports on the portal map.
 - [ ] Heat forecast plus recorded low supply triggers a clearly labeled warning.
@@ -206,7 +208,7 @@ If time gets tight, simplify styling and extra screens first.
 
 ## 9. Implementation context and open choices
 
-The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication and the Customer API for report submission, customer-owned listing, and detail retrieval are implemented. The Staff report queue and ticket workspace are implemented. The mobile client implements Customer login/Home, report submission with location selection, owned-report history, and supplier conversations. Supplier-site maps, supply monitoring, weather warnings, an Updates inbox, and full Profile remain deferred.
+The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication, Customer reporting, the Staff report queue and ticket workspace, Admin site management, and the supplier personnel Manual Supply Monitoring API and Admin/Staff web interface are implemented. The mobile client implements Customer login/Home, report submission with location selection, owned-report history, and supplier conversations. Customer supplier-site maps and supply display, weather warnings, an Updates inbox, and full Profile remain deferred.
 
 Before implementing the remaining workflow slices, settle:
 

@@ -149,6 +149,17 @@ export class ApiClient {
     return this.refreshing;
   }
 
+  async getAccessToken(): Promise<string> {
+    if (
+      this.session &&
+      Date.parse(this.session.accessTokenExpiresAt) <= Date.now()
+    )
+      await this.refresh();
+    if (!this.session)
+      throw new ApiError("Your session expired. Please sign in again.", 401);
+    return this.session.accessToken;
+  }
+
   async request<T>(
     path: string,
     body?: object,
@@ -161,15 +172,7 @@ export class ApiClient {
         "Set EXPO_PUBLIC_API_URL to your supplier API address before signing in.",
         0,
       );
-    if (
-      authenticated &&
-      this.session &&
-      Date.parse(this.session.accessTokenExpiresAt) <= Date.now()
-    )
-      await this.refresh();
-    if (authenticated && !this.session)
-      throw new ApiError("Your session expired. Please sign in again.", 401);
-    const token = this.session?.accessToken;
+    const token = authenticated ? await this.getAccessToken() : undefined;
     let response: Response;
     const controller = new AbortController();
     const abort = () => controller.abort();

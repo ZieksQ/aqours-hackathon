@@ -13,6 +13,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { HomeScreen } from "../features/home/HomeScreen";
 import { reportDate } from "../features/home/ReportCard";
 import { reportKeys } from "../features/reports/api";
+import { ReportConversationScreen } from "../features/reports/ReportConversationScreen";
+import { conversationStyles } from "../features/reports/conversationStyles";
 import { emptyDraft } from "../features/reports/form";
 import { ReportDetailScreen } from "../features/reports/ReportDetailScreen";
 import { ReportScreen } from "../features/reports/ReportScreen";
@@ -41,6 +43,9 @@ export function CustomerApp({
   const [draft, setDraft] = useState(emptyDraft);
   const [receipt, setReceipt] = useState<Report | null>(null);
   const [reportId, setReportId] = useState<string | null>(null);
+  const [reportPage, setReportPage] = useState<"details" | "conversation">(
+    "details",
+  );
   const [replies, setReplies] = useState<Record<string, string>>({});
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -59,6 +64,7 @@ export function CustomerApp({
     setScreen("Report");
   }
   function viewReport(report: Report) {
+    setReportPage("details");
     if (!preview)
       queryClient.setQueryData(
         reportKeys.detail(account.id, report.id),
@@ -198,7 +204,8 @@ export function CustomerApp({
                 else if (label === "Updates")
                   Alert.alert(
                     "Updates",
-                    "Open My reports to read supplier responses and follow report progress. An updates inbox is coming later.",
+                    "Open My reports to read supplier responses and follow " +
+                      "report progress. An updates inbox is coming later.",
                     [
                       { text: "Close", style: "cancel" },
                       {
@@ -230,30 +237,52 @@ export function CustomerApp({
       <Modal
         visible={reportId !== null}
         animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setReportId(null)}
+        presentationStyle="fullScreen"
+        onRequestClose={() => {
+          if (reportPage === "conversation") setReportPage("details");
+          else setReportId(null);
+        }}
       >
-        <SafeAreaView style={s.page}>
+        <SafeAreaView
+          style={
+            reportPage === "conversation"
+              ? conversationStyles.safePage
+              : s.page
+          }
+        >
           {reportId && (
-            <ReportDetailScreen
-              key={reportId}
-              api={api}
-              accountId={account.id}
-              reportId={reportId}
-              preview={preview}
-              draft={replies[reportId] ?? ""}
-              onDraftChange={(reply) =>
-                setReplies((current) => ({ ...current, [reportId]: reply }))
-              }
-              backLabel={
-                screen === "Reports"
-                  ? "Back to My reports"
-                  : screen === "Home"
-                    ? "Back to Home"
-                    : "Back to confirmation"
-              }
-              onBack={() => setReportId(null)}
-            />
+            reportPage === "conversation" ? (
+              <ReportConversationScreen
+                key={`${reportId}-conversation`}
+                api={api}
+                accountId={account.id}
+                reportId={reportId}
+                preview={preview}
+                draft={replies[reportId] ?? ""}
+                onDraftChange={(reply) =>
+                  setReplies((current) => ({ ...current, [reportId]: reply }))
+                }
+                onBack={() => setReportPage("details")}
+                onViewDetails={() => setReportPage("details")}
+              />
+            ) : (
+              <ReportDetailScreen
+                key={`${reportId}-details`}
+                api={api}
+                accountId={account.id}
+                reportId={reportId}
+                preview={preview}
+                backLabel={
+                  screen === "Reports"
+                    ? "Back to My reports"
+                    : screen === "Home"
+                      ? "Back to Home"
+                      : "Back to confirmation"
+                }
+                onBack={() => setReportId(null)}
+                onOpenConversation={() => setReportPage("conversation")}
+              />
+            )
           )}
         </SafeAreaView>
       </Modal>

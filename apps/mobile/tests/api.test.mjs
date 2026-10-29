@@ -176,3 +176,35 @@ test("validation messages are surfaced and private server error details are hidd
     (error) => !error.message.includes("database") && error.status === 500,
   );
 });
+
+test("live connections share token rotation with concurrent REST requests", async () => {
+  let refreshes = 0;
+  globalThis.fetch = async (url, options) => {
+    if (url.endsWith("login"))
+      return json(session({ accessTokenExpiresAt: "2000-01-01T00:00:00Z" }));
+    if (url.endsWith("refresh")) {
+      refreshes++;
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      return json(session({ accessToken: "renewed-access" }));
+    }
+    assert.equal(options.headers.Authorization, "Bearer renewed-access");
+    return json({ items: [] });
+  };
+  const api = new ApiClient("http://supplier.test");
+  await api.login("a", "b");
+  const [token] = await Promise.all([
+    api.getAccessToken(),
+    api.request("/reports"),
+  ]);
+  assert.equal(token, "renewed-access");
+  assert.equal(refreshes, 1);
+});
+
+test("live connections cannot reuse a token after sign-out", async () => {
+  globalThis.fetch = async () => json(session());
+  const api = new ApiClient("http://supplier.test");
+  await api.login("a", "b");
+  assert.equal(await api.getAccessToken(), "access-1");
+  await api.logout();
+  await assert.rejects(api.getAccessToken(), (error) => error.status === 401);
+});

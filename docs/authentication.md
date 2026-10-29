@@ -10,7 +10,7 @@ For a deployed environment, provide the same configuration through a secret mana
 
 ## 2. Apply the database migration
 
-The EF migrations, including `InitialAccounts`, `CustomerReports`, and `StaffReportWorkspace`, are committed under `apps/api/src/Aqours.Infrastructure/Persistence/Migrations`. Restore the repository-pinned EF tool and apply them explicitly:
+The EF migrations, including `InitialAccounts`, `CustomerReports`, `StaffReportWorkspace`, `SupplySiteManagement`, and `20261029071543_ManualSupplyMonitoring`, are committed under `apps/api/src/Aqours.Infrastructure/Persistence/Migrations`. Restore the repository-pinned EF tool and apply them explicitly:
 
 ```sh
 dotnet tool restore

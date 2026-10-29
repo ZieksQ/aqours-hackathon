@@ -1,0 +1,390 @@
+@layer components {
+  .supply-monitoring .ui-button {
+    border-radius: 6px;
+    min-height: 36px;
+  }
+  .supply-monitoring > .ui-page-header {
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .monitoring-table-panel {
+    border: 1px solid var(--control);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .supply-monitoring h2 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .monitoring-table-panel .ui-table {
+    table-layout: fixed;
+  }
+  .monitoring-table-panel .ui-table th {
+    background: var(--ground);
+    padding: 12px 16px;
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .monitoring-table-panel .ui-table td {
+    padding: 16px;
+    overflow-wrap: anywhere;
+  }
+  .monitoring-directory-table th:nth-child(1) {
+    width: 16%;
+  }
+  .monitoring-directory-table th:nth-child(2) {
+    width: 21%;
+  }
+  .monitoring-directory-table th:nth-child(3) {
+    width: 11%;
+  }
+  .monitoring-directory-table th:nth-child(4) {
+    width: 12%;
+  }
+  .monitoring-directory-table th:nth-child(5) {
+    width: 18%;
+  }
+  .monitoring-directory-table th:nth-child(6) {
+    width: 22%;
+  }
+  .monitoring-site-name {
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .monitoring-site-name:hover {
+    text-decoration: underline;
+  }
+  .monitoring-address {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .monitoring-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .monitoring-row-actions .ui-button {
+    font-size: 12px;
+    padding-inline: 10px;
+    white-space: nowrap;
+  }
+  .supply-monitoring time {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .monitoring-table-panel .ui-pagination {
+    margin: 0;
+    padding: 14px 16px;
+    background: var(--ground);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .monitoring-footnote,
+  .monitoring-role-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-block: 16px;
+  }
+  .monitoring-footnote svg,
+  .monitoring-role-note svg {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+  .monitoring-location {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1px solid var(--control);
+    border-radius: 6px;
+    background: var(--raised);
+    padding: 14px 16px;
+    overflow-wrap: anywhere;
+  }
+  .monitoring-location svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    color: var(--muted);
+  }
+  .monitoring-location strong {
+    font-weight: 500;
+    margin-right: 6px;
+  }
+  .monitoring-latest {
+    border: 1px solid var(--control);
+    border-left: 4px solid var(--control);
+    border-radius: 8px;
+    padding: 20px;
+    margin-block: 24px 32px;
+  }
+  .monitoring-latest-Low {
+    border-left-color: var(--warning);
+  }
+  .monitoring-latest-Normal {
+    border-left-color: var(--positive);
+  }
+  .monitoring-latest-Unavailable {
+    border-left-color: var(--negative);
+  }
+  .monitoring-latest > p {
+    margin-top: 4px;
+  }
+  /* Three equal columns plus two 24px gutters fill the latest-reading panel. */
+  .monitoring-latest dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+  }
+  .monitoring-latest dt {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .monitoring-latest dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .monitoring-history-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .monitoring-history-heading p,
+  .monitoring-history-heading > span {
+    font-size: 12px;
+  }
+  .monitoring-history-table th:last-child,
+  .monitoring-history-table td:last-child {
+    text-align: right;
+  }
+  .monitoring-dialog-body {
+    padding: 24px;
+  }
+  .monitoring-context,
+  .monitoring-attribution {
+    border: 1px solid var(--control);
+    background: var(--ground);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .monitoring-context .monitoring-location {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0 0 14px;
+  }
+  .monitoring-current {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+  .monitoring-dialog-body fieldset {
+    margin: 24px 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .monitoring-dialog-body legend {
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .monitoring-dialog-body legend span,
+  .monitoring-validation {
+    color: var(--negative);
+  }
+  .monitoring-choice {
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 12px 16px;
+    border: 1px solid var(--control);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .monitoring-choice + .monitoring-choice {
+    margin-top: 10px;
+  }
+  .monitoring-choice:has(:checked) {
+    border: 2px solid var(--accent);
+    padding: 11px 15px;
+    background: var(--info-surface);
+    font-weight: 500;
+  }
+  .monitoring-choice:has(:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .monitoring-choice input {
+    min-height: 18px;
+    padding: 0;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+  }
+  .monitoring-attribution p {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .monitoring-attribution p:first-child {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  .monitoring-attribution p + p {
+    margin-top: 6px;
+  }
+  .monitoring-dialog-body .ui-alert {
+    margin-top: 16px;
+    margin-bottom: 0;
+  }
+  .monitoring-validation {
+    font-size: 12px;
+    margin: -12px 0 16px;
+  }
+  .monitoring-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    background: var(--ground);
+    padding: 16px 24px;
+  }
+  @media (max-width: 1100px) {
+    .monitoring-directory-table th:nth-child(1) {
+      width: 18%;
+    }
+    .monitoring-directory-table th:nth-child(2) {
+      width: 22%;
+    }
+    .monitoring-directory-table th:nth-child(3) {
+      width: 14%;
+    }
+    .monitoring-directory-table th:nth-child(4) {
+      width: 14%;
+    }
+    .monitoring-directory-table th:nth-child(5) {
+      width: 16%;
+    }
+    .monitoring-directory-table th:nth-child(6) {
+      width: 16%;
+    }
+    .monitoring-table-panel .ui-table td,
+    .monitoring-table-panel .ui-table th {
+      padding: 12px 8px;
+    }
+  }
+  @media (max-width: 700px) {
+    .supply-monitoring .ui-button,
+    .monitoring-dialog-actions .ui-button,
+    .ui-dialog-heading .ui-button {
+      min-height: 44px;
+    }
+    .supply-monitoring > .ui-page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .monitoring-latest dl {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+    .monitoring-latest {
+      padding: 16px;
+    }
+    .monitoring-history-heading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .monitoring-table-panel .ui-table thead {
+      display: none;
+    }
+    .monitoring-table-panel .ui-table,
+    .monitoring-table-panel tbody,
+    .monitoring-table-panel tr,
+    .monitoring-table-panel td {
+      display: block;
+      width: 100%;
+    }
+    .monitoring-table-panel tr {
+      padding: 16px;
+    }
+    .monitoring-table-panel tr + tr {
+      border-top: 1px solid var(--border);
+    }
+    .monitoring-table-panel .ui-table td {
+      padding: 0;
+      border: 0;
+      height: auto;
+      text-align: left;
+    }
+    .monitoring-table-panel td + td {
+      margin-top: 10px;
+    }
+    .monitoring-table-panel td[data-label]::before {
+      content: attr(data-label);
+      display: inline-block;
+      min-width: 100px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 8px;
+    }
+    .monitoring-row-actions {
+      justify-content: flex-start;
+      margin-top: 14px;
+    }
+    .monitoring-table-panel .ui-pagination > div {
+      flex-wrap: wrap;
+    }
+    .monitoring-dialog-body,
+    .ui-dialog-heading {
+      padding: 16px;
+    }
+    .monitoring-dialog-actions {
+      padding: 16px;
+    }
+    .monitoring-context,
+    .monitoring-attribution {
+      padding: 12px;
+    }
+  }
+}
+
+@layer components {
+  @media (min-width: 701px) {
+    .supply-monitoring .ui-pagination {
+      justify-content: space-between;
+    }
+    .supply-monitoring .ui-pagination > p {
+      width: auto;
+      text-align: left;
+      margin-right: auto;
+    }
+  }
+}
