@@ -39,6 +39,8 @@ Archived early implementation: [2026-10-25 archive](memory/progress-2026-10-25-0
 
 - 2026-10-27: Implemented the separate native report conversation page from the reviewed Stitch designs, with iOS/Android navigation, chronological bubbles, message paging and polling, a keyboard-safe reply composer, and read-only Submitted/Resolved states. The Customer report response does not expose claim actor/time, so live status events use accurate generic copy while preview data matches the named/timed design; mobile TypeScript check passed, no Prettier executable is installed in the workspace, and physical-phone review remains pending.
 
+- 2026-10-28: Fixed mobile report conversations to receive live SignalR message/status updates, resubscribe and recover missed messages after reconnect or foregrounding, and share token renewal with REST requests. Verified mobile TypeScript, tests, and formatting; Expo export stalled in Metro, and real-phone verification remains pending.
+
 - 2026-10-28: Implemented Admin supply-site directory, add, details, and edit screens from the reviewed designs using shared UI, canonical PSGC selectors, and independent Leaflet/Geoapify map pins without visible coordinates. Web/shared build, lint, formatting, and responsive screenshot checks passed; browser API checks use fixtures, and live-backend UI verification remains pending.
 
 - 2026-10-29: Implemented Staff-only manual supply readings with personnel reads, latest status, permanent attributed history, deterministic ordering, and an additive EF migration; documented contracts and setup. Verified the solution build, C# formatting, EF model consistency, explicit migration to the dedicated test database, and all 36 PostgreSQL integration tests; the development database was not migrated.

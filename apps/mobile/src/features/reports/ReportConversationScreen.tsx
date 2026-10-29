@@ -29,6 +29,7 @@ import {
 } from "../home/preview";
 import { reportKeys, reportingApi } from "./api";
 import { conversationStyles as s } from "./conversationStyles";
+import { useReportConnection } from "./useReportConnection";
 
 type TimelineRow =
   | { kind: "day"; key: string; label: string }
@@ -55,6 +56,7 @@ export function ReportConversationScreen({
   onViewDetails: () => void;
 }) {
   const queryClient = useQueryClient();
+  useReportConnection(api, accountId, reportId, !preview);
   const scroll = useRef<ScrollView>(null);
   const stickToLatest = useRef(true);
   const sending = useRef(false);
@@ -83,10 +85,11 @@ export function ReportConversationScreen({
       )
     : [
         ...new Map(
-          (messages.data?.pages
-            .slice()
-            .reverse()
-            .flatMap((page) => page.items) ?? []
+          (
+            messages.data?.pages
+              .slice()
+              .reverse()
+              .flatMap((page) => page.items) ?? []
           ).map((message) => [message.id, message]),
         ).values(),
       ];
@@ -98,7 +101,9 @@ export function ReportConversationScreen({
       void queryClient.invalidateQueries({
         queryKey: reportKeys.messages(accountId, reportId),
       });
-      void queryClient.invalidateQueries({ queryKey: reportKeys.all(accountId) });
+      void queryClient.invalidateQueries({
+        queryKey: reportKeys.all(accountId),
+      });
     },
     onError: () => {
       void queryClient.invalidateQueries({
@@ -123,7 +128,9 @@ export function ReportConversationScreen({
     try {
       await reply.mutateAsync();
       stickToLatest.current = true;
-      requestAnimationFrame(() => scroll.current?.scrollToEnd({ animated: true }));
+      requestAnimationFrame(() =>
+        scroll.current?.scrollToEnd({ animated: true }),
+      );
     } catch {
       // The error stays visible and the draft remains available to retry.
     } finally {
@@ -133,9 +140,7 @@ export function ReportConversationScreen({
 
   const history = report ? buildTimeline(report, conversation) : [];
   const canReply =
-    !preview &&
-    !detail.isError &&
-    report?.status === "InProgress";
+    !preview && !detail.isError && report?.status === "InProgress";
 
   return (
     <KeyboardAvoidingView
@@ -170,7 +175,8 @@ export function ReportConversationScreen({
           const { contentOffset, contentSize, layoutMeasurement } =
             event.nativeEvent;
           stickToLatest.current =
-            contentSize.height - contentOffset.y - layoutMeasurement.height < 96;
+            contentSize.height - contentOffset.y - layoutMeasurement.height <
+            96;
         }}
         onContentSizeChange={() => {
           if (stickToLatest.current)
@@ -230,7 +236,9 @@ export function ReportConversationScreen({
               <View style={s.messageError}>
                 <Notice>{messages.error.message}</Notice>
                 {conversation.length > 0 && (
-                  <Text style={s.bodyMuted}>Showing the last loaded messages.</Text>
+                  <Text style={s.bodyMuted}>
+                    Showing the last loaded messages.
+                  </Text>
                 )}
                 <Button
                   label="Retry conversation"
@@ -263,13 +271,12 @@ export function ReportConversationScreen({
             {report.status === "Resolved" && (
               <StatusEvent status={report.status} preview={false} />
             )}
-            {conversation.length === 0 &&
-              (preview || messages.isSuccess) && (
-                <Text style={s.emptyMessage}>
-                  No supplier replies yet. Your supplier’s response will appear
-                  here.
-                </Text>
-              )}
+            {conversation.length === 0 && (preview || messages.isSuccess) && (
+              <Text style={s.emptyMessage}>
+                No supplier replies yet. Your supplier’s response will appear
+                here.
+              </Text>
+            )}
           </>
         )}
       </ScrollView>
@@ -284,10 +291,7 @@ export function ReportConversationScreen({
           preview={preview}
         />
       ) : report ? (
-        <ReadOnlyComposer
-          status={report.status}
-          stale={detail.isError}
-        />
+        <ReadOnlyComposer status={report.status} stale={detail.isError} />
       ) : null}
     </KeyboardAvoidingView>
   );
@@ -412,9 +416,7 @@ function ReportBubble({ report }: { report: Report }) {
           {report.description}
         </Text>
       </View>
-      <Text style={s.messageTime}>
-        {formatTime(report.createdAt)} · You
-      </Text>
+      <Text style={s.messageTime}>{formatTime(report.createdAt)} · You</Text>
     </View>
   );
 }
@@ -424,16 +426,9 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <View style={customer ? s.outgoingMessage : s.incomingMessage}>
       {!customer && (
-        <Text style={s.senderLabel}>
-          {message.senderName} · Supplier team
-        </Text>
+        <Text style={s.senderLabel}>{message.senderName} · Supplier team</Text>
       )}
-      <View
-        style={[
-          s.bubble,
-          customer ? s.customerBubble : s.supplierBubble,
-        ]}
-      >
+      <View style={[s.bubble, customer ? s.customerBubble : s.supplierBubble]}>
         <Text selectable style={s.messageText}>
           {message.body}
         </Text>
@@ -499,7 +494,11 @@ function ReplyComposer({
   preview: boolean;
 }) {
   const disabled =
-    !canReply || preview || sending || !draft.trim() || draft.trim().length > 2000;
+    !canReply ||
+    preview ||
+    sending ||
+    !draft.trim() ||
+    draft.trim().length > 2000;
   const errorMessage = error
     ? [
         error,
@@ -510,7 +509,9 @@ function ReplyComposer({
   return (
     <View style={s.composer}>
       <View style={s.composerTop}>
-        <Text style={s.characterCount}>{draft.length.toLocaleString()} / 2,000</Text>
+        <Text style={s.characterCount}>
+          {draft.length.toLocaleString()} / 2,000
+        </Text>
       </View>
       <View style={s.composerRow}>
         <TextInput
