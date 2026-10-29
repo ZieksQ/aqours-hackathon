@@ -1,3 +1,5 @@
+using Aqours.Domain.Features.Weather;
+using Aqours.Infrastructure.Features.Weather;
 using Aqours.Infrastructure.Features.Accounts;
 using Aqours.Domain.Features.Reports;
 using Aqours.Domain.Features.SupplySites;
@@ -11,6 +13,10 @@ namespace Aqours.Infrastructure.Persistence;
 public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
     : IdentityDbContext<IdentityAccountUser>(options)
 {
+    public DbSet<WeatherSettings> WeatherSettings => Set<WeatherSettings>();
+
+    public DbSet<WeatherForecastRecord> WeatherForecasts => Set<WeatherForecastRecord>();
+
     public DbSet<SupplySite> SupplySites => Set<SupplySite>();
 
     public DbSet<SupplyUpdate> SupplyUpdates => Set<SupplyUpdate>();
@@ -25,6 +31,8 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
         builder.ApplyConfiguration(new ReportConfiguration());
         builder.ApplyConfiguration(new SupplySiteConfiguration());
         builder.ApplyConfiguration(new SupplyUpdateConfiguration());
+        builder.ApplyConfiguration(new WeatherSettingsConfiguration());
+        builder.ApplyConfiguration(new WeatherForecastConfiguration());
         builder.Entity<ReportMessage>(message =>
         {
             message.ToTable("report_messages");

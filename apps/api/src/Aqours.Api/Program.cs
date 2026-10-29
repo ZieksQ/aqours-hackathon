@@ -1,3 +1,4 @@
+using Aqours.Api.Features.Weather;
 using Aqours.Api.Features.Accounts;
 using Aqours.Api.Features.Map;
 using Aqours.Api.Features.Reports;
@@ -61,6 +62,7 @@ app.MapStaffReportEndpoints();
 app.MapSupplySiteEndpoints();
 app.MapSupplyMonitoringEndpoints();
 app.MapSupplierMapEndpoints();
+app.MapWeatherEndpoints();
 app.MapHub<ReportsHub>("/api/hubs/reports", options => options.CloseOnAuthenticationExpiration = true);
 app.Run();
 

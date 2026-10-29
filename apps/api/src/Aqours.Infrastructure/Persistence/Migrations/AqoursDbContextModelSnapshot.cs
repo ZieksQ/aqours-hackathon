@@ -247,6 +247,38 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                     b.ToTable("supply_updates", (string)null);
                 });
 
+            modelBuilder.Entity("Aqours.Domain.Features.Weather.WeatherSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<double>("HeatThresholdCelsius")
+                        .HasColumnType("double precision")
+                        .HasColumnName("heat_threshold_celsius");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_weather_settings");
+
+                    b.ToTable("weather_settings", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_weather_settings_singleton", "id = 1");
+
+                            t.HasCheckConstraint("ck_weather_settings_threshold", "heat_threshold_celsius >= 0 AND heat_threshold_celsius <= 60");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            HeatThresholdCelsius = 35.0
+                        });
+                });
+
             modelBuilder.Entity("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", b =>
                 {
                     b.Property<string>("Id")
@@ -405,6 +437,43 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_refresh_tokens_family_id");
 
                     b.ToTable("refresh_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("Aqours.Infrastructure.Features.Weather.WeatherForecastRecord", b =>
+                {
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("site_id");
+
+                    b.Property<string>("DaysJson")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("days_json");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("latitude");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("longitude");
+
+                    b.Property<DateTimeOffset?>("RetrievedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retrieved_at");
+
+                    b.Property<DateTimeOffset?>("RetryAfter")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retry_after");
+
+                    b.Property<DateOnly>("WindowStart")
+                        .HasColumnType("date")
+                        .HasColumnName("window_start");
+
+                    b.HasKey("SiteId")
+                        .HasName("pk_weather_forecasts");
+
+                    b.ToTable("weather_forecasts", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -643,6 +712,16 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_refresh_tokens_refresh_families_family_id");
+                });
+
+            modelBuilder.Entity("Aqours.Infrastructure.Features.Weather.WeatherForecastRecord", b =>
+                {
+                    b.HasOne("Aqours.Domain.Features.SupplySites.SupplySite", null)
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_weather_forecasts_supply_sites_site_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

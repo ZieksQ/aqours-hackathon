@@ -1,3 +1,5 @@
+using Aqours.Application.Features.Weather;
+using Aqours.Infrastructure.Features.Weather;
 using Aqours.Application.Locations;
 using Aqours.Application.Features.Map;
 using Aqours.Infrastructure.Features.Map;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Aqours.Infrastructure;
 
@@ -23,7 +26,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<AqoursDbContext>(options =>
+        services.AddDbContextFactory<AqoursDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("Aqours");
             if (string.IsNullOrWhiteSpace(connectionString))
@@ -52,6 +55,12 @@ public static class DependencyInjection
         services.AddScoped<ISupplySiteStore, PostgresSupplySiteStore>();
         services.AddScoped<SupplySiteService>();
         services.AddScoped<ISupplyMonitoringStore, PostgresSupplyMonitoringStore>();
+        services.AddScoped<IWeatherStore, PostgresWeatherStore>();
+        services.AddScoped<WeatherService>();
+        services.AddSingleton<WeatherRefreshCoordinator>();
+        services.AddSingleton<IWeatherForecastProvider>(provider => new OpenMeteoForecastProvider(
+            new HttpClient(new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(5) })
+            { Timeout = TimeSpan.FromSeconds(10) }, provider.GetRequiredService<ILogger<OpenMeteoForecastProvider>>()));
         services.AddScoped<SupplyMonitoringService>();
         services.AddScoped<IStaffReportStore, PostgresStaffReportStore>();
         services.AddScoped<StaffReportService>();
