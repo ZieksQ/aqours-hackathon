@@ -1,4 +1,6 @@
 using Aqours.Application.Locations;
+using Aqours.Application.Features.Map;
+using Aqours.Infrastructure.Features.Map;
 using Aqours.Infrastructure.Locations;
 using Aqours.Application.Features.SupplySites;
 using Aqours.Infrastructure.Features.SupplySites;
@@ -44,6 +46,8 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IPsgcAddresses, PsgcAddresses>();
         services.AddScoped<IReportStore, PostgresReportStore>();
+        services.AddScoped<ISupplierMapStore, PostgresSupplierMapStore>();
+        services.AddScoped<SupplierMapService>();
         services.AddScoped<ReportService>();
         services.AddScoped<ISupplySiteStore, PostgresSupplySiteStore>();
         services.AddScoped<SupplySiteService>();

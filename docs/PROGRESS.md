@@ -3,13 +3,9 @@
 Archived foundation setup: [2026-10-28 archive](memory/progress-2026-10-28-01.md).
 Archived early implementation: [2026-10-25 archive](memory/progress-2026-10-25-01.md).
 
-- 2026-10-25: Added the initial Admin configuration section to API appsettings with nonsecret development defaults and a password supplied through user secrets; configured the missing local JWT/database/Admin secrets and explicitly applied the authentication migration. Verified normal development startup, health HTTP 200, seeded Admin sign-in with mandatory password change, and logout HTTP 204; no credentials were committed.
-
-- 2026-10-25: Added database connection and JWT configuration placeholders alongside the existing initial administrator settings in API appsettings, and documented configuration precedence. Verified JSON formatting and all required configuration keys; preserved existing local configuration edits and staged no credentials.
-
-- 2026-10-25: Removed initial administrator details from API appsettings and added a dedicated local user-secrets guide; confirmed the existing root `.env.example` contains placeholder-only Docker PostgreSQL settings. JSON and documentation updates recorded; no credentials added to tracked files.
-
 - 2026-10-25: Implemented the authenticated Customer reporting API for report submission, owner-scoped listing and detail retrieval, PSGC hierarchy validation/name snapshots, and the explicit `CustomerReports` migration; documented endpoint contracts and clarified deferred supplier/mobile workflows. Verified solution build (0 warnings/errors), PostgreSQL integration suite (16/16), C# formatting, EF model consistency, explicit migration application, and all 19 canonical PSGC files in build and publish output.
+
+Archived authentication configuration: [2026-10-29 archive](memory/progress-2026-10-29-01.md).
 
 - 2026-10-25: Implemented the Staff report queue and ticket workspace with atomic claims, handler-only priority and resolution, customer/staff conversations, authorized SignalR updates, and an explicit migration; documented contracts and setup while preserving existing Customer reporting behavior. Verified PostgreSQL integration tests (21/21), solution build and C# formatting, EF model consistency and migration application, web build/lint/Prettier, and responsive browser workflows at 1440/1280/900/390px including claim, reply, priority, resolution, and read-only history.
 
@@ -50,3 +46,5 @@ Archived early implementation: [2026-10-25 archive](memory/progress-2026-10-25-0
 - 2026-10-29: Implemented the Admin/Staff `/supply-monitoring` directory, paginated site history, Staff-only reading dialog, and read-only Admin view from the reviewed designs. Updated product/API documentation; web build, lint, and formatting passed, and fixture-backed browser checks covered role access, save/retry, keyboard focus, pagination, and narrow-screen overflow. Live-backend UI verification remains pending.
 
 - 2026-10-29: Implemented native Updates and Profile from the mobile Stitch references, with session-local unread filters/badges, report/conversation links, account details, password change, support information, and sign-out. Live activity uses existing owned-report/message APIs; service area and timestamped claim/resolution events remain unavailable. TypeScript, mobile tests, formatting, and source lint passed; JavaScript export stalled in Metro, and physical-phone visual/runtime verification remains pending.
+
+- 2026-10-29: Implemented the Admin/Staff supplier portal map with protected paginated summaries, complete-layer loading, priority/issue markers and Submitted badges, accessible location selection, filters, detail links, refresh, and independent failure states; retrieved desktop/phone Google Stitch references under ignored `design/supplier-portal-map/`. Verified all 53 PostgreSQL integration cases (17 map cases), solution build/C# formatting, web/shared build/lint/formatting, and fixture-backed browser workflows at 1440/768/390px including overlaps, focus refresh, pan/zoom preservation, page failure/retry, empty layers, and tile/configuration failures; live-backend UI and real Geoapify verification remain pending.

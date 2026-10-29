@@ -42,10 +42,12 @@ export async function api<T>(
   path: string,
   body?: unknown,
   method?: "POST" | "PUT",
+  signal?: AbortSignal,
 ): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`/api${path}`, {
+      signal,
       method: body === undefined ? "GET" : (method ?? "POST"),
       credentials: "same-origin",
       cache: "no-store",
@@ -59,6 +61,7 @@ export async function api<T>(
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch (error) {
+    if (signal?.aborted) throw error;
     if (error instanceof ApiError) throw error;
     throw new ApiError(
       0,
