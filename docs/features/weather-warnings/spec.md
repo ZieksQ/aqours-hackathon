@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The API provides supplier personnel with site-level forecasts and potential supply-risk assessments. Admins configure one organization-wide demo heat threshold. There is no weather dashboard or map highlighting, customer weather display, alert delivery, push notification, service-area association, or water-depletion prediction in this slice.
+The API provides supplier personnel with site-level forecasts and potential supply-risk assessments. Admins configure one organization-wide demo heat threshold. The supplier portal implements weather monitoring and a dedicated site weather map. Customer weather display, alert delivery, push notification, service-area association, water-depletion prediction, and warning overlays on the separate operational `/map` screen remain deferred.
 
 The forecast is retrieved from Open-Meteo's free forecast API for each site's coordinates. The API returns three Philippine-local forecast dates (today and the next two days), daily maximum temperatures in Celsius, the manual supply reading, and a per-day assessment. A potential supply-risk warning means only that forecast maximum temperature strictly exceeds the configured threshold while the latest manual supply status is `Low`. The threshold is a demo setting, not an official safety level. An `Unavailable` reading remains visible and is not treated as `Low`.
 
@@ -66,9 +66,19 @@ dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup
 
 Forecast refresh does not run in a background job: reads trigger refresh when required. Changing site coordinates invalidates reuse of the old coordinate-associated cache. Updating supply or the threshold changes the assessment returned on the next read without requiring a new forecast fetch.
 
+## Supplier portal
+
+Admin and Staff use `/weather-monitoring` to review all supplier sites, overlapping monitored/risk/unavailable/data-limited counts, site map markers, three-day forecasts, daily risk counts, and the selected site's assessment timeline. The overview loads every page of the existing personnel list before computing organization-wide counts. Name and assessment filters narrow the site list; the summary and daily counts retain the all-site scope. A site can belong to multiple summary categories.
+
+`/weather-monitoring/{id}` presents the API's daily assessment, latest manual supply evidence, independent forecast and supply timestamps, limitations, retry time, and recommended actions. Missing temperatures remain chart gaps and Unknown assessments. Stale evidence remains visible and explicitly provisional. The timeline uses each forecast date with the latest reading; it does not represent assessment history or predict future supply. Staff can follow the existing supply-monitoring destination to record a reading; Admin remains read-only for supply observations.
+
+Admin alone can edit the organization-wide demo threshold at `/weather-monitoring/settings`. The form accepts finite values from 0 through 60 inclusive and invalidates weather queries after a successful save. API authorization and CSRF remain authoritative. Forecast refresh is still read-triggered and respects the provider retry window; the portal refresh control does not force a provider fetch.
+
+Charts use Recharts with displayed textual forecast values; maps use the existing React Leaflet/Geoapify configuration. Maps provide accessible site selection and retain a site list when tiles are unavailable. Responsive layouts use the existing portal shell and a compact site list on phones. No new migration is required beyond the existing WeatherWarnings migration.
+
 ## Deferred
 
-- Supplier portal dashboard and map warning presentation.
+- Warning overlays on the separate operational `/map` screen.
 - Customer forecast or supply-risk display and notifications.
 - Background refresh, distributed refresh locks, and live update delivery.
 - Site/service-area association, stock depletion estimates, official heat alerts, or El Niño detection.

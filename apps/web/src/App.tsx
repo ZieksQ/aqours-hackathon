@@ -18,6 +18,7 @@ import {
   FiDroplet,
   FiActivity,
   FiMap,
+  FiCloud,
 } from "react-icons/fi";
 import { Brand } from "./shared/Brand";
 import { FormError } from "./shared/FormError";
@@ -49,6 +50,7 @@ import { Accounts } from "./features/accounts/Accounts";
 import { Dashboard } from "./features/dashboard/Dashboard";
 import { SupplySites } from "./features/supply-sites/SupplySites";
 import { SupplyMonitoring } from "./features/supply-monitoring/SupplyMonitoring";
+import { WeatherMonitoring } from "./features/weather/WeatherMonitoring";
 import { SupplierMap } from "./features/map/SupplierMap";
 import { readSite } from "./features/supply-sites/api";
 import { readMonitoredSite } from "./features/supply-monitoring/api";
@@ -101,8 +103,9 @@ function Portal({ account }: { account: Account }) {
       document.removeEventListener("keydown", dismiss);
     };
   }, []);
-  const page =
-    pathname === "/map"
+  const page = pathname.startsWith("/weather-monitoring")
+    ? "Weather monitoring"
+    : pathname === "/map"
       ? "Map"
       : pathname.startsWith("/supply-monitoring")
         ? "Supply monitoring"
@@ -321,6 +324,15 @@ function Portal({ account }: { account: Account }) {
                 <FiActivity aria-hidden="true" />
                 <span className="ui-nav-label">Supply monitoring</span>
               </NavLink>
+              <NavLink
+                to="/weather-monitoring"
+                onClick={closeMenu}
+                aria-label="Weather monitoring"
+                title={collapsed ? "Weather monitoring" : undefined}
+              >
+                <FiCloud aria-hidden="true" />
+                <span className="ui-nav-label">Weather monitoring</span>
+              </NavLink>
               {account.role === "Admin" && (
                 <NavLink
                   to="/supply-sites"
@@ -427,6 +439,10 @@ function SessionRoutes() {
     <Routes>
       <Route element={<Portal account={account} />}>
         <Route path="/map" element={<SupplierMap />} />
+        <Route
+          path="/weather-monitoring/*"
+          element={<WeatherMonitoring account={account} />}
+        />
         <Route path="/reports/*" element={<Reports account={account} />} />
         <Route
           path="/supply-monitoring/*"
