@@ -1,6 +1,6 @@
 import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import * as Notifications from "expo-notifications";
+import type { NotificationResponse } from "expo-notifications";
 import {
   BackHandler,
   Modal,
@@ -28,26 +28,12 @@ import { ReportScreen } from "../features/reports/ReportScreen";
 import { ReportsScreen } from "../features/reports/ReportsScreen";
 import { reportStyles as s } from "../features/reports/styles";
 import type { Account, ApiClient, Report } from "../shared/api";
+import { loadPushNotifications } from "../shared/pushNotifications";
 import { colors, fonts } from "../shared/theme";
 import { Brand, Button, Icon, Text } from "../shared/ui";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
-
 type Screen =
-  | "Home"
-  | "Report"
-  | "Reports"
-  | "Updates"
-  | "Profile"
-  | "Sites"
-  | "Weather";
+  "Home" | "Report" | "Reports" | "Updates" | "Profile" | "Sites" | "Weather";
 export function CustomerApp({
   api,
   account,
@@ -106,8 +92,28 @@ export function CustomerApp({
     const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
     if (!projectId) return;
     let active = true;
+    let subscription: { remove(): void } | undefined;
     void (async () => {
       try {
+        const Notifications = await loadPushNotifications();
+        if (!active || !Notifications) return;
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowBanner: true,
+            shouldShowList: true,
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+          }),
+        });
+        subscription =
+          Notifications.addNotificationResponseReceivedListener(
+            openNotification,
+          );
+        void Notifications.getLastNotificationResponseAsync()
+          .then((response) => {
+            if (active && response) openNotification(response);
+          })
+          .catch(() => {});
         if (Platform.OS === "android") {
           await Notifications.setNotificationChannelAsync("default", {
             name: "Updates",
@@ -115,9 +121,11 @@ export function CustomerApp({
           });
         }
         let permission = await Notifications.getPermissionsAsync();
-        if (!permission.granted) permission = await Notifications.requestPermissionsAsync();
+        if (!permission.granted)
+          permission = await Notifications.requestPermissionsAsync();
         if (!active || !permission.granted) return;
-        const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+        const token = (await Notifications.getExpoPushTokenAsync({ projectId }))
+          .data;
         if (!active) return;
         pushToken.current = token;
         const registration = api.request<void>(
@@ -130,7 +138,7 @@ export function CustomerApp({
         // The in-app Updates list remains available when push setup is unavailable.
       }
     })();
-    function openNotification(response: Notifications.NotificationResponse) {
+    function openNotification(response: NotificationResponse) {
       const reportId = response.notification.request.content.data?.reportId;
       if (typeof reportId !== "string") {
         setScreen("Updates");
@@ -144,16 +152,9 @@ export function CustomerApp({
         })
         .catch(() => setScreen("Updates"));
     }
-    const subscription =
-      Notifications.addNotificationResponseReceivedListener(openNotification);
-    void Notifications.getLastNotificationResponseAsync()
-      .then((response) => {
-        if (active && response) openNotification(response);
-      })
-      .catch(() => {});
     return () => {
       active = false;
-      subscription.remove();
+      subscription?.remove();
     };
   }, [api, preview, account.id]);
   useEffect(() => {
@@ -435,7 +436,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  profileTabAvatarSelected: { backgroundColor: colors.pale, borderColor: colors.primary },
+  profileTabAvatarSelected: {
+    backgroundColor: colors.pale,
+    borderColor: colors.primary,
+  },
   profileTabInitials: {
     fontSize: 10,
     lineHeight: 14,
