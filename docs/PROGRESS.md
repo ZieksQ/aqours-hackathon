@@ -3,7 +3,7 @@
 Archived foundation setup: [2026-10-28 archive](memory/progress-2026-10-28-01.md).
 Archived early implementation: [2026-10-25 archive](memory/progress-2026-10-25-01.md).
 
-- 2026-10-25: Implemented the authenticated Customer reporting API for report submission, owner-scoped listing and detail retrieval, PSGC hierarchy validation/name snapshots, and the explicit `CustomerReports` migration; documented endpoint contracts and clarified deferred supplier/mobile workflows. Verified solution build (0 warnings/errors), PostgreSQL integration suite (16/16), C# formatting, EF model consistency, explicit migration application, and all 19 canonical PSGC files in build and publish output.
+Archived Customer reporting API: [2026-10-30 archive](memory/progress-2026-10-30-01.md).
 
 Archived authentication configuration: [2026-10-29 archive](memory/progress-2026-10-29-01.md).
 
@@ -50,3 +50,5 @@ Archived authentication configuration: [2026-10-29 archive](memory/progress-2026
 - 2026-10-29: Implemented the Admin/Staff supplier portal map with protected paginated summaries, complete-layer loading, priority/issue markers and Submitted badges, accessible location selection, filters, detail links, refresh, and independent failure states; retrieved desktop/phone Google Stitch references under ignored `design/supplier-portal-map/`. Verified all 53 PostgreSQL integration cases (17 map cases), solution build/C# formatting, web/shared build/lint/formatting, and fixture-backed browser workflows at 1440/768/390px including overlaps, focus refresh, pan/zoom preservation, page failure/retry, empty layers, and tile/configuration failures; live-backend UI and real Geoapify verification remain pending.
 
 - 2026-10-29: Implemented the personnel Weather Warnings API with Admin-configurable threshold, persistent three-day Open-Meteo forecast cache, stale/missing indicators, and per-day potential supply-risk assessments; documented endpoint and provider contracts. Migration `20261029151904_WeatherWarnings` was applied to the dedicated test database, EF model consistency and C# formatting passed, the build had zero warnings/errors, and the full API suite passed 107/107; the development database was not migrated and forecasts used fake provider responses.
+
+- 2026-10-30: Generated and refined five weather-monitoring review designs in the existing Aqours web Google Stitch project, including KPI cards, area maps, forecast charts, three-day assessment timelines, Admin threshold settings, limited-data states, and a phone layout; retrieved PNG/HTML exports, prompts, fixtures, metadata and review evidence under ignored `design/weather-monitoring/`. No frontend implementation changed; Recharts installation attempts failed on registry metadata timeouts and incomplete offline metadata, and generated HTML layout limitations are documented with the designs.
