@@ -17,6 +17,8 @@ import {
   FiSearch,
   FiDroplet,
   FiActivity,
+  FiMap,
+  FiCloud,
 } from "react-icons/fi";
 import { Brand } from "./shared/Brand";
 import { FormError } from "./shared/FormError";
@@ -48,6 +50,8 @@ import { Accounts } from "./features/accounts/Accounts";
 import { Dashboard } from "./features/dashboard/Dashboard";
 import { SupplySites } from "./features/supply-sites/SupplySites";
 import { SupplyMonitoring } from "./features/supply-monitoring/SupplyMonitoring";
+import { WeatherMonitoring } from "./features/weather/WeatherMonitoring";
+import { SupplierMap } from "./features/map/SupplierMap";
 import { readSite } from "./features/supply-sites/api";
 import { readMonitoredSite } from "./features/supply-monitoring/api";
 
@@ -99,25 +103,29 @@ function Portal({ account }: { account: Account }) {
       document.removeEventListener("keydown", dismiss);
     };
   }, []);
-  const page = pathname.startsWith("/supply-monitoring")
-    ? "Supply monitoring"
-    : pathname.startsWith("/supply-sites")
-      ? pathname === "/supply-sites/new"
-        ? "Add supply site"
-        : pathname.endsWith("/edit")
-          ? "Edit supply site"
-          : "Supply sites"
-      : pathname.startsWith("/reports/")
-        ? "Ticket workspace"
-        : pathname.startsWith("/reports")
-          ? "Reports"
-          : pathname === "/accounts/new"
-            ? "Create account"
-            : pathname === "/accounts"
-              ? "Accounts"
-              : pathname === "/change-password"
-                ? "Change password"
-                : "Dashboard";
+  const page = pathname.startsWith("/weather-monitoring")
+    ? "Weather monitoring"
+    : pathname === "/map"
+      ? "Map"
+      : pathname.startsWith("/supply-monitoring")
+        ? "Supply monitoring"
+        : pathname.startsWith("/supply-sites")
+          ? pathname === "/supply-sites/new"
+            ? "Add supply site"
+            : pathname.endsWith("/edit")
+              ? "Edit supply site"
+              : "Supply sites"
+          : pathname.startsWith("/reports/")
+            ? "Ticket workspace"
+            : pathname.startsWith("/reports")
+              ? "Reports"
+              : pathname === "/accounts/new"
+                ? "Create account"
+                : pathname === "/accounts"
+                  ? "Accounts"
+                  : pathname === "/change-password"
+                    ? "Change password"
+                    : "Dashboard";
   const logout = useMutation({
     mutationFn: () => api("/auth/web/logout", {}),
     onSuccess: async () => {
@@ -299,6 +307,15 @@ function Portal({ account }: { account: Account }) {
                 <span className="ui-nav-label">Reports</span>
               </NavLink>
               <NavLink
+                to="/map"
+                onClick={closeMenu}
+                aria-label="Map"
+                title={collapsed ? "Map" : undefined}
+              >
+                <FiMap aria-hidden="true" />
+                <span className="ui-nav-label">Map</span>
+              </NavLink>
+              <NavLink
                 to="/supply-monitoring"
                 onClick={closeMenu}
                 aria-label="Supply monitoring"
@@ -306,6 +323,15 @@ function Portal({ account }: { account: Account }) {
               >
                 <FiActivity aria-hidden="true" />
                 <span className="ui-nav-label">Supply monitoring</span>
+              </NavLink>
+              <NavLink
+                to="/weather-monitoring"
+                onClick={closeMenu}
+                aria-label="Weather monitoring"
+                title={collapsed ? "Weather monitoring" : undefined}
+              >
+                <FiCloud aria-hidden="true" />
+                <span className="ui-nav-label">Weather monitoring</span>
               </NavLink>
               {account.role === "Admin" && (
                 <NavLink
@@ -412,6 +438,11 @@ function SessionRoutes() {
   return (
     <Routes>
       <Route element={<Portal account={account} />}>
+        <Route path="/map" element={<SupplierMap />} />
+        <Route
+          path="/weather-monitoring/*"
+          element={<WeatherMonitoring account={account} />}
+        />
         <Route path="/reports/*" element={<Reports account={account} />} />
         <Route
           path="/supply-monitoring/*"

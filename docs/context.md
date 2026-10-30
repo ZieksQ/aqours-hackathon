@@ -1,6 +1,6 @@
 # Water Reporting and Response System — App Context & MVP
 
-> This document defines the hackathon MVP. Account authentication, the Customer reporting API, the Staff report queue and ticket workspace, manual supply monitoring API and Admin/Staff web interface, and mobile Customer login, Home, reporting, history, and supplier conversations have been implemented; other workflows below describe product scope and are not implied to be implemented.
+> This document defines the hackathon MVP. Account authentication, the Customer reporting API, the Staff report queue and ticket workspace, manual supply monitoring API and Admin/Staff web interface, the supplier portal map, and mobile Customer login, Home, reporting, history, and supplier conversations have been implemented; other workflows below describe product scope and are not implied to be implemented.
 
 ## 1. App context
 
@@ -29,7 +29,7 @@ A simple water reporting, supplier response, and manual water supply monitoring 
 - Customers can access only their own reports.
 - Only authorized supplier personnel can access customer report locations.
 
-**Implemented account and reporting slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. Admins can manage supplier site records through the Supply Site Management API and web directory, address forms, and map-pin picker. The supplier portal includes a paginated manual supply monitoring directory and site history for Admin and Staff, with Staff-only recording. The web portal also includes an Admin-only account directory and report dashboards with seven-day submission charts, issue breakdown, and Staff workload derived from report data. The mobile app implements Customer sign-in, initial password change, Home with the latest owned report, report submission with address and location selection, owned-report history, and details with progress and supplier conversations. Customer supplier-site maps and mobile supply display, weather warnings, an Updates inbox, and full Profile remain deferred. See the [authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), [Staff report workspace spec](features/staff-report-workspace/spec.md), [Supply Site Management spec](features/supply-site-management/spec.md), and [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md).
+**Implemented account and reporting slices:** Admin and Staff use the supplier web portal; Customer accounts use the mobile API. The API supports seeded Admin setup, Admin account creation, web cookie sessions, mobile Customer JWT and refresh sessions, forced first-login password changes, and role checks. Authenticated Customers with completed password setup can submit reports and access only their own report list and details through the API. The Staff report queue and ticket workspace is implemented with its API, messaging, and SignalR contracts. Admins can manage supplier site records through the Supply Site Management API and web directory, address forms, and map-pin picker. The supplier portal includes a paginated manual supply monitoring directory and site history for Admin and Staff, with Staff-only recording. Its `/map` screen shows sites and organization-wide report locations to Admin and Staff, with layer, status, and priority controls and links to existing details. The web portal also includes an Admin-only account directory and report dashboards with seven-day submission charts, issue breakdown, and Staff workload derived from report data. The `/weather-monitoring` portal provides Admin-configurable three-day site weather assessments, a site map, forecasts, and supply-risk review for personnel. The mobile app implements Customer sign-in, initial password change, Home, supplier-site map and manual supply display, three-day weather views, report submission with address and location selection, owned-report history, and supplier conversations. Updates read state persists on the server per Customer, and supplier ticket/status changes can send Expo push notifications to registered devices. See the [authentication feature spec](features/authentication/spec.md), [Customer reporting API spec](features/customer-reporting/specs.md), [Staff report workspace spec](features/staff-report-workspace/spec.md), [Supply Site Management spec](features/supply-site-management/spec.md), [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md), [Supplier Portal Map spec](features/supplier-portal-map/spec.md), and [Weather Warnings API spec](features/weather-warnings/spec.md).
 
 ### 3.2 Customer water reporting
 
@@ -62,7 +62,7 @@ The report location represents where the problem occurs. It may differ from the 
 
 ### 3.5 Manual supply monitoring
 
-The supplier personnel API and Admin/Staff web interface for manual site supply readings are implemented; customer-facing site supply displays and weather warnings are still deferred. The portal shows paginated site summaries and exact local recording times, and site details retain attributed reading history. Staff can append a Normal, Low, or Unavailable reading; Admin can inspect without recording. These are manual observations, not live sensor data. See the [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md).
+The supplier personnel API and Admin/Staff web interface for manual site supply readings are implemented, and Customers can inspect current site status in the mobile app. The portal shows paginated site summaries and exact local recording times, and site details retain attributed reading history. Staff can append a Normal, Low, or Unavailable reading; Admin can inspect without recording. These are manual observations, not live sensor data. The [Weather Warnings API](features/weather-warnings/spec.md) combines these readings with Open-Meteo forecasts for staff assessments; personnel can review them at `/weather-monitoring`, and Customers can review forecasts and limitations in mobile. See the [Manual Supply Monitoring API spec](features/manual-supply-monitoring/spec.md).
 
 - Record supply availability per site: **Normal**, **Low**, or **Unavailable**.
 - Record who updated the site and when.
@@ -78,9 +78,13 @@ The supplier personnel API and Admin/Staff web interface for manual site supply 
 | Customer report form | Location of the reported problem                               | Use current location or manually drop a pin                         |
 | Supplier portal      | Supplier sites and authorized report locations                 | Tap reports to view issue, handler, status, and location            |
 
-Customers see supplier sites and their own reports. Do not expose other customers' report locations. Live tracking and route navigation are outside scope.
+The supplier portal map is implemented for Admin and Staff at `/map`, with dedicated personnel-only site/report summaries, manual supply timestamps, priority/issue markers, a Submitted badge, and an accessible location list. It starts with unresolved reports and refreshes manually or on window focus; weather warnings and live map subscriptions are deferred. See the [Supplier Portal Map spec](features/supplier-portal-map/spec.md).
+
+The Customer supplier-site map uses Customer-authorized site data, shows manual supply readings, and can add the customer's location after an explicit one-time permission action. Customer report forms/history expose only the customer's own report locations. Do not expose other customers' report locations. Live tracking and route navigation are outside scope.
 
 ### 3.7 Weather-based early warnings
+
+The personnel API and `/weather-monitoring` portal for Admin-configured three-day forecast assessments are implemented. The Customer mobile weather view presents each site's forecast and supply assessment with missing/stale data limitations. The staff portal includes an assessment overview, site map, forecasts, daily risk counts, site details, and Admin threshold settings; warning overlays on the separate `/map` screen remain deferred. See the [Weather Warnings API spec](features/weather-warnings/spec.md).
 
 - Retrieve the next three days of forecast temperatures using each site's coordinates.
 - Allow the admin to configure a heat threshold as a **demo setting**.
@@ -188,10 +192,10 @@ If time gets tight, simplify styling and extra screens first.
 - [ ] Admin can manage users and configuration and monitor reports through overview dashboards.
 - [ ] Customer can view the report status and supplier responses in the mobile app.
 - [x] Staff can record a site's supply status through the supplier API, with updater and timestamp recorded.
-- [ ] Customer can locate supplier sites and inspect their supply information.
-- [ ] Authorized staff can locate reports on the portal map.
-- [ ] Heat forecast plus recorded low supply triggers a clearly labeled warning.
-- [ ] Missing or stale forecast and supply data are clearly indicated.
+- [x] Customer can locate supplier sites and inspect their supply information.
+- [x] Authorized Admin and Staff can locate reports on the portal map.
+- [x] Heat forecast plus recorded low supply triggers a clearly labeled warning in the personnel and Customer views.
+- [x] Missing or stale forecast and supply data are clearly indicated.
 - [ ] Customers cannot access other customers' reports or locations.
 
 ## 8. Outside the MVP
@@ -208,14 +212,11 @@ If time gets tight, simplify styling and extra screens first.
 
 ## 9. Implementation context and open choices
 
-The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication, Customer reporting, the Staff report queue and ticket workspace, Admin site management, and the supplier personnel Manual Supply Monitoring API and Admin/Staff web interface are implemented. The mobile client implements Customer login/Home, report submission with location selection, owned-report history, and supplier conversations. Customer supplier-site maps and supply display, weather warnings, an Updates inbox, and full Profile remain deferred.
+The product brief does not prescribe a technology stack. The required stack is defined by [architecture](architecture.md): ASP.NET Core Minimal APIs, a React web SPA, and React Native with Expo for mobile. Account authentication, Customer reporting, the Staff report queue and ticket workspace, Admin site management, supplier personnel manual supply monitoring and the Admin/Staff web interface, supplier and customer maps, personnel and customer weather views, Expo push registration, and server-persisted notification read state are implemented. Physical-device push setup requires an Expo project ID and platform credentials; remote push cannot be verified in Android Expo Go under the repository's no-native-build testing rule. Mobile Updates and Profile use the existing Customer APIs with the limits documented in the mobile README.
 
-Before implementing the remaining workflow slices, settle:
+Weather provider, forecast refresh age, demo threshold, and stale data rules are implemented as documented in the [Weather Warnings API spec](features/weather-warnings/spec.md). Before implementing the remaining workflow slices, settle:
 
 - Final project name: Aqours or Upwards.
-- Weather API provider and forecast refresh interval.
-- Demo temperature threshold and how it is configured.
-- What age makes supply or forecast data stale.
 - How reports are associated with service areas and supplier sites.
 
 Keep implementation focused on one complete reporting-and-response flow, manual supply visibility, simple maps, and the transparent weather warning rule.

@@ -7,14 +7,14 @@ import {
 } from "react-native";
 import type { ApiClient } from "../../shared/api";
 import { colors } from "../../shared/theme";
-import { Button, Icon, Notice, Text } from "../../shared/ui";
+import { BackButton, Button, Icon, Notice, Text } from "../../shared/ui";
 import {
   issueLabels,
   ReportProgress,
   reportDate,
   statusLabels,
 } from "../home/ReportCard";
-import { previewReport } from "../home/preview";
+import { previewReport, previewResolvedReport } from "../home/preview";
 import { reportKeys, reportingApi } from "./api";
 import { reportStyles as s } from "./styles";
 
@@ -41,7 +41,11 @@ export function ReportDetailScreen({
     queryFn: ({ signal }) => reportingApi.detail(api, reportId, signal),
     refetchInterval: 30000,
   });
-  const report = preview ? previewReport : detail.data;
+  const report = preview
+    ? reportId === previewResolvedReport.id
+      ? previewResolvedReport
+      : previewReport
+    : detail.data;
 
   return (
     <ScrollView
@@ -58,12 +62,7 @@ export function ReportDetailScreen({
         />
       }
     >
-      <Button
-        label={backLabel}
-        icon="arrow-left"
-        secondary
-        onPress={onBack}
-      />
+      <BackButton label={backLabel} onPress={onBack} />
       <Text accessibilityRole="header" style={s.title}>
         Report details
       </Text>
@@ -78,7 +77,8 @@ export function ReportDetailScreen({
           <Notice>{detail.error.message}</Notice>
           {report && (
             <Text style={s.small}>
-              Showing the last loaded report. Refresh to check its latest status.
+              Showing the last loaded report. Refresh to check its latest
+              status.
             </Text>
           )}
           <Button
@@ -97,7 +97,9 @@ export function ReportDetailScreen({
               </Text>
               <Text style={s.status}>{statusLabels[report.status]}</Text>
             </View>
-            <Text style={s.small}>Submitted {reportDate(report.createdAt)}</Text>
+            <Text style={s.small}>
+              Submitted {reportDate(report.createdAt)}
+            </Text>
             <Text selectable style={s.small}>
               Reference: {report.id}
             </Text>

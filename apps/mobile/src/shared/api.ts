@@ -48,6 +48,40 @@ export type Message = {
   createdAt: string;
 };
 
+export type CustomerSupplySite = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address: ReportAddress;
+  latestSupply: {
+    status: "Normal" | "Low" | "Unavailable";
+    updatedAt: string;
+  } | null;
+};
+
+export type CustomerSiteWeather = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  heatThresholdCelsius: number;
+  latestSupplyStatus: string | null;
+  latestSupplyAt: string | null;
+  supplyMissing: boolean;
+  supplyStale: boolean;
+  forecastMissing: boolean;
+  forecastIncomplete: boolean;
+  forecastStale: boolean;
+  provider: { name: string; attribution: string; url: string };
+  days: {
+    date: string;
+    maximumTemperatureCelsius: number | null;
+    warningState: string;
+  }[];
+  limitations: string[];
+};
+
 export class ApiError extends Error {
   status: number;
   errors: Record<string, string[]>;
@@ -116,6 +150,29 @@ export class ApiClient {
         { refreshToken: token },
         false,
       );
+  }
+
+  async removePushDevice(token: string) {
+    const session = this.session;
+    if (!session || !token || !this.baseUrl) return;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    try {
+      await fetch(`${this.baseUrl}/api/customer/notifications/devices/remove`, {
+        method: "POST",
+        credentials: "omit",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify({ token }),
+        signal: controller.signal,
+      });
+    } catch {
+      // Sign-out must remain local and available while offline.
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   private async refresh() {

@@ -156,6 +156,28 @@ export function Notice({ children }: { children: string }) {
   );
 }
 
+export function BackButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+    >
+      <View style={styles.backCircle}>
+        <Icon name="arrow-left" size={18} color={colors.primary} />
+      </View>
+      <Text style={styles.backLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   text: {
     fontFamily: fonts.regular,
@@ -225,4 +247,23 @@ const styles = StyleSheet.create({
   },
   notice: { padding: 12, backgroundColor: colors.errorGround, borderRadius: 8 },
   noticeText: { color: colors.error, fontSize: 14, lineHeight: 20 },
+  backButton: {
+    minHeight: 44,
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingRight: 12,
+  },
+  backCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backLabel: { fontSize: 14, lineHeight: 20, fontFamily: fonts.medium, color: colors.primaryPressed },
 });

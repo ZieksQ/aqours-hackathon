@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import type { ApiClient, Report } from "../../shared/api";
 import { colors } from "../../shared/theme";
-import { Button, Icon, Notice, Text } from "../../shared/ui";
+import { BackButton, Button, Icon, Notice, Text } from "../../shared/ui";
 import { issueLabels, reportDate, statusLabels } from "../home/ReportCard";
 import { previewReport } from "../home/preview";
 import { reportingApi, reportKeys } from "./api";
@@ -66,12 +66,7 @@ export function ReportsScreen({
         />
       }
     >
-      <Button
-        label="Back to Home"
-        icon="arrow-left"
-        secondary
-        onPress={onBack}
-      />
+      <BackButton label="Back to Home" onPress={onBack} />
       <View style={s.section}>
         <Text accessibilityRole="header" style={s.title}>
           My reports

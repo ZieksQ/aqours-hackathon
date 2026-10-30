@@ -26,6 +26,7 @@ import {
   previewCustomerReply,
   previewMessage,
   previewReport,
+  previewResolvedReport,
 } from "../home/preview";
 import { reportKeys, reportingApi } from "./api";
 import { conversationStyles as s } from "./conversationStyles";
@@ -68,7 +69,11 @@ export function ReportConversationScreen({
     queryFn: ({ signal }) => reportingApi.detail(api, reportId, signal),
     refetchInterval: 30000,
   });
-  const report = preview ? previewReport : detail.data;
+  const report = preview
+    ? reportId === previewResolvedReport.id
+      ? previewResolvedReport
+      : previewReport
+    : detail.data;
   const messages = useInfiniteQuery({
     queryKey: reportKeys.messages(accountId, reportId),
     enabled: !preview && !!report,
@@ -79,7 +84,17 @@ export function ReportConversationScreen({
     refetchInterval: 30000,
   });
   const conversation = preview
-    ? [previewMessage, previewCustomerReply].sort(
+    ? (reportId === previewResolvedReport.id
+        ? [
+            {
+              ...previewMessage,
+              id: "preview-resolved-message",
+              body: "Repair on main distribution line completed in Brgy. Commonwealth.",
+              createdAt: "2026-10-26T15:30:00+08:00",
+            },
+          ]
+        : [previewMessage, previewCustomerReply]
+      ).sort(
         (left, right) =>
           Date.parse(left.createdAt) - Date.parse(right.createdAt),
       )

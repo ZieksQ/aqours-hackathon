@@ -46,3 +46,10 @@ export const previewCustomerReply: Message = {
   body: "Thank you. Please let me know when the pressure is back to normal.",
   createdAt: "2026-10-27T09:18:00+08:00",
 };
+
+export const previewResolvedReport: Report = {
+  ...previewReport,
+  id: "AQ-1031",
+  status: "Resolved",
+  createdAt: "2026-10-26T14:00:00+08:00",
+};

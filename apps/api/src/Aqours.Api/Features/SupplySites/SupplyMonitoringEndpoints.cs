@@ -39,6 +39,18 @@ public static class SupplyMonitoringEndpoints
 {
     public static void MapSupplyMonitoringEndpoints(this WebApplication app)
     {
+        var customerSites = app.MapGroup("/api/customer/supply-sites").RequireAuthorization("Customer");
+        customerSites.MapGet("", async (SupplyMonitoringService service, CancellationToken cancellationToken, string? page = null, string? pageSize = null) =>
+        {
+            var errors = new Dictionary<string, string[]>();
+            var pageNumber = SupplySiteEndpoints.ParsePagination(page, 1, "page", errors);
+            var size = SupplySiteEndpoints.ParsePagination(pageSize, 100, "pageSize", errors);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            var result = await service.ListAsync(pageNumber, size, cancellationToken);
+            if (result.Errors is not null) return Results.ValidationProblem(result.Errors);
+            var value = result.Value!;
+            return Results.Ok(new MonitoredSupplySitePageResponse(value.Items.Select(MonitoredSupplySiteResponse.From).ToList(), value.Page, value.PageSize, value.TotalCount));
+        });
         var sites = app.MapGroup("/api/staff/supply-sites").RequireAuthorization("Personnel");
         sites.MapGet("", async (SupplyMonitoringService service, CancellationToken cancellationToken, string? page = null, string? pageSize = null) =>
         {

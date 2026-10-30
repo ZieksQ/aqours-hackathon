@@ -1,6 +1,6 @@
 # Aqours
 
-Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, Admin supplier-site management, Admin/Staff manual supply monitoring in the web portal and API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. Customer supplier-site maps and supply display, weather, the Updates inbox, and full Profile remain deferred.
+Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, Admin supplier-site management, Admin/Staff manual supply monitoring and the supplier portal map in the web portal and API, personnel weather monitoring in the web portal and API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. Customer supplier-site maps, supply display, and weather UI, push notifications, and server-persisted notification read state remain deferred. Mobile Updates and Profile now use the existing Customer APIs; see the mobile README for their limits.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ cp .env.example .env
 
 Skip the copy if `.env` already exists. Set your own `POSTGRES_PASSWORD` in `.env` before starting PostgreSQL. Initial setup on the original development device created an ignored `.env` with a random local password. Configure the API's connection string, JWT key, and initial administrator through user secrets or environment variables as described in [authentication setup](docs/authentication.md).
 
-Before the first API start, restore the pinned EF tool and apply all committed migrations after configuring the connection string (including `InitialAccounts`, `CustomerReports`, `StaffReportWorkspace`, `SupplySiteManagement`, and `20261029071543_ManualSupplyMonitoring`):
+Before the first API start, restore the pinned EF tool and apply all committed migrations after configuring the connection string (including `InitialAccounts`, `CustomerReports`, `StaffReportWorkspace`, `SupplySiteManagement`, `20261029071543_ManualSupplyMonitoring`, and `WeatherWarnings`):
 
 ```sh
 pnpm db:up
@@ -29,7 +29,7 @@ dotnet tool restore
 dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup-project apps/api/src/Aqours.Api
 ```
 
-Startup checks for pending migrations and seeds the supported roles and configured first administrator. It does not apply migrations automatically. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), [Supply Site Management spec](docs/features/supply-site-management/spec.md), and [Manual Supply Monitoring API spec](docs/features/manual-supply-monitoring/spec.md) for their contracts and migration details.
+Startup checks for pending migrations and seeds the supported roles and configured first administrator. It does not apply migrations automatically. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), [Supply Site Management spec](docs/features/supply-site-management/spec.md), [Manual Supply Monitoring API spec](docs/features/manual-supply-monitoring/spec.md), and [Weather Warnings API spec](docs/features/weather-warnings/spec.md) for their contracts and migration details.
 
 ```sh
 pnpm dev
@@ -61,7 +61,7 @@ This connection string can also be set with `dotnet user-secrets`; see [authenti
 
 ## Web styling
 
-Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, an Admin account directory and creation form, password change, report dashboards with seven-day submission charts and workload summaries, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Admins can list, add, view, and edit supply sites at `/supply-sites`, including canonical Philippine addresses and independent map pins. Admin and Staff can review paginated manual supply readings at `/supply-monitoring`; Staff can record readings, while Admin has read-only access. Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; Customer supplier-site maps and supply display, weather, an Updates inbox, and full Profile remain deferred.
+Tailwind CSS is configured with the official `@tailwindcss/vite` plugin in `apps/web/vite.config.ts` and imported in `apps/web/src/index.css`. The web app includes supplier sign-in, an Admin account directory and creation form, password change, report dashboards with seven-day submission charts and workload summaries, and the Staff report queue and ticket workspace. Shared browser UI is implemented in `packages/ui`; use its public components across portal pages instead of duplicating common navigation and layout markup. Use the Feather set from `react-icons/fi`; preserve the existing custom Aqours brand mark. Admins can list, add, view, and edit supply sites at `/supply-sites`, including canonical Philippine addresses and independent map pins. Admin and Staff can review paginated manual supply readings at `/supply-monitoring`; Staff can record readings, while Admin has read-only access. Both roles can use `/map` to browse supply sites and authorized report locations, filter layers, status, and priority, and open tickets or supply history; see the [Supplier Portal Map spec](docs/features/supplier-portal-map/spec.md). Admin and Staff can use `/weather-monitoring` for three-day forecasts, a site map, supply-risk counts, and individual assessments; Admin can configure the demo threshold at `/weather-monitoring/settings`. Forecasts and warning decisions come from the existing Weather Warnings API. See the [Weather Warnings API spec](docs/features/weather-warnings/spec.md). Mobile Customer login, Home, report submission with map/GPS selection, owned-report history, and conversations are implemented; Customer supplier-site maps, supply display, and weather UI, push notifications, and server-persisted notification read state remain deferred. Mobile Updates and Profile use the existing Customer APIs with the limits documented in the mobile README.
 
 To review supply monitoring in a real browser, run `pnpm dev:web`, then in another terminal set `CDP_HELPER` to a local zero-dependency Chrome DevTools Protocol helper module and `CHROME_PATH` to Chrome/Chromium, and run:
 
@@ -71,7 +71,7 @@ WEB_BASE_URL=http://127.0.0.1:5173 node apps/web/scripts/verify-supply-monitorin
 
 The script uses fixture data and does not require a live API; set `CAPTURE_DIR` to save screenshots.
 
-Copy `apps/web/.env.example` to `apps/web/.env.local` and set `VITE_GEOAPIFY_API_KEY` for supply-site maps. This browser-visible key should be restricted to your application origins. Restart Vite after changing it; builds use the configured value at build time. Map loading failures have a retry action, and an unconfigured map shows a setup notice. The address selectors do not move or verify the map pin.
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set `VITE_GEOAPIFY_API_KEY` for supply-site maps and the supplier portal map. This browser-visible key should be restricted to your application origins. Restart Vite after changing it; builds use the configured value at build time. Map loading failures have a retry action, and an unconfigured map shows a setup notice. The address selectors do not move or verify the map pin. The portal map keeps its location list usable when tiles are unavailable, and its site/report layer reads use the existing personnel cookie policy. No additional migration is required for the portal map.
 
 ## Verification
 

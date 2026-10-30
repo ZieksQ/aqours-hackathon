@@ -1,6 +1,9 @@
+using Aqours.Domain.Features.Weather;
+using Aqours.Infrastructure.Features.Weather;
 using Aqours.Infrastructure.Features.Accounts;
 using Aqours.Domain.Features.Reports;
 using Aqours.Domain.Features.SupplySites;
+using Aqours.Domain.Features.Updates;
 using Aqours.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -11,6 +14,10 @@ namespace Aqours.Infrastructure.Persistence;
 public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
     : IdentityDbContext<IdentityAccountUser>(options)
 {
+    public DbSet<WeatherSettings> WeatherSettings => Set<WeatherSettings>();
+
+    public DbSet<WeatherForecastRecord> WeatherForecasts => Set<WeatherForecastRecord>();
+
     public DbSet<SupplySite> SupplySites => Set<SupplySite>();
 
     public DbSet<SupplyUpdate> SupplyUpdates => Set<SupplyUpdate>();
@@ -19,12 +26,17 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
 
     public DbSet<ReportMessage> ReportMessages => Set<ReportMessage>();
 
+    public DbSet<NotificationRead> NotificationReads => Set<NotificationRead>();
+    public DbSet<PushDeviceToken> PushDeviceTokens => Set<PushDeviceToken>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new ReportConfiguration());
         builder.ApplyConfiguration(new SupplySiteConfiguration());
         builder.ApplyConfiguration(new SupplyUpdateConfiguration());
+        builder.ApplyConfiguration(new WeatherSettingsConfiguration());
+        builder.ApplyConfiguration(new WeatherForecastConfiguration());
         builder.Entity<ReportMessage>(message =>
         {
             message.ToTable("report_messages");
@@ -34,6 +46,22 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
             message.HasOne<Report>().WithMany().HasForeignKey(m => m.ReportId).OnDelete(DeleteBehavior.Restrict);
             message.HasOne<IdentityAccountUser>().WithMany().HasForeignKey(m => m.SenderId).OnDelete(DeleteBehavior.Restrict);
             message.HasIndex(m => new { m.ReportId, m.Sequence }).IsUnique();
+        });
+        builder.Entity<NotificationRead>(read =>
+        {
+            read.ToTable("notification_reads");
+            read.HasKey(item => new { item.CustomerId, item.EventId });
+            read.Property(item => item.CustomerId).HasMaxLength(450).IsRequired();
+            read.Property(item => item.EventId).HasMaxLength(256).IsRequired();
+            read.HasOne<IdentityAccountUser>().WithMany().HasForeignKey(item => item.CustomerId).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<PushDeviceToken>(device =>
+        {
+            device.ToTable("push_device_tokens");
+            device.HasKey(item => new { item.CustomerId, item.Token });
+            device.Property(item => item.CustomerId).HasMaxLength(450).IsRequired();
+            device.Property(item => item.Token).HasMaxLength(512).IsRequired();
+            device.HasOne<IdentityAccountUser>().WithMany().HasForeignKey(item => item.CustomerId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<IdentityAccountUser>().Property(u => u.FirstName).HasMaxLength(100).IsRequired();
