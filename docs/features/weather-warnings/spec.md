@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The API provides supplier personnel with site-level forecasts and potential supply-risk assessments. Admins configure one organization-wide demo heat threshold. The supplier portal implements weather monitoring and a dedicated site weather map. Customer weather display, alert delivery, push notification, service-area association, water-depletion prediction, and warning overlays on the separate operational `/map` screen remain deferred.
+The API provides supplier personnel with site-level forecasts and potential supply-risk assessments. Admins configure one organization-wide demo heat threshold. The supplier portal implements weather monitoring and a dedicated site weather map. Customers can read the same site forecasts and assessments through the mobile view. Automated weather alert delivery, service-area association, water-depletion prediction, and warning overlays on the separate operational `/map` screen remain deferred.
 
 The forecast is retrieved from Open-Meteo's free forecast API for each site's coordinates. The API returns three Philippine-local forecast dates (today and the next two days), daily maximum temperatures in Celsius, the manual supply reading, and a per-day assessment. A potential supply-risk warning means only that forecast maximum temperature strictly exceeds the configured threshold while the latest manual supply status is `Low`. The threshold is a demo setting, not an official safety level. An `Unavailable` reading remains visible and is not treated as `Low`.
 
@@ -16,6 +16,7 @@ All routes return camelCase JSON and use non-cacheable response headers.
 | `PUT /api/admin/weather/settings` | Fully onboarded Admin cookie session and CSRF token | `200` updated settings or `400` field validation problem |
 | `GET /api/staff/supply-sites/{id}/weather` | Fully onboarded Admin or Staff personnel cookie session | `200` site weather or `404` unknown site |
 | `GET /api/staff/weather/sites?page={page}&pageSize={pageSize}` | Fully onboarded Admin or Staff personnel cookie session | `200` paginated weather assessments |
+| `GET /api/customer/weather/sites?page={page}&pageSize={pageSize}` | Fully onboarded Customer bearer session | `200` paginated site weather assessments |
 
 Anonymous and Customer bearer requests receive `401`; role or onboarding restrictions receive `403`. Reads require the `Personnel` policy. The settings write requires Admin and `X-CSRF-TOKEN`; missing or invalid CSRF returns `400`. Admin cannot update settings through the Staff settings route.
 
@@ -79,7 +80,7 @@ Charts use Recharts with displayed textual forecast values; maps use the existin
 ## Deferred
 
 - Warning overlays on the separate operational `/map` screen.
-- Customer forecast or supply-risk display and notifications.
+- Weather-triggered Customer push alerts. The mobile app currently receives push for supplier report status changes and replies.
 - Background refresh, distributed refresh locks, and live update delivery.
 - Site/service-area association, stock depletion estimates, official heat alerts, or El Niño detection.
 

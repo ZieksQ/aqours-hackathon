@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { Account, ApiClient } from "../../shared/api";
 import { accountScreenStyles as s } from "../../shared/accountScreenStyles";
 import { colors, fonts } from "../../shared/theme";
-import { Button, Icon, Text } from "../../shared/ui";
+import { BackButton, Button, Icon, Text } from "../../shared/ui";
 import { LoginScreen } from "./LoginScreen";
 
 export function ProfileScreen({
@@ -161,12 +161,7 @@ export function ProfileScreen({
             />
           ) : (
             <ScrollView contentContainerStyle={s.content}>
-              <Button
-                label="Back to Profile"
-                secondary
-                icon="arrow-left"
-                onPress={() => setPanel(null)}
-              />
+              <BackButton label="Back to Profile" onPress={() => setPanel(null)} />
               <Text accessibilityRole="header" style={s.title}>
                 {panel === "about" ? "About Aqours" : "Privacy Policy"}
               </Text>

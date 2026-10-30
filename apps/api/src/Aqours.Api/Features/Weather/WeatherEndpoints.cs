@@ -41,6 +41,18 @@ public static class WeatherEndpoints
 {
     public static void MapWeatherEndpoints(this WebApplication app)
     {
+        var customerWeather = app.MapGroup("/api/customer/weather").RequireAuthorization("Customer");
+        customerWeather.MapGet("/sites", async (WeatherService service, CancellationToken ct, string? page = null, string? pageSize = null) =>
+        {
+            var errors = new Dictionary<string, string[]>();
+            var number = SupplySiteEndpoints.ParsePagination(page, 1, "page", errors);
+            var size = SupplySiteEndpoints.ParsePagination(pageSize, 100, "pageSize", errors);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            var result = await service.ListAsync(number, size, ct);
+            if (result.Errors is not null) return Results.ValidationProblem(result.Errors);
+            var value = result.Value!;
+            return Results.Ok(new SiteWeatherPageResponse(value.Items.Select(SiteWeatherResponse.From).ToList(), value.Page, value.PageSize, value.TotalCount));
+        });
         var weather = app.MapGroup("/api/staff/weather").RequireAuthorization("Personnel");
         weather.MapGet("/settings", async (WeatherService service, CancellationToken ct) =>
             Results.Ok(WeatherSettingsResponse.From(await service.SettingsAsync(ct))));

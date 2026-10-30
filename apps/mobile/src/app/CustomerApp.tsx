@@ -1,9 +1,11 @@
 import { useIsMutating, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as Notifications from "expo-notifications";
 import {
   BackHandler,
   Modal,
   Pressable,
+  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -14,6 +16,8 @@ import { UpdatesScreen } from "../features/updates/UpdatesScreen";
 import { useUpdates } from "../features/updates/useUpdates";
 import { unreadActivity } from "../features/updates/activity";
 import { HomeScreen } from "../features/home/HomeScreen";
+import { CustomerSitesScreen } from "../features/home/CustomerSitesScreen";
+import { CustomerWeatherScreen } from "../features/home/CustomerWeatherScreen";
 import { reportDate } from "../features/home/ReportCard";
 import { reportKeys } from "../features/reports/api";
 import { ReportConversationScreen } from "../features/reports/ReportConversationScreen";
@@ -27,7 +31,23 @@ import type { Account, ApiClient, Report } from "../shared/api";
 import { colors, fonts } from "../shared/theme";
 import { Brand, Button, Icon, Text } from "../shared/ui";
 
-type Screen = "Home" | "Report" | "Reports" | "Updates" | "Profile";
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+type Screen =
+  | "Home"
+  | "Report"
+  | "Reports"
+  | "Updates"
+  | "Profile"
+  | "Sites"
+  | "Weather";
 export function CustomerApp({
   api,
   account,
@@ -44,10 +64,33 @@ export function CustomerApp({
     useIsMutating({ mutationKey: ["submit-report", account.id] }) > 0;
   const [screen, setScreen] = useState<Screen>("Home");
   const updates = useUpdates(api, account.id, preview);
-  const [readIds, setReadIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [sessionReadIds, setReadIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const [readSaveError, setReadSaveError] = useState(false);
+  const readIds = new Set([...updates.readIds, ...sessionReadIds]);
   const unreadCount = unreadActivity(updates.items, readIds).length;
   function markRead(ids: string[]) {
+    setReadSaveError(false);
     setReadIds((current) => new Set([...current, ...ids]));
+    if (!preview && ids.length) {
+      void api
+        .request<void>("/customer/notifications/read-state", {
+          eventIds: ids,
+        })
+        .then(() => {
+          void queryClient.invalidateQueries({
+            queryKey: ["updates", account.id],
+          });
+        })
+        .catch(() => {
+          setReadIds(
+            (current) =>
+              new Set([...current].filter((id) => !ids.includes(id))),
+          );
+          setReadSaveError(true);
+        });
+    }
   }
   const [draft, setDraft] = useState(emptyDraft);
   const [receipt, setReceipt] = useState<Report | null>(null);
@@ -56,6 +99,63 @@ export function CustomerApp({
     "details",
   );
   const [replies, setReplies] = useState<Record<string, string>>({});
+  const pushToken = useRef<string | null>(null);
+  const pushRegistration = useRef<Promise<void> | null>(null);
+  useEffect(() => {
+    if (preview || Platform.OS === "web") return;
+    const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+    if (!projectId) return;
+    let active = true;
+    void (async () => {
+      try {
+        if (Platform.OS === "android") {
+          await Notifications.setNotificationChannelAsync("default", {
+            name: "Updates",
+            importance: Notifications.AndroidImportance.DEFAULT,
+          });
+        }
+        let permission = await Notifications.getPermissionsAsync();
+        if (!permission.granted) permission = await Notifications.requestPermissionsAsync();
+        if (!active || !permission.granted) return;
+        const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+        if (!active) return;
+        pushToken.current = token;
+        const registration = api.request<void>(
+          "/customer/notifications/devices",
+          { token },
+        );
+        pushRegistration.current = registration;
+        await registration;
+      } catch {
+        // The in-app Updates list remains available when push setup is unavailable.
+      }
+    })();
+    function openNotification(response: Notifications.NotificationResponse) {
+      const reportId = response.notification.request.content.data?.reportId;
+      if (typeof reportId !== "string") {
+        setScreen("Updates");
+        return;
+      }
+      void api
+        .request<Report>(`/reports/${reportId}`)
+        .then((report) => {
+          setScreen("Updates");
+          viewReport(report);
+        })
+        .catch(() => setScreen("Updates"));
+    }
+    const subscription =
+      Notifications.addNotificationResponseReceivedListener(openNotification);
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (active && response) openNotification(response);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+      subscription.remove();
+    };
+  }, [api, preview, account.id]);
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -81,6 +181,14 @@ export function CustomerApp({
       );
     setReportId(report.id);
   }
+  async function signOut() {
+    if (pushRegistration.current) {
+      await pushRegistration.current.catch(() => {});
+    }
+    if (pushToken.current) await api.removePushDevice(pushToken.current);
+    pushToken.current = null;
+    onSignOut();
+  }
   return (
     <View style={s.page}>
       {preview && (
@@ -88,7 +196,7 @@ export function CustomerApp({
           <Text style={s.small}>Design preview · Sample data</Text>
           <Pressable
             accessibilityRole="button"
-            onPress={onSignOut}
+            onPress={signOut}
             style={styles.exit}
           >
             <Text style={styles.exitText}>Exit preview</Text>
@@ -99,19 +207,6 @@ export function CustomerApp({
         style={[styles.header, screen === "Profile" && styles.profileHeader]}
       >
         <Brand />
-        {screen !== "Profile" && (
-          <Pressable
-            disabled={submitting}
-            accessibilityState={{ disabled: submitting }}
-            accessibilityRole="button"
-            accessibilityLabel={`Account for ${account.firstName} ${account.lastName}`}
-            hitSlop={6}
-            onPress={() => setScreen("Profile")}
-            style={({ pressed }) => [styles.avatar, pressed && s.pressed]}
-          >
-            <Icon name="user" color="#3F484C" size={20} />
-          </Pressable>
-        )}
       </View>
       {screen === "Home" ? (
         <HomeScreen
@@ -121,12 +216,19 @@ export function CustomerApp({
           onCreate={openReport}
           onReports={() => setScreen("Reports")}
           onView={viewReport}
+          onSites={() => setScreen("Sites")}
+          onWeather={() => setScreen("Weather")}
         />
+      ) : screen === "Sites" ? (
+        <CustomerSitesScreen api={api} onBack={() => setScreen("Home")} />
+      ) : screen === "Weather" ? (
+        <CustomerWeatherScreen api={api} onBack={() => setScreen("Home")} />
       ) : screen === "Updates" ? (
         <UpdatesScreen
           updates={updates}
           preview={preview}
           readIds={readIds}
+          readSaveError={readSaveError}
           onRead={markRead}
           onView={viewReport}
           onReports={() => setScreen("Reports")}
@@ -136,7 +238,7 @@ export function CustomerApp({
           api={api}
           account={account}
           preview={preview}
-          onSignOut={onSignOut}
+          onSignOut={signOut}
         />
       ) : screen === "Reports" ? (
         <ReportsScreen
@@ -225,10 +327,23 @@ export function CustomerApp({
             >
               <View style={styles.tabIcon}>
                 {selected && <View style={styles.activeTab} />}
-                <Icon
-                  name={icon}
-                  color={selected ? colors.primary : "#3F484C"}
-                />
+                {label === "Profile" ? (
+                  <View
+                    style={[
+                      styles.profileTabAvatar,
+                      selected && styles.profileTabAvatarSelected,
+                    ]}
+                  >
+                    <Text style={styles.profileTabInitials}>
+                      {`${account.firstName[0] ?? ""}${account.lastName[0] ?? ""}`.toUpperCase()}
+                    </Text>
+                  </View>
+                ) : (
+                  <Icon
+                    name={icon}
+                    color={selected ? colors.primary : "#3F484C"}
+                  />
+                )}
                 {label === "Updates" && unreadCount > 0 && (
                   <View style={styles.unreadBadge}>
                     <Text style={styles.unreadBadgeText}>
@@ -310,13 +425,22 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     backgroundColor: colors.white,
   },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  profileTabAvatar: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: "#EFEDF0",
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
+  },
+  profileTabAvatarSelected: { backgroundColor: colors.pale, borderColor: colors.primary },
+  profileTabInitials: {
+    fontSize: 10,
+    lineHeight: 14,
+    fontFamily: fonts.semibold,
+    color: colors.primaryPressed,
   },
   profileHeader: { minHeight: 56 },
   unreadBadge: {

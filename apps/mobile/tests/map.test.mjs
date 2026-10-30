@@ -6,13 +6,18 @@ import {
   parseMapMessage,
 } from "../src/features/reports/leaflet-map.ts";
 
-function mapHarness(coordinates = null, interactive = true) {
+function mapHarness(coordinates = null, interactive = true, sites = []) {
   const messages = [];
   const mapEvents = {};
   const tileEvents = {};
   let marker;
+  const markers = [];
   const map = {
     setView: () => {},
+    fitBounds: (bounds, options) => {
+      map.bounds = bounds;
+      map.fitOptions = options;
+    },
     on: (event, callback) => {
       mapEvents[event] = callback;
     },
@@ -20,10 +25,12 @@ function mapHarness(coordinates = null, interactive = true) {
   };
   const L = {
     map: () => map,
-    divIcon: () => ({}),
-    marker: (position) => {
-      marker = {
+    DomUtil: { create: () => ({ style: {}, textContent: "" }) },
+    divIcon: (options) => options,
+    marker: (position, options) => {
+      const created = {
         position,
+        options,
         events: {},
         addTo: function () {
           return this;
@@ -39,7 +46,13 @@ function mapHarness(coordinates = null, interactive = true) {
             wrap: () => ({ lat: this.position[0], lng: this.position[1] }),
           };
         },
+        bindPopup: function (popup) {
+          this.popup = popup;
+          return this;
+        },
       };
+      markers.push(created);
+      marker = created;
       return marker;
     },
     tileLayer: () => ({
@@ -59,11 +72,12 @@ function mapHarness(coordinates = null, interactive = true) {
     apiKey: "test-client-key",
     coordinates,
     interactive,
+    sites,
   });
   const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
   vm.runInNewContext(inline, { window, L });
   window.startAqoursMap();
-  return { messages, mapEvents, tileEvents, getMarker: () => marker };
+  return { messages, mapEvents, tileEvents, markers, map, getMarker: () => marker };
 }
 
 test("bridge accepts finite, bounded selected locations and rejects malformed messages", () => {
@@ -153,6 +167,28 @@ test("the compact preview never sends location selections", () => {
     messages.some((message) => message.type === "select"),
     false,
   );
+});
+
+test("supplier sites show status and address in safe popups and frame all pins", () => {
+  const site = {
+    latitude: 14.7,
+    longitude: 121.1,
+    name: "North Site <script>",
+    address: "Commonwealth, Quezon City",
+    status: "Low",
+    updatedAt: "Oct 30, 8:30 AM",
+  };
+  const { markers, map } = mapHarness(null, false, [site]);
+  const siteMarker = markers[0];
+
+  assert.equal(markers.length, 1);
+  assert.match(siteMarker.options.icon.html, /#D68B21/);
+  assert.match(siteMarker.popup.textContent, /North Site <script>/);
+  assert.match(siteMarker.popup.textContent, /Commonwealth, Quezon City/);
+  assert.match(siteMarker.popup.textContent, /Low/);
+  assert.match(siteMarker.popup.textContent, /Updated Oct 30, 8:30 AM/);
+  assert.equal(JSON.stringify(map.bounds), "[[14.7,121.1]]");
+  assert.equal(map.fitOptions.maxZoom, 13);
 });
 
 test("embedded configuration cannot inject HTML and map credits are included", () => {

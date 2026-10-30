@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import type { ApiClient } from "../../shared/api";
 import { colors } from "../../shared/theme";
-import { Button, Icon, Notice, Text } from "../../shared/ui";
+import { BackButton, Button, Icon, Notice, Text } from "../../shared/ui";
 import {
   issueLabels,
   ReportProgress,
@@ -62,7 +62,7 @@ export function ReportDetailScreen({
         />
       }
     >
-      <Button label={backLabel} icon="arrow-left" secondary onPress={onBack} />
+      <BackButton label={backLabel} onPress={onBack} />
       <Text accessibilityRole="header" style={s.title}>
         Report details
       </Text>

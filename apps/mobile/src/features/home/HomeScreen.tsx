@@ -6,10 +6,17 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import type { Account, ApiClient, Message, Report } from "../../shared/api";
+import type {
+  Account,
+  ApiClient,
+  CustomerSupplySite,
+  Message,
+  Report,
+} from "../../shared/api";
 import { colors, fonts } from "../../shared/theme";
 import { Button, Icon, Notice, Text } from "../../shared/ui";
 import { ReportCard } from "./ReportCard";
+import { LeafletMap } from "../reports/LeafletMap";
 import { previewMessage, previewReport } from "./preview";
 import { reportKeys } from "../reports/api";
 
@@ -20,6 +27,8 @@ export function HomeScreen({
   onCreate,
   onReports,
   onView,
+  onSites,
+  onWeather,
 }: {
   api: ApiClient;
   account: Account;
@@ -27,6 +36,8 @@ export function HomeScreen({
   onCreate: () => void;
   onReports: () => void;
   onView: (report: Report) => void;
+  onSites: () => void;
+  onWeather: () => void;
 }) {
   const reports = useQuery({
     queryKey: reportKeys.latest(account.id),
@@ -43,6 +54,21 @@ export function HomeScreen({
     refetchInterval: 30000,
   });
   const report = preview ? previewReport : reports.data?.items[0];
+  const supplySites = useQuery({
+    queryKey: ["customer-sites"],
+    enabled: !preview,
+    queryFn: ({ signal }) =>
+      api.request<{ items: CustomerSupplySite[] }>(
+        "/customer/supply-sites?pageSize=100",
+        undefined,
+        true,
+        true,
+        signal,
+      ),
+    staleTime: 30000,
+    refetchInterval: 30000,
+  });
+  const site = supplySites.data?.items[0];
   const messages = useQuery({
     queryKey: ["messages", account.id, report?.id, "latest"],
     enabled: !preview && !!report,
@@ -72,6 +98,7 @@ export function HomeScreen({
             onRefresh={() => {
               if (!preview) {
                 void reports.refetch();
+                void supplySites.refetch();
                 if (report) void messages.refetch();
               }
             }}
@@ -197,17 +224,78 @@ export function HomeScreen({
                 <Text style={styles.small}>Sample supply information</Text>
               </View>
             </View>
+          ) : supplySites.isPending ? (
+            <View style={styles.stateCard}>
+              <ActivityIndicator color={colors.primary} />
+              <Text style={styles.small}>Loading supplier supply status…</Text>
+            </View>
+          ) : supplySites.isError ? (
+            <View style={styles.stateCard}>
+              <Notice>{supplySites.error.message}</Notice>
+              {supplySites.data && (
+                <Text style={styles.small}>Showing the last loaded supply status.</Text>
+              )}
+              <Button
+                label="Try again"
+                secondary
+                onPress={() => void supplySites.refetch()}
+              />
+            </View>
+          ) : site ? (
+            <View style={styles.supplyCard}>
+              <View style={styles.map}>
+                <LeafletMap
+                  coordinates={null}
+                  readOnlyInteractive
+                  sites={(supplySites.data?.items ?? []).map((item) => ({
+                    latitude: item.latitude,
+                    longitude: item.longitude,
+                    name: item.name,
+                    status: item.latestSupply?.status,
+                    address: `${item.address.details}, ${item.address.barangayName}, ${item.address.cityMunicipalityName}`,
+                    updatedAt: item.latestSupply?.updatedAt
+                      ? new Date(item.latestSupply.updatedAt).toLocaleString(
+                          "en-PH",
+                          { dateStyle: "medium", timeStyle: "short" },
+                        )
+                      : null,
+                  }))}
+                />
+              </View>
+              <View style={styles.supplyDetails}>
+                <Text style={styles.supplyTitle}>{site.name}</Text>
+                <Text style={styles.small}>
+                  {site.address.details}, {site.address.barangayName},{" "}
+                  {site.address.cityMunicipalityName}
+                </Text>
+                <Text
+                  style={[
+                    styles.supplyStatus,
+                    site.latestSupply?.status === "Low" && styles.lowSupply,
+                    site.latestSupply?.status === "Unavailable" &&
+                      styles.unavailableSupply,
+                  ]}
+                >
+                  {site.latestSupply?.status ?? "No update"}
+                </Text>
+                <Text style={styles.small}>
+                  {site.latestSupply
+                    ? `Manually updated ${new Date(site.latestSupply.updatedAt).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" })}`
+                    : "No manual supply reading recorded"}
+                </Text>
+              </View>
+            </View>
           ) : (
             <View style={styles.stateCard}>
               <Icon name="map-pin" />
-              <Text>Supply information is not available yet.</Text>
-              <Text style={styles.small}>
-                Supplier sites, maps, and manually recorded supply updates will
-                appear here when available.
-              </Text>
+              <Text>Supplier sites are not available yet.</Text>
             </View>
           )}
         </View>
+        {!preview && <View style={styles.toolsRow}>
+          <Button label="Supplier map" icon="map" secondary onPress={onSites} />
+          <Button label="Weather outlook" icon="cloud" secondary onPress={onWeather} />
+        </View>}
         <Button label="My reports" secondary onPress={onReports} />
         {!preview && (
           <Text style={styles.freshness}>
@@ -252,6 +340,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   supplySection: { gap: 12 },
+  toolsRow: { gap: 10 },
   supplyCard: {
     backgroundColor: colors.white,
     borderRadius: 16,
@@ -299,6 +388,17 @@ const styles = StyleSheet.create({
   },
   supplyDetails: { padding: 14, gap: 6 },
   supplyTitle: { fontFamily: fonts.semibold },
+  supplyStatus: {
+    alignSelf: "flex-start",
+    color: colors.primaryPressed,
+    backgroundColor: colors.pale,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    fontFamily: fonts.semibold,
+  },
+  lowSupply: { color: "#79520C", backgroundColor: "#FFF2D9" },
+  unavailableSupply: { color: "#9C2924", backgroundColor: "#FFF0EE" },
   freshness: {
     fontSize: 12,
     lineHeight: 18,

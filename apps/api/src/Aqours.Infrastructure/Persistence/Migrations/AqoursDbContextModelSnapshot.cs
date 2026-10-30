@@ -247,6 +247,50 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                     b.ToTable("supply_updates", (string)null);
                 });
 
+            modelBuilder.Entity("Aqours.Domain.Features.Updates.NotificationRead", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("EventId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("event_id");
+
+                    b.Property<DateTimeOffset>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at");
+
+                    b.HasKey("CustomerId", "EventId")
+                        .HasName("pk_notification_reads");
+
+                    b.ToTable("notification_reads", (string)null);
+                });
+
+            modelBuilder.Entity("Aqours.Domain.Features.Updates.PushDeviceToken", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("Token")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("token");
+
+                    b.Property<DateTimeOffset>("RegisteredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("registered_at");
+
+                    b.HasKey("CustomerId", "Token")
+                        .HasName("pk_push_device_tokens");
+
+                    b.ToTable("push_device_tokens", (string)null);
+                });
+
             modelBuilder.Entity("Aqours.Domain.Features.Weather.WeatherSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -692,6 +736,26 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_supply_updates_asp_net_users_updated_by_id");
+                });
+
+            modelBuilder.Entity("Aqours.Domain.Features.Updates.NotificationRead", b =>
+                {
+                    b.HasOne("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notification_reads_asp_net_users_customer_id");
+                });
+
+            modelBuilder.Entity("Aqours.Domain.Features.Updates.PushDeviceToken", b =>
+                {
+                    b.HasOne("Aqours.Infrastructure.Features.Accounts.IdentityAccountUser", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_push_device_tokens_asp_net_users_customer_id");
                 });
 
             modelBuilder.Entity("Aqours.Infrastructure.Features.Accounts.RefreshFamily", b =>

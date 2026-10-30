@@ -11,6 +11,8 @@ using Aqours.Infrastructure.Features.Reports;
 using Aqours.Application.Features.Reports;
 using Aqours.Infrastructure.Persistence.Seeders;
 using Aqours.Infrastructure.Features.Accounts;
+using Aqours.Application.Features.Updates;
+using Aqours.Infrastructure.Features.Updates;
 using Aqours.Application.Features.Accounts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +69,11 @@ public static class DependencyInjection
         services.AddScoped<IAccountStore, IdentityAccountStore>();
         services.AddScoped<AccountService>();
         services.AddScoped<IRefreshSessions, PostgresRefreshSessions>();
+        services.AddScoped<INotificationReadStore, PostgresNotificationReadStore>();
+        services.AddScoped<NotificationReadService>();
+        services.AddScoped<IPushDeviceStore, PostgresPushDeviceStore>();
+        services.AddScoped<PushDeviceService>();
+        services.AddScoped<IPushNotifications, ExpoPushNotifications>();
         services.AddScoped<IAccountSeeder, AccountSeeder>();
         return services;
     }

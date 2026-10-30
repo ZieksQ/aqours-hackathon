@@ -16,11 +16,24 @@ export function LeafletMap({
   interactive = false,
   onSelect,
   onReadyChange,
+  sites,
+  readOnlyInteractive = false,
+  coordinateLabel,
 }: {
   coordinates: Coordinates | null;
   interactive?: boolean;
   onSelect?: (coordinates: Coordinates | null) => void;
   onReadyChange?: (ready: boolean) => void;
+  sites?: {
+    latitude: number;
+    longitude: number;
+    name: string;
+    status?: string | null;
+    address?: string;
+    updatedAt?: string | null;
+  }[];
+  readOnlyInteractive?: boolean;
+  coordinateLabel?: string;
 }) {
   const apiKey = process.env.EXPO_PUBLIC_GEOAPIFY_API_KEY?.trim() ?? "";
   const [attempt, setAttempt] = useState(0);
@@ -29,10 +42,10 @@ export function LeafletMap({
   );
   const source = useMemo(
     () => ({
-      html: createMapHtml({ apiKey, coordinates, interactive }),
+      html: createMapHtml({ apiKey, coordinates, interactive, gestures: interactive || readOnlyInteractive, sites, coordinateLabel }),
       baseUrl: mapDocumentOrigin,
     }),
-    [apiKey, coordinates, interactive],
+    [apiKey, coordinates, interactive, readOnlyInteractive, sites, coordinateLabel],
   );
   useEffect(() => {
     setStatus("loading");
@@ -64,7 +77,7 @@ export function LeafletMap({
     <View style={styles.root}>
       <WebView
         key={attempt}
-        pointerEvents={interactive ? "auto" : "none"}
+        pointerEvents={interactive || readOnlyInteractive ? "auto" : "none"}
         source={source}
         style={styles.map}
         javaScriptEnabled

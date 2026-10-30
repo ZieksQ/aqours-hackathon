@@ -45,13 +45,26 @@ export function createMapHtml({
   apiKey,
   coordinates,
   interactive,
+  gestures = interactive,
+  sites = [],
+  coordinateLabel = "Selected location",
 }: {
   apiKey: string;
   coordinates: Coordinates | null;
   interactive: boolean;
+  gestures?: boolean;
+  sites?: {
+    latitude: number;
+    longitude: number;
+    name: string;
+    status?: string | null;
+    address?: string;
+    updatedAt?: string | null;
+  }[];
+  coordinateLabel?: string;
 }) {
   // Escape embedded JSON so configuration can never terminate the script element.
-  const config = JSON.stringify({ apiKey, coordinates, interactive }).replace(
+  const config = JSON.stringify({ apiKey, coordinates, interactive, gestures, sites, coordinateLabel }).replace(
     /</g,
     "\\u003c",
   );
@@ -92,13 +105,13 @@ html,body,#map { width:100%; height:100%; margin:0; background:#F4F7F6; }
       let errors = 0;
       let loaded = 0;
       const map = L.map('map', {
-        zoomControl: config.interactive,
-        dragging: config.interactive,
-        touchZoom: config.interactive,
-        scrollWheelZoom: config.interactive,
-        doubleClickZoom: config.interactive,
-        boxZoom: config.interactive,
-        keyboard: config.interactive,
+        zoomControl: config.gestures,
+        dragging: config.gestures,
+        touchZoom: config.gestures,
+        scrollWheelZoom: config.gestures,
+        doubleClickZoom: config.gestures,
+        boxZoom: config.gestures,
+        keyboard: config.gestures,
         attributionControl: true
       });
       const point = config.coordinates;
@@ -112,7 +125,7 @@ html,body,#map { width:100%; height:100%; margin:0; background:#F4F7F6; }
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude)>90 || Math.abs(longitude)>180) return;
         if (marker) marker.setLatLng([latitude,longitude]);
         else {
-          marker = L.marker([latitude,longitude], {icon:icon, draggable:config.interactive, autoPan:config.interactive, title:'Report location', alt:'Selected problem location'}).addTo(map);
+          marker = L.marker([latitude,longitude], {icon:icon, draggable:config.interactive, autoPan:config.interactive, title:config.coordinateLabel, alt:config.coordinateLabel}).addTo(map);
           marker.on('dragend', function () {
             const position = marker.getLatLng().wrap();
             select(position.lat,position.lng,true);
@@ -122,6 +135,19 @@ html,body,#map { width:100%; height:100%; margin:0; background:#F4F7F6; }
         if (notify) post({type:'select',latitude:latitude,longitude:longitude});
       }
       if (point) select(point.latitude,point.longitude,false);
+      const bounds = [];
+      if (point) bounds.push([point.latitude,point.longitude]);
+      (config.sites || []).forEach(function (site) {
+        if (!Number.isFinite(site.latitude) || !Number.isFinite(site.longitude)) return;
+        const low = site.status === 'Low' || site.status === 'Unavailable';
+        const pin = L.divIcon({ className:'report-pin', html:'<span style="background:' + (site.status === 'Unavailable' ? '#BA322A' : low ? '#D68B21' : '#1B6C80') + '"></span>', iconSize:[30,30], iconAnchor:[15,34] });
+        const popup = L.DomUtil.create('div', 'site-popup');
+        popup.style.whiteSpace = 'pre-line';
+        popup.textContent = site.name + '\\n' + (site.address || '') + '\\n' + (site.status || 'No supply update') + (site.updatedAt ? '\\nUpdated ' + site.updatedAt : '');
+        L.marker([site.latitude,site.longitude], {icon:pin, title:site.name, alt:site.name}).addTo(map).bindPopup(popup);
+        bounds.push([site.latitude,site.longitude]);
+      });
+      if (bounds.length > 0) map.fitBounds(bounds, {padding:[28,28], maxZoom:point ? 16 : 13});
       map.on('click', function (event) {
         if (!config.interactive || !usable) return;
         const position = event.latlng.wrap();

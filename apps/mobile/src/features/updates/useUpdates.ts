@@ -13,7 +13,10 @@ export function useUpdates(
     queryKey: ["updates", accountId],
     enabled: !preview,
     queryFn: async ({ signal }) => {
-      const reports = await reportingApi.list(api, 1, signal);
+      const [reports, readState] = await Promise.all([
+        reportingApi.list(api, 1, signal),
+        api.request<{ eventIds: string[] }>("/customer/notifications/read-state", undefined, true, true, signal),
+      ]);
       const activity = await Promise.all(
         reports.items.map(async (report) => {
           const messages = await reportingApi.messages(
@@ -31,6 +34,7 @@ export function useUpdates(
           .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
         latestReport: reports.items[0],
         hasOlderReports: reports.totalCount > reports.items.length,
+        readIds: readState.eventIds,
       };
     },
     staleTime: 30000,
@@ -42,5 +46,6 @@ export function useUpdates(
     latestReport: preview
       ? previewActivity[0].report
       : query.data?.latestReport,
+    readIds: preview ? [] : (query.data?.readIds ?? []),
   };
 }

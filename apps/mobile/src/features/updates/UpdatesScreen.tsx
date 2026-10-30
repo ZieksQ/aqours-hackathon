@@ -19,6 +19,7 @@ export function UpdatesScreen({
   updates,
   preview,
   readIds,
+  readSaveError,
   onRead,
   onView,
   onReports,
@@ -26,6 +27,7 @@ export function UpdatesScreen({
   updates: ReturnType<typeof useUpdates>;
   preview: boolean;
   readIds: ReadonlySet<string>;
+  readSaveError: boolean;
   onRead: (ids: string[]) => void;
   onView: (report: Report, conversation?: boolean) => void;
   onReports: () => void;
@@ -101,6 +103,7 @@ export function UpdatesScreen({
           </Pressable>
         </View>
       </View>
+      {readSaveError && <Notice>We couldn’t save that read status. Open the update again when you’re back online.</Notice>}
       {!preview && updates.isPending && (
         <ActivityIndicator
           accessibilityLabel="Loading updates"

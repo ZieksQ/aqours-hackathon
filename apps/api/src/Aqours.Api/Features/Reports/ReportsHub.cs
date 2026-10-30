@@ -1,4 +1,5 @@
 using Aqours.Application.Features.Reports;
+using Aqours.Application.Features.Updates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -33,7 +34,7 @@ public sealed class ReportUserIdProvider : IUserIdProvider
 }
 
 // REST is durable; transient notification failures must not turn a committed write into a failed send.
-public sealed class ReportNotifications(IHubContext<ReportsHub> hub, ILogger<ReportNotifications> logger) : IReportNotifications
+public sealed class ReportNotifications(IHubContext<ReportsHub> hub, IPushNotifications push, ILogger<ReportNotifications> logger) : IReportNotifications
 {
     public Task ReportCreatedAsync(Guid id) => DeliverAsync(async () =>
     {
@@ -41,14 +42,28 @@ public sealed class ReportNotifications(IHubContext<ReportsHub> hub, ILogger<Rep
         await hub.Clients.Group(ReportsHub.QueueGroup).SendAsync("QueueChanged", new { id });
     });
 
-    public Task TicketUpdatedAsync(Guid id) => DeliverAsync(async () =>
+    public async Task TicketUpdatedAsync(Guid id)
     {
-        await hub.Clients.Group(ReportsHub.TicketGroup(id)).SendAsync("TicketUpdated", new { id });
-        await hub.Clients.Group(ReportsHub.QueueGroup).SendAsync("QueueChanged", new { id });
-    });
+        await DeliverAsync(async () =>
+        {
+            await hub.Clients.Group(ReportsHub.TicketGroup(id)).SendAsync("TicketUpdated", new { id });
+            await hub.Clients.Group(ReportsHub.QueueGroup).SendAsync("QueueChanged", new { id });
+        });
+        await DeliverPushAsync(id, "Your report was updated", "Your supplier changed the status of your report.");
+    }
 
-    public Task MessageCreatedAsync(TicketMessage message) => DeliverAsync(() =>
-        hub.Clients.Group(ReportsHub.TicketGroup(message.ReportId)).SendAsync("MessageCreated", MessageResponse.From(message)));
+    public async Task MessageCreatedAsync(TicketMessage message)
+    {
+        await DeliverAsync(() => hub.Clients.Group(ReportsHub.TicketGroup(message.ReportId)).SendAsync("MessageCreated", MessageResponse.From(message)));
+        if (message.SenderRole != "Customer")
+            await DeliverPushAsync(message.ReportId, $"{message.SenderName} replied to your report", message.Body);
+    }
+
+    private async Task DeliverPushAsync(Guid reportId, string title, string body)
+    {
+        try { await push.SendToReportCustomerAsync(reportId, title, body); }
+        catch (Exception error) { logger.LogWarning(error, "Push notification failed after commit for report {ReportId}.", reportId); }
+    }
 
     private async Task DeliverAsync(Func<Task> deliver)
     {
