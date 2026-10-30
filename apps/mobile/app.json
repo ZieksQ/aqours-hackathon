@@ -21,6 +21,15 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font", "expo-notifications"]
+    "plugins": [
+      "expo-font",
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5dff41a7-8457-4c32-a45a-a1b46f497ffe"
+      }
+    },
+    "owner": "zieksq"
   }
 }
