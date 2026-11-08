@@ -1,5 +1,7 @@
 # Progress
 
+Archived early mobile Stitch design work: [2026-11-08 archive](memory/progress-2026-11-08-01.md).
+
 Archived foundation setup: [2026-10-28 archive](memory/progress-2026-10-28-01.md).
 Archived early implementation: [2026-10-25 archive](memory/progress-2026-10-25-01.md).
 
@@ -8,8 +10,6 @@ Archived Customer reporting API: [2026-10-30 archive](memory/progress-2026-10-30
 Archived authentication configuration: [2026-10-29 archive](memory/progress-2026-10-29-01.md).
 
 Archived portal foundation and mobile setup: [2026-10-30 archive](memory/progress-2026-10-30-02.md).
-
-- 2026-10-27: Created the private Google Stitch project `Aqours Mobile` and generated/refined Login, Home, Report, Updates, and Profile designs using the existing blue-teal brand accent; saved PNG previews, original HTML exports, and review notes in the Git-ignored `design/aqours-mobile-stitch/` folder. Validated all five export pairs and browser-inspected Home at 1440/768/390px (0 failures, 3 accepted design warnings); no application implementation or mobile runtime testing was performed.
 
 - 2026-10-27: Implemented native Customer login, initial password change, and Home from the Stitch references, including bundled IBM Plex Sans, safe areas, latest owned report/progress/response, in-memory refresh/logout, and a labeled development-only sample preview; documented setup and preserved deferred submission, inbox, maps, and supply scope. Verified TypeScript, eight API-client tests, Prettier, design source lint, Expo's local dependency compatibility check, and Android/iOS JavaScript exports; real-phone visual/runtime verification remains pending.
 
@@ -52,3 +52,5 @@ Archived portal foundation and mobile setup: [2026-10-30 archive](memory/progres
 - 2026-10-30: Implemented the Stitch-based Admin/Staff weather-monitoring overview, site assessment, and Admin demo-threshold pages with all-site counts, Leaflet/Geoapify markers, forecast charts, supply evidence, limitations, and recommended actions. Web/shared build, lint, formatting, 41 weather tests, and 14 fixture-backed browser checks passed at 1440/768/390px; live-backend end-to-end verification remains pending.
 - 2026-10-30: Added Customer-authenticated supplier-site and weather reads, a native supplier map with opt-in current location, a three-day weather view, server-persisted notification reads, and Expo push token registration/delivery; aligned navigation avatars and back controls with the mobile Stitch style. Mobile typecheck/tests and the API solution build passed, EF reports no pending model changes, and C# formatting passed; PostgreSQL integration tests could not run without `AQOURS_TEST_CONNECTION_STRING`, no mobile lint/Prettier tooling is configured, and real-phone/remote-push verification remains outstanding under Expo Go limits.
 - 2026-10-30: Fixed the Expo Go startup crash from `ExpoTopicSubscriptionModule` by guarding and deferring notification imports while preserving in-app Updates. Mobile tests, TypeScript, formatting, and offline Expo dependency checks passed; physical-phone verification remains pending.
+
+- 2026-11-08: Added a Linux Docker-first development stack for PostgreSQL, API, and web, with an opt-in Expo Go profile, explicit migrations, the existing database volume, persistent Data Protection keys, and CI shell-variable configuration without an env file. Default/mobile/db-only Compose, shell, mobile-guard, and Vite checks passed; image builds, Docker runtime auth/migrations/hot reload/live data retention, and physical-phone checks remain unverified because Docker daemon access and a phone were unavailable.

@@ -238,6 +238,9 @@ _pkginfo.txt
 # Others
 ClientBin/
 ~$*
+
+# Orchestrator session memory
+/.orchestrator/tmp/
 *~
 *.dbmdl
 *.dbproj.schemaview
