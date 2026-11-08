@@ -1,5 +1,7 @@
 # Progress
 
+Archived oldest active entry: [2026-11-08 archive 02](memory/progress-2026-11-08-02.md).
+
 Archived early mobile Stitch design work: [2026-11-08 archive](memory/progress-2026-11-08-01.md).
 
 Archived foundation setup: [2026-10-28 archive](memory/progress-2026-10-28-01.md).
@@ -10,8 +12,6 @@ Archived Customer reporting API: [2026-10-30 archive](memory/progress-2026-10-30
 Archived authentication configuration: [2026-10-29 archive](memory/progress-2026-10-29-01.md).
 
 Archived portal foundation and mobile setup: [2026-10-30 archive](memory/progress-2026-10-30-02.md).
-
-- 2026-10-27: Implemented native Customer login, initial password change, and Home from the Stitch references, including bundled IBM Plex Sans, safe areas, latest owned report/progress/response, in-memory refresh/logout, and a labeled development-only sample preview; documented setup and preserved deferred submission, inbox, maps, and supply scope. Verified TypeScript, eight API-client tests, Prettier, design source lint, Expo's local dependency compatibility check, and Android/iOS JavaScript exports; real-phone visual/runtime verification remains pending.
 
 - 2026-10-27: Implemented the Stitch-based native Customer reporting flow with validated canonical PSGC address selection, optional foreground GPS/manual map pin/coordinate entry, submission receipts, owned-report history, and paginated supplier conversations with InProgress-only replies; added the approved Expo-compatible map/location packages and retained in-memory drafts. Verified mobile TypeScript, 16 API-client/reporting tests including every canonical barangay path, Prettier, design source lint, local Expo dependency/config checks, and Android/iOS JavaScript exports; real-phone Expo Go interaction and live-backend UI verification remain pending.
 
@@ -54,3 +54,5 @@ Archived portal foundation and mobile setup: [2026-10-30 archive](memory/progres
 - 2026-10-30: Fixed the Expo Go startup crash from `ExpoTopicSubscriptionModule` by guarding and deferring notification imports while preserving in-app Updates. Mobile tests, TypeScript, formatting, and offline Expo dependency checks passed; physical-phone verification remains pending.
 
 - 2026-11-08: Added a Linux Docker-first development stack for PostgreSQL, API, and web, with an opt-in Expo Go profile, explicit migrations, the existing database volume, persistent Data Protection keys, and CI shell-variable configuration without an env file. Default/mobile/db-only Compose, shell, mobile-guard, and Vite checks passed; image builds, Docker runtime auth/migrations/hot reload/live data retention, and physical-phone checks remain unverified because Docker daemon access and a phone were unavailable.
+
+- 2026-11-08: Added a production Compose stack with multi-stage API and Nginx SPA images, same-origin REST/SignalR routing, loopback HTTPS-edge ingress, dedicated database/Data Protection volumes, and distinct runtime/migration connections with role-provisioning and EF bundle guidance. API Debug/Release builds, 15/15 focused hosting tests, UI/web builds, five Compose configurations, formatting/shell checks, and independent static review passed; `nginx -t`, Docker image builds, container/runtime checks, migrations, live auth/data retention, and deployment remain unverified because the Nginx binary was unavailable and daemon access was denied.

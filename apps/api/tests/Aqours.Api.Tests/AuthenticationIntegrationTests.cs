@@ -470,7 +470,10 @@ public sealed class AuthenticationIntegrationTests(ApiFixture fixture)
             ["SeedAdmin:Email"] = ApiFixture.AdminEmail,
             ["SeedAdmin:FirstName"] = "Integration",
             ["SeedAdmin:LastName"] = "Admin",
-            ["SeedAdmin:Password"] = ApiFixture.AdminPassword
+            ["SeedAdmin:Password"] = ApiFixture.AdminPassword,
+            ["PROD_PUBLIC_HOST"] = "localhost",
+            ["PROD_PROXY_CIDR"] = "172.30.0.0/24",
+            ["AQOURS_DATA_PROTECTION_KEY_PATH"] = Path.Combine(Path.GetTempPath(), "aqours-production-test-keys", Guid.NewGuid().ToString("N"))
         };
         using var productionFactory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {

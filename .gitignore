@@ -489,6 +489,7 @@ dist-ssr/
 coverage/
 .env.*
 !.env.example
+!.env.production.example
 *.local
 
 # Local browser/design verification evidence

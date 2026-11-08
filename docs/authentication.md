@@ -24,6 +24,22 @@ The Compose `.env` parser interpolates unquoted and double-quoted values; single
 
 CI can set the same Compose variables in its job environment without creating a root `.env` file. For the API when run directly on the host, use .NET user secrets or host environment variables instead; Compose's `.env` values are not automatically loaded by ASP.NET Core. See [local API user secrets](user-secrets.md) for host setup commands.
 
+### Production Compose settings
+
+The production Compose file uses a separate `PROD_` environment contract. Invoke it with the explicitly selected production env file so Compose does not fall back to the development root `.env`. The mapping below matches the current Compose source; the API build and hosting tests passed, but production container/runtime behavior has not been verified. See the [production deployment runbook](deployment.md) for the release boundary and migration workflow.
+
+| Production variable | Purpose |
+| --- | --- |
+| `PROD_API_CONNECTION_STRING` | API runtime connection string for a restricted application database role. |
+| `PROD_MIGRATION_CONNECTION_STRING` | One-shot migration bundle connection string for a separate role with required DDL privileges. |
+| `PROD_POSTGRES_DB`, `PROD_POSTGRES_USER`, `PROD_POSTGRES_PASSWORD` | PostgreSQL bootstrap values for initializing the production database volume; do not use this bootstrap account as the API runtime account. |
+| `PROD_JWT_ISSUER`, `PROD_JWT_AUDIENCE`, `PROD_JWT_SIGNING_KEY` | Server-side JWT configuration; keep the signing key stable across restarts. |
+| `PROD_SEED_ADMIN_EMAIL`, `PROD_SEED_ADMIN_FIRST_NAME`, `PROD_SEED_ADMIN_MIDDLE_NAME`, `PROD_SEED_ADMIN_LAST_NAME`, `PROD_SEED_ADMIN_PASSWORD` | Server-side initial administrator settings. |
+| `PROD_PUBLIC_HOST`, `PROD_PROXY_CIDR`, `PROD_DATABASE_CIDR`, `PROD_WEB_PORT` | Public host name, trusted proxy subnet, private database subnet, and loopback web port. |
+| `PROD_VITE_GEOAPIFY_API_KEY` | Public browser map key passed to the web image build; never place server credentials here. |
+
+Provide production values through the restricted production environment mechanism with explicit `--env-file` and `-f compose.production.yaml` options. The API runtime and migration bundle must receive only their respective connection strings. The `PROD_POSTGRES_*` values initialize a new PostgreSQL volume; changing them does not rotate credentials in an existing database. Compose dotenv parsing also applies to the production connection strings: if a password contains `$`, single-quote the entire connection-string value; if it contains a semicolon, quote that password field using Npgsql connection-string syntax. See the Docker Compose and Npgsql references above.
+
 ## 2. Apply database migrations
 
 The EF migrations are committed under `apps/api/src/Aqours.Infrastructure/Persistence/Migrations`. With Docker Compose, start PostgreSQL and apply the migrations explicitly before starting the API and web app:
@@ -62,7 +78,7 @@ The web portal is at `http://localhost:5173`, the API is at `http://localhost:52
 
 ## Web/API routing
 
-The browser calls the relative `/api` path. In the Docker workflow, Vite proxies it to the API service through server-only `API_PROXY_TARGET=http://api:5251`; in host development, Vite proxies it to `http://localhost:5251`. Both preserve a same-origin browser request for the session and antiforgery cookies. For a future deployed environment, route `/api/*` through the web origin to the API, and configure the web host to return the SPA's `index.html` for client routes such as `/sign-in`, `/dashboard`, `/change-password`, `/accounts`, and `/accounts/new`. Keep browser authentication same-origin; cookie and CSRF behavior depends on that routing. Staff report workspace mutations also use the web session and must include the antiforgery request token; see the [workspace spec](features/staff-report-workspace/spec.md) for REST and SignalR access rules. The development Compose setup is not a production deployment configuration; use a secret manager for deployed credentials.
+The browser calls the relative `/api` path. In the Docker development workflow, Vite proxies it to the API service through server-only `API_PROXY_TARGET=http://api:5251`; in host development, Vite proxies it to `http://localhost:5251`. Both preserve same-origin requests for session and antiforgery cookies. In production Compose, Nginx proxies `/api` and SignalR WebSocket traffic through the same origin and serves the SPA for client-side routes. Production authentication cookies use the HTTPS-only secure policy; the TLS edge must preserve the public host, and Nginx sets `X-Forwarded-Host` and `X-Forwarded-Proto=https` for the API. The API accepts those headers only from its configured proxy subnet. Keep browser authentication same-origin; cookie and CSRF behavior depends on that routing. Staff report workspace mutations also use the web session and must include the antiforgery request token; see the [workspace spec](features/staff-report-workspace/spec.md) for REST and SignalR access rules. See the [production runbook](deployment.md) for proxy and secret configuration; the development Compose setup remains a separate workflow.
 
 ## Account directory
 

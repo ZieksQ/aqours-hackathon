@@ -36,6 +36,10 @@ PostgreSQL uses `postgres:18.6-alpine3.23` with `pull_policy: missing`: Compose 
 
 The API uses ASP.NET Core Identity with PostgreSQL persistence and snake_case naming through `EFCore.NamingConventions`. Supplier users authenticate with a protected HTTP-only cookie; the mobile API issues short-lived Customer JWTs and rotates hashed refresh tokens. See the [authentication feature spec](docs/features/authentication/spec.md) for contracts, roles, CSRF, and session behavior. No privileged credentials belong in client configuration.
 
+## Production deployment
+
+Production uses the standalone `compose.production.yaml` project and independent database and Data Protection volumes. It targets a single native Linux host behind an existing HTTPS edge proxy; only the web service is published, on loopback. Production migrations use a separate, explicit EF bundle and connection string. See the [production deployment runbook](docs/deployment.md) for image tags, database roles, backups, migration, and rollout commands. Compose configuration and API hosting checks passed, but production image builds, container startup, live migrations/authentication/data retention, and edge behavior were not verified because Docker daemon access was denied. Validate the complete flow in staging before a production rollout.
+
 ## Host development alternative
 
 Use this workflow when you want to run the API and web app directly on the host. Install the prerequisites above, then run from the repository root:
