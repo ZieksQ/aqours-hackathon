@@ -99,6 +99,8 @@ Use four separate .NET projects to enforce layer boundaries. Within each layer, 
 
 For example, a report use case belongs under `Aqours.Application/Features/Reports/`, while report endpoints belong under `Aqours.Api/Features/Reports/`. Domain models can live under `Aqours.Domain/Features/Reports/` and persistence implementations under `Aqours.Infrastructure/Features/Reports/`.
 
+Chat message attachments follow the same feature boundary. The API binds JSON or multipart message requests and returns attachment metadata; Domain owns attachment metadata invariants, Application coordinates authorization and storage, and Infrastructure stores the metadata row in PostgreSQL while writing original image bytes through the filesystem storage adapter. PostgreSQL stores only a relative `storage_key`, not image bytes. The filesystem root comes from `ChatAttachments:RootPath`. The service writes files before the message transaction, which then saves the message and attachment metadata under the existing report-row lock. Back up the database and attachment files as a pair, and review mismatches manually; there is no background orphan cleanup. See the [chat attachment spec](features/chat-attachments/spec.md) and [deployment runbook](deployment.md).
+
 ### Dependency rules
 
 - Domain has no project references to other application layers and no dependency on ASP.NET Core, persistence frameworks, Identity, or external providers.

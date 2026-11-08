@@ -10,13 +10,15 @@ The current Compose model names the services `db`, `api`, `web`, and profile-gat
 
 The existing HTTPS edge terminates TLS on the public HTTPS listener (port 443) and routes to the loopback web port while preserving the public `Host`. It should strip or overwrite client-supplied forwarded headers. Nginx then sets `X-Forwarded-Host` from the public host and sets `X-Forwarded-Proto` to `https` for the API. The API production host validates `PROD_PUBLIC_HOST`, allows that host, trusts only `PROD_PROXY_CIDR`, accepts one forwarded host/proto hop, and applies forwarded headers before HTTPS redirection. Redirects target port 443; `/health` is excluded for the internal HTTP probe. `PROD_PROXY_CIDR` must parse as IPv4 with a prefix from `/16` through `/30`; use the same subnet as the Compose `proxy` network.
 
-The Nginx configuration serves the built SPA, routes same-origin `/api` requests and SignalR WebSocket upgrades to `api:8080`, and sets the forwarded host and HTTPS scheme headers. It rejects unknown hosts, disables caching for the SPA entry document, returns 404 for missing static assets, and applies immutable cache headers to successful `/assets/` responses. Access logs record method and URI without query strings; Nginx API proxy error logs are suppressed to avoid query-bearing diagnostics such as SignalR `access_token` URLs. API application errors still go to the container log; avoid adding request-query or secret-header logging. The static web health endpoint is `/healthz`; the API health probe behavior is described below. Neither Docker health probe has been exercised in a production container.
+The Nginx configuration serves the built SPA, routes same-origin `/api` requests and SignalR WebSocket upgrades to `api:8080`, and sets the forwarded host and HTTPS scheme headers. It rejects unknown hosts, disables caching for the SPA entry document, returns 404 for missing static assets, and applies immutable cache headers to successful `/assets/` responses. The `/api/` proxy allows request bodies up to 16 MiB for chat image uploads; configure the external HTTPS edge to accept at least the same size. Access logs record method and URI without query strings; Nginx API proxy error logs are suppressed to avoid query-bearing diagnostics such as SignalR `access_token` URLs. API application errors still go to the container log; avoid adding request-query or secret-header logging. The static web health endpoint is `/healthz`; the API health probe behavior is described below. Neither Docker health probe has been exercised in a production container.
 
 This plan covers a single-host deployment. It does not provide high availability, horizontal scaling, certificate automation, a new public API origin, or a production Expo/Metro service. Use HTTPS for any production mobile API origin configured in a separate mobile release process; Expo Go remains a development workflow.
 
 ## Images and configuration
 
 The API image restores and publishes with SDK `10.0.114`, then runs on ASP.NET runtime `10.0.14`; the `production` stage is the default final target. A separate `migration` stage contains a framework-dependent EF migration bundle. The production API sets `SetApplicationName("Aqours")` and persists keys under `AQOURS_DATA_PROTECTION_KEY_PATH=/var/lib/aqours/data-protection`, backed by the separate `production-data-protection` volume. The web image builds with Node `22.22.2-bookworm-slim` and pnpm `11.24.0`, then serves static assets from nonroot `nginx:1.30.6-alpine3.24`. The production images must not include source bind mounts, the SDK in the API runtime, `dotnet watch`, personal user-secrets files, or development-only settings.
+
+The API uses `ChatAttachments__RootPath=/app/storage/chat-attachments`, backed by the separate `production-chat-attachments` volume. The production image prepares that directory for UID/GID `1654`; the API runs as that non-root user with a read-only root filesystem, while the mounted attachment volume remains writable. Do not replace this persistent volume with container-layer storage. See the [chat message attachment API spec](features/chat-attachments/spec.md) for endpoint permissions and upload limits.
 
 The Compose file and `.env.production.example` use `PROD_PUBLIC_HOST`, `PROD_WEB_PORT`, `PROD_API_IMAGE`, `PROD_WEB_IMAGE`, `PROD_MIGRATION_IMAGE`, `PROD_PROXY_CIDR`, `PROD_DATABASE_CIDR`, `PROD_POSTGRES_DB/USER/PASSWORD`, `PROD_API_CONNECTION_STRING`, `PROD_MIGRATION_CONNECTION_STRING`, `PROD_JWT_ISSUER/AUDIENCE/SIGNING_KEY`, `PROD_SEED_ADMIN_EMAIL/FIRST_NAME/MIDDLE_NAME/LAST_NAME/PASSWORD`, and `PROD_VITE_GEOAPIFY_API_KEY`. Image variables default to local tags and may be set to immutable registry references. `PROD_VITE_GEOAPIFY_API_KEY` is a public value passed only as a web build argument. Compose maps the API connection string, JWT, and seed variables into the existing ASP.NET Core keys (`ConnectionStrings__Aqours`, `Jwt__*`, and `SeedAdmin__*`); the API validates those mapped values at startup. `PROD_PUBLIC_HOST` and `PROD_PROXY_CIDR` are passed to the production hosting helper. Compose maps `PROD_API_CONNECTION_STRING` into the API's `ConnectionStrings__Aqours` setting, and maps only `PROD_MIGRATION_CONNECTION_STRING` into the profile-gated `migrate` service's setting with the same key. The `PROD_POSTGRES_*` values initialize the database bootstrap user for a new volume and are not the API's least-privilege credentials; changing them does not update roles in an already-initialized volume.
 
@@ -93,6 +95,40 @@ docker compose --env-file "$PROD_ENV_FILE" -f compose.production.yaml exec -T db
 
 Confirm the `pg_dump` command succeeds and the backup file is nonempty before continuing; do not migrate from a partial dump.
 
+### Attachment backup
+
+The SQL dump contains attachment metadata, not image bytes. While the API and web services remain stopped and no other application instance can write messages, back up the production attachment volume as well. Choose a unique protected destination outside the repository:
+
+```sh
+PROD_ATTACHMENT_BACKUP_FILE=/secure/backups/aqours-production-attachments-before-release.tar
+if [ -e "$PROD_ATTACHMENT_BACKUP_FILE" ]; then echo "Choose a new attachment backup path; refusing to overwrite an existing file." >&2; exit 1; fi
+docker compose --env-file "$PROD_ENV_FILE" -f compose.production.yaml run --rm --no-deps --entrypoint sh api -c 'tar -C /app/storage/chat-attachments -cf - .' > "$PROD_ATTACHMENT_BACKUP_FILE" && test -s "$PROD_ATTACHMENT_BACKUP_FILE"
+tar -tf "$PROD_ATTACHMENT_BACKUP_FILE" >/dev/null
+```
+
+Restore the database dump and attachment archive as one set. Preserve the Data Protection key volume too; it is separate from both. Do not use `docker compose down --volumes` for a release or backup because it deletes the persistent volumes.
+
+### Chat attachment reconciliation
+
+The API removes files after a confirmed failed write, but intentionally keeps files if it cannot determine whether a database commit succeeded. A process crash can also leave a file without metadata. There is no scheduled or automatic orphan cleanup.
+
+To inspect storage, block external application traffic and stop every API instance first; stop the web service as well if it is the only ingress. Leave PostgreSQL running. Back up the database and attachment volume before comparing them. Choose fresh private filenames for each comparison; the commands below overwrite existing output files. Export the relative storage keys recorded in PostgreSQL and inventory the files under the named volume:
+
+```sh
+PROD_ATTACHMENT_KEYS=/secure/backups/aqours-production-storage-keys.txt
+PROD_ATTACHMENT_FILES=/secure/backups/aqours-production-storage-files.txt
+docker compose --env-file "$PROD_ENV_FILE" -f compose.production.yaml exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -c "SELECT storage_key FROM report_message_attachments ORDER BY storage_key"' > "$PROD_ATTACHMENT_KEYS"
+docker compose --env-file "$PROD_ENV_FILE" -f compose.production.yaml run --rm --no-deps --entrypoint sh api -c 'find /app/storage/chat-attachments -type f -printf "%P\n" | sort' > "$PROD_ATTACHMENT_FILES"
+LC_ALL=C sort -o "$PROD_ATTACHMENT_KEYS" "$PROD_ATTACHMENT_KEYS"
+LC_ALL=C sort -o "$PROD_ATTACHMENT_FILES" "$PROD_ATTACHMENT_FILES"
+comm -23 "$PROD_ATTACHMENT_FILES" "$PROD_ATTACHMENT_KEYS"  # files with no metadata row
+comm -13 "$PROD_ATTACHMENT_FILES" "$PROD_ATTACHMENT_KEYS"  # metadata rows with no file
+```
+
+Review every mismatch against the saved backups and the affected report/message before changing either side. These lists are diagnostic only: never delete files or metadata automatically based on a diff. Restore a missing file from a verified matching backup where possible; preserve uncertain files and escalate unresolved mismatches. Record any manual repair and repeat the comparison before restarting API traffic.
+
+### Database migration and startup
+
 Run the EF migration bundle as a separate, one-shot service. It has access only to the migration connection string; the normal API startup verifies schema state and seeds accounts but never applies migrations.
 
 ```sh
@@ -118,6 +154,6 @@ The API health probe requests `http://127.0.0.1:8080/health` with `API_HEALTH_HO
 
 ## Operations and rollback
 
-Use the Compose service names for status, logs, health checks, and controlled restarts. Services use `unless-stopped` restart policies, graceful stop periods (60 seconds for PostgreSQL, 30 seconds for the API, and 15 seconds for Nginx), read-only root filesystems, dropped Linux capabilities, and `no-new-privileges`. JSON container logs are rotated at 10 MiB with three files; arrange separate log retention/monitoring for the host. Preserve the production database volume and Data Protection key storage across container recreation. Inspect the project volumes with `docker volume inspect aqours-production_production-database aqours-production_production-data-protection`. Include the Data Protection key volume in protected host backups as well as the database; a SQL dump does not contain those keys. Do not reset the production Compose project with volume deletion. Limit database and API access to the internal service network; only the loopback web endpoint is intended for the existing edge proxy.
+Use the Compose service names for status, logs, health checks, and controlled restarts. Services use `unless-stopped` restart policies, graceful stop periods (60 seconds for PostgreSQL, 30 seconds for the API, and 15 seconds for Nginx), read-only root filesystems, dropped Linux capabilities, and `no-new-privileges`. JSON container logs are rotated at 10 MiB with three files; arrange separate log retention/monitoring for the host. Preserve the production database, chat attachment, and Data Protection volumes across container recreation. Inspect them with `docker volume inspect aqours-production_production-database aqours-production_production-chat-attachments aqours-production_production-data-protection`. Include the attachment volume and Data Protection key volume in protected backups as well as the database; SQL dumps do not contain image bytes or Data Protection keys. Do not reset the production Compose project with volume deletion. Limit database and API access to the internal service network; only the loopback web endpoint is intended for the existing edge proxy.
 
 Rollback may restore a prior application image when the database schema remains compatible. It must not assume that reverting an image reverses a database migration. If a migration is not compatible with the previous application version, follow the reviewed restore procedure using the pre-migration backup and retained Data Protection keys; restore into the production database only after validating the procedure. Never point a production restore at the development database.

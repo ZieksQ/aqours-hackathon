@@ -1,6 +1,6 @@
 # Aqours
 
-Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, Admin supplier-site management, Admin/Staff manual supply monitoring and the supplier portal map in the web portal and API, personnel weather monitoring in the web portal and API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. Customer supplier-site maps, supply display, and weather UI, push notifications, and server-persisted notification read state remain deferred. Mobile Updates and Profile now use the existing Customer APIs; see the mobile README for their limits.
+Water reporting and supplier response MVP. Account authentication, the Customer reporting API (submission, customer-owned listing, detail retrieval, and messaging), the Staff report queue and ticket workspace, Admin supplier-site management, Admin/Staff manual supply monitoring and the supplier portal map in the web portal and API, personnel weather monitoring in the web portal and API, and mobile Customer login, Home, report submission with location selection, owned-report history, and supplier conversations are implemented. The API now supports image attachments on conversation messages; web and mobile attachment UI integration is still in progress. Customer supplier-site maps, supply display, and weather UI, push notifications, and server-persisted notification read state remain deferred. Mobile Updates and Profile now use the existing Customer APIs; see the mobile README for their limits.
 
 ## Prerequisites
 
@@ -20,6 +20,14 @@ Keep an existing `.env` and its database password; do not overwrite it with the 
 
 The root `.env` is Compose configuration. Compose passes explicitly selected settings into the API; it does not mount your personal .NET user-secrets store. In CI, provide the required Compose variables through the job environment instead of creating an env file. `LOCAL_UID` and `LOCAL_GID` default to `1000`; set them to your host user and group IDs if mounted files have the wrong ownership. `VITE_USE_POLLING` defaults to `false`; set it to `true` only if Vite does not detect changes through the source mounts.
 
+Chat attachment bytes are stored as files, separately from PostgreSQL metadata. Before starting the Compose API, create the local storage directory yourself so Docker does not create it with unexpected ownership:
+
+```sh
+mkdir -p storage/chat-attachments
+```
+
+Compose bind-mounts this directory at `/workspace/storage/chat-attachments`; the API user must be able to write to it. Its UID/GID default to `1000`; set `LOCAL_UID` and `LOCAL_GID` to the host directory owner's IDs when they differ. The directory is excluded from Git and the Docker build context. Host-run API development uses the same repository directory through the default `ChatAttachments:RootPath`, resolved relative to the API content root. A PostgreSQL dump does not include image files, so back up the database and this directory together while API writes are stopped. See the [chat attachment spec](docs/features/chat-attachments/spec.md) and [deployment runbook](docs/deployment.md) for storage and reconciliation details.
+
 Start PostgreSQL, apply the committed EF migrations, then start the API and web app:
 
 ```sh
@@ -28,7 +36,7 @@ docker compose run --rm --build api dotnet ef database update --project apps/api
 docker compose up --build
 ```
 
-The migration command applies schema changes explicitly; API startup does not apply migrations. Repeat it after adding migrations. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), [Supply Site Management spec](docs/features/supply-site-management/spec.md), [Manual Supply Monitoring API spec](docs/features/manual-supply-monitoring/spec.md), and [Weather Warnings API spec](docs/features/weather-warnings/spec.md) for feature contracts and migration history.
+The migration command applies schema changes explicitly; API startup does not apply migrations. Repeat it after adding migrations. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), [Chat message attachment API spec](docs/features/chat-attachments/spec.md), [Supply Site Management spec](docs/features/supply-site-management/spec.md), [Manual Supply Monitoring API spec](docs/features/manual-supply-monitoring/spec.md), and [Weather Warnings API spec](docs/features/weather-warnings/spec.md) for feature contracts and migration history.
 
 The Compose project is named `aqours-hackathon` and preserves its `database` volume. PostgreSQL publishes on `127.0.0.1:5433`; the web app is at `http://localhost:5173`, and the API process health endpoint is at `http://localhost:5251/health`. `/health` reports process health, not database readiness. The web app proxies `/api` to the API service so browser cookies, antiforgery checks, and SignalR use the web origin. Press Ctrl+C to stop the foreground services; `docker compose down` also stops them and retains the database volume. Do not use `docker compose down --volumes` if you need the existing database data. To inspect the volume metadata, run `docker volume inspect aqours-hackathon_database`. To back up the database, choose a destination outside the repository and run `docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > /path/to/aqours.sql`.
 
@@ -38,7 +46,7 @@ The API uses ASP.NET Core Identity with PostgreSQL persistence and snake_case na
 
 ## Production deployment
 
-Production uses the standalone `compose.production.yaml` project and independent database and Data Protection volumes. It targets a single native Linux host behind an existing HTTPS edge proxy; only the web service is published, on loopback. Production migrations use a separate, explicit EF bundle and connection string. See the [production deployment runbook](docs/deployment.md) for image tags, database roles, backups, migration, and rollout commands. Compose configuration and API hosting checks passed, but production image builds, container startup, live migrations/authentication/data retention, and edge behavior were not verified because Docker daemon access was denied. Validate the complete flow in staging before a production rollout.
+Production uses the standalone `compose.production.yaml` project and independent database, chat attachment, and Data Protection volumes. It targets a single native Linux host behind an existing HTTPS edge proxy; only the web service is published, on loopback. Production migrations use a separate, explicit EF bundle and connection string. See the [production deployment runbook](docs/deployment.md) for image tags, database roles, paired database/file backups, migration, and rollout commands. Compose configuration and API hosting checks passed, but production image builds, container startup, live migrations/authentication/data retention, and edge behavior were not verified because Docker daemon access was denied. Validate the complete flow in staging before a production rollout.
 
 ## Host development alternative
 
