@@ -4,24 +4,55 @@ Water reporting and supplier response MVP. Account authentication, the Customer 
 
 ## Prerequisites
 
-- .NET SDK 10.0.108 (or a newer patch in the 10.0.1xx feature band; see `global.json`).
-- Node.js 22.22.2 or newer and pnpm 11.24.0.
-- Docker with Compose and the local image `postgres:18.6-alpine3.23`.
+The recommended local workflow targets native Linux with Docker Engine and the Compose plugin; it does not require a host .NET SDK, Node.js, or pnpm installation.
 
-## Local setup
+The optional host workflow requires .NET SDK 10.0.108 (or a newer patch in the 10.0.1xx feature band; see `global.json`), Node.js 22.22.2 or newer, and pnpm 11.24.0. Both workflows use PostgreSQL 18.6 from `postgres:18.6-alpine3.23`.
 
-Run commands from the repository root:
+## Local development with Docker Compose
+
+Run commands from the repository root. On first setup, copy the Docker configuration template only when you do not already have a root `.env`:
+
+```sh
+if [ ! -f .env ]; then cp .env.example .env; fi
+```
+
+Keep an existing `.env` and its database password; do not overwrite it with the template. Configure `POSTGRES_PASSWORD`, `DOCKER_API_CONNECTION_STRING`, `JWT_SIGNING_KEY`, and the initial administrator values in the root `.env`. The API connection string must use `Host=db;Port=5432` and match `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD`. Use a unique signing key with at least 32 UTF-8 bytes. `SEED_ADMIN_EMAIL` is required whenever the API starts; the administrator name and password are needed only when creating that account. The signing key and administrator password are server credentials. For Docker, copy any public `VITE_GEOAPIFY_API_KEY`, `EXPO_PUBLIC_GEOAPIFY_API_KEY`, or `EXPO_PUBLIC_EAS_PROJECT_ID` values you use from per-app environment files into the root `.env`; Compose does not mount those files, and the build context excludes them. Keep the per-app files for host development and never put privileged credentials in public client settings. See [mobile setup](apps/mobile/README.md) and [authentication setup](docs/authentication.md) for details.
+
+The root `.env` is Compose configuration. Compose passes explicitly selected settings into the API; it does not mount your personal .NET user-secrets store. In CI, provide the required Compose variables through the job environment instead of creating an env file. `LOCAL_UID` and `LOCAL_GID` default to `1000`; set them to your host user and group IDs if mounted files have the wrong ownership. `VITE_USE_POLLING` defaults to `false`; set it to `true` only if Vite does not detect changes through the source mounts.
+
+Start PostgreSQL, apply the committed EF migrations, then start the API and web app:
+
+```sh
+docker compose up -d --wait db
+docker compose run --rm --build api dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup-project apps/api/src/Aqours.Api
+docker compose up --build
+```
+
+The migration command applies schema changes explicitly; API startup does not apply migrations. Repeat it after adding migrations. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), [Supply Site Management spec](docs/features/supply-site-management/spec.md), [Manual Supply Monitoring API spec](docs/features/manual-supply-monitoring/spec.md), and [Weather Warnings API spec](docs/features/weather-warnings/spec.md) for feature contracts and migration history.
+
+The Compose project is named `aqours-hackathon` and preserves its `database` volume. PostgreSQL publishes on `127.0.0.1:5433`; the web app is at `http://localhost:5173`, and the API process health endpoint is at `http://localhost:5251/health`. `/health` reports process health, not database readiness. The web app proxies `/api` to the API service so browser cookies, antiforgery checks, and SignalR use the web origin. Press Ctrl+C to stop the foreground services; `docker compose down` also stops them and retains the database volume. Do not use `docker compose down --volumes` if you need the existing database data. To inspect the volume metadata, run `docker volume inspect aqours-hackathon_database`. To back up the database, choose a destination outside the repository and run `docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > /path/to/aqours.sql`.
+
+PostgreSQL uses `postgres:18.6-alpine3.23` with `pull_policy: missing`: Compose can pull the image on a new device and reuse it locally afterward. The database remains separate from the existing `aqours` Compose project and its port 5432. The API Data Protection key ring is persisted separately in the `api-data-protection` volume; the API NuGet package cache uses the `nuget-cache` volume.
+
+The API uses ASP.NET Core Identity with PostgreSQL persistence and snake_case naming through `EFCore.NamingConventions`. Supplier users authenticate with a protected HTTP-only cookie; the mobile API issues short-lived Customer JWTs and rotates hashed refresh tokens. See the [authentication feature spec](docs/features/authentication/spec.md) for contracts, roles, CSRF, and session behavior. No privileged credentials belong in client configuration.
+
+## Production deployment
+
+Production uses the standalone `compose.production.yaml` project and independent database and Data Protection volumes. It targets a single native Linux host behind an existing HTTPS edge proxy; only the web service is published, on loopback. Production migrations use a separate, explicit EF bundle and connection string. See the [production deployment runbook](docs/deployment.md) for image tags, database roles, backups, migration, and rollout commands. Compose configuration and API hosting checks passed, but production image builds, container startup, live migrations/authentication/data retention, and edge behavior were not verified because Docker daemon access was denied. Validate the complete flow in staging before a production rollout.
+
+## Host development alternative
+
+Use this workflow when you want to run the API and web app directly on the host. Install the prerequisites above, then run from the repository root:
 
 ```sh
 pnpm install --frozen-lockfile
 dotnet restore Aqours.slnx
 dotnet tool restore
-cp .env.example .env
 ```
 
-Skip the copy if `.env` already exists. Set your own `POSTGRES_PASSWORD` in `.env` before starting PostgreSQL. Initial setup on the original development device created an ignored `.env` with a random local password. Configure the API's connection string, JWT key, and initial administrator through user secrets or environment variables as described in [authentication setup](docs/authentication.md).
+Configure the API connection string, JWT settings, and seed administrator through .NET user secrets or environment variables as described in [authentication setup](docs/authentication.md). Docker Compose's `.env` is not automatically loaded into a host-run ASP.NET Core process.
 
-Before the first API start, restore the pinned EF tool and apply all committed migrations after configuring the connection string (including `InitialAccounts`, `CustomerReports`, `StaffReportWorkspace`, `SupplySiteManagement`, `20261029071543_ManualSupplyMonitoring`, and `WeatherWarnings`):
+Before the first API start, apply all committed migrations after configuring the connection string:
 
 ```sh
 pnpm db:up
@@ -29,33 +60,9 @@ dotnet tool restore
 dotnet ef database update --project apps/api/src/Aqours.Infrastructure --startup-project apps/api/src/Aqours.Api
 ```
 
-Startup checks for pending migrations and seeds the supported roles and configured first administrator. It does not apply migrations automatically. See the [Customer reporting API spec](docs/features/customer-reporting/specs.md), [Staff report workspace spec](docs/features/staff-report-workspace/spec.md), [Supply Site Management spec](docs/features/supply-site-management/spec.md), [Manual Supply Monitoring API spec](docs/features/manual-supply-monitoring/spec.md), and [Weather Warnings API spec](docs/features/weather-warnings/spec.md) for their contracts and migration details.
+`pnpm dev` starts PostgreSQL and waits for it to be healthy, then runs the API and web app together through `concurrently`, with labeled logs. Press Ctrl+C to stop both application processes; PostgreSQL remains running until `pnpm db:down`. If either application exits, the other is stopped too. For separate terminals, use `pnpm db:up`, `pnpm dev:api`, and `pnpm dev:web`.
 
-```sh
-pnpm dev
-```
-
-This starts PostgreSQL and waits for it to be healthy, then runs the API and web app together through `concurrently`, with labeled logs. Press Ctrl+C to stop both application processes; PostgreSQL remains running until `pnpm db:down`. If either application exits, the other is stopped too.
-
-For separate terminals, use `pnpm db:up`, `pnpm dev:api`, and `pnpm dev:web`.
-
-- Web: `http://localhost:5173` (use the URL Vite prints if that port is occupied).
-- API process health: `http://localhost:5251/health`.
-- PostgreSQL: `localhost:5433`, database/user `aqours`, password from `.env`.
-
-The database uses a separate `aqours-hackathon` Compose project and volume to avoid the existing `aqours` database on port 5432. The image is reused locally without pulling. On another device, run `docker pull postgres:18.6-alpine3.23` once before `pnpm db:up`. Override `POSTGRES_PORT` in `.env` if necessary.
-
-The API uses ASP.NET Core Identity with PostgreSQL persistence and snake_case naming through `EFCore.NamingConventions`. Supplier users authenticate with a protected HTTP-only cookie; the mobile API issues short-lived Customer JWTs and rotates hashed refresh tokens. Its `/health` endpoint reports process health only. See the [authentication feature spec](docs/features/authentication/spec.md) for contracts, roles, CSRF, and session behavior. No privileged credentials belong in client configuration.
-
-## API database configuration
-
-Supply the database connection string, JWT settings, and seed administrator through ASP.NET Core configuration before starting the API. The recommended local setup is .NET user secrets:
-
-```sh
-export ConnectionStrings__Aqours='Host=localhost;Port=5433;Database=aqours;Username=aqours;Password=<local password>'
-```
-
-This connection string can also be set with `dotnet user-secrets`; see [authentication setup](docs/authentication.md) for all required settings. Replace placeholders with local values and keep credentials out of tracked files. Docker Compose's `.env` is not automatically loaded by ASP.NET Core. API startup requires the database and authentication settings, including when requesting `/health`.
+For the host workflow, PostgreSQL is available at `localhost:5433`, database/user `aqours`, with the password from `.env`. Override `POSTGRES_PORT` in the root `.env` if necessary. Keep host API credentials in user secrets or environment variables; see [local API user secrets](docs/user-secrets.md).
 
 `AqoursDbContext` derives from `IdentityDbContext` and stores refresh families and hashed refresh tokens. Tables, columns, keys, and indexes use snake_case (for example, `asp_net_users` and `normalized_email`). EF migrations live in Infrastructure; target Infrastructure and use Api as the startup project when running `dotnet ef`. Apply each migration explicitly before starting the API; startup does not create or modify the database schema.
 
@@ -71,7 +78,7 @@ WEB_BASE_URL=http://127.0.0.1:5173 node apps/web/scripts/verify-supply-monitorin
 
 The script uses fixture data and does not require a live API; set `CAPTURE_DIR` to save screenshots.
 
-Copy `apps/web/.env.example` to `apps/web/.env.local` and set `VITE_GEOAPIFY_API_KEY` for supply-site maps and the supplier portal map. This browser-visible key should be restricted to your application origins. Restart Vite after changing it; builds use the configured value at build time. Map loading failures have a retry action, and an unconfigured map shows a setup notice. The address selectors do not move or verify the map pin. The portal map keeps its location list usable when tiles are unavailable, and its site/report layer reads use the existing personnel cookie policy. No additional migration is required for the portal map.
+For host web development, copy `apps/web/.env.example` to `apps/web/.env.local` only if that file does not already exist, then set `VITE_GEOAPIFY_API_KEY` for supply-site maps and the supplier portal map. Preserve any existing per-app environment files. This browser-visible key should be restricted to your application origins. Restart Vite after changing it; builds use the configured value at build time. Map loading failures have a retry action, and an unconfigured map shows a setup notice. The address selectors do not move or verify the map pin. The portal map keeps its location list usable when tiles are unavailable, and its site/report layer reads use the existing personnel cookie policy. No additional migration is required for the portal map.
 
 ## Verification
 
@@ -107,6 +114,14 @@ Read [architecture](docs/architecture.md), [product context](docs/context.md), [
 
 ## Mobile development (Expo Go)
 
+For an opt-in Docker-based Expo Go session, set `LAN_IP` in the root `.env` to the development computer's Wi-Fi/LAN IPv4 address and set `API_BIND_ADDRESS=0.0.0.0`. Then run:
+
+```sh
+docker compose --profile mobile up --build
+```
+
+This starts the normal database/API/web services plus the Expo Go packager on port 8081. The phone must be able to reach the computer on ports 5251 and 8081; allow those ports through the local firewall. The API URL is derived from `LAN_IP` and does not include `/api`. Use the opt-in profile only when testing on a real phone; see the [mobile README](apps/mobile/README.md) for map-key settings and the host alternative.
+
 ```sh
 pnpm dev:mobile
 ```
@@ -115,4 +130,4 @@ Install Expo Go on your real Android or iOS phone, connect the phone and develop
 
 Use only a real phone connected to Expo Go for mobile runtime testing. Do not generate APKs, native builds, or test through emulators/simulators. `pnpm typecheck:mobile` checks TypeScript but does not replace phone verification. Physical-phone verification of the native screens and location interactions remains pending.
 
-Copy `apps/mobile/.env.example` to `apps/mobile/.env.local`, set `EXPO_PUBLIC_API_URL` to the computer's LAN origin (for example, `http://192.168.1.100:5251`, without `/api`), and expose the configured development API with `dotnet run --project apps/api/src/Aqours.Api --launch-profile http --urls http://0.0.0.0:5251`. Sign in with a supplier-created Customer account; the app handles the required initial password change and keeps tokens in memory. The development-only **Preview Home design** button shows labeled Stitch sample data without signing in. Keep privileged credentials on the API; see [the mobile README](apps/mobile/README.md) for details and verification commands.
+If `apps/mobile/.env.local` does not already exist, copy `apps/mobile/.env.example` to it, then set `EXPO_PUBLIC_API_URL` to the computer's LAN origin (for example, `http://192.168.1.100:5251`, without `/api`). Expose the configured development API with `dotnet run --project apps/api/src/Aqours.Api --launch-profile http --urls http://0.0.0.0:5251`. Sign in with a supplier-created Customer account; the app handles the required initial password change and keeps tokens in memory. The development-only **Preview Home design** button shows labeled Stitch sample data without signing in. Keep privileged credentials on the API; see [the mobile README](apps/mobile/README.md) for details and verification commands.

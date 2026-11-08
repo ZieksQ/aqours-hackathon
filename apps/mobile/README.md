@@ -2,15 +2,29 @@
 
 Native React Native screens for Expo Go: Customer sign-in, required initial password change, Home, report submission, My reports, report details, a separate supplier conversation page, Updates, and Profile. The conversation uses iOS and Android navigation patterns, API-backed message history, and a status-aware plain-text reply composer. Home loads the signed-in customer's latest report, progress, and latest supplier response. Sessions refresh while the app is running; credentials stay in memory and reopening the app requires sign-in. Sign-out clears local access even if remote revocation fails.
 
-## Run on a real phone
+## Optional Docker Compose Expo Go profile
 
-From the repository root:
+The mobile service is opt-in; the default Compose stack does not start Metro. Use this profile to run Expo Go on a real phone with the Docker API. Copy the root `.env.example` to `.env` only if the root `.env` does not already exist, and preserve any current database or API credentials. Set `LAN_IP` to the development computer's Wi-Fi/LAN IPv4 address and `API_BIND_ADDRESS=0.0.0.0`. If the API is already configured, keep those existing settings and add only the mobile values. The mobile entrypoint validates the advertised API/Metro addresses and API bind setting; it does not test network reachability.
+
+For maps, copy the public key from an existing `apps/mobile/.env.local` into the root `.env` as `EXPO_PUBLIC_GEOAPIFY_API_KEY`. `EXPO_PUBLIC_EAS_PROJECT_ID` is optional Expo project configuration. These are client-visible values and must not contain privileged credentials. Per-app `.env.local` files remain for host development; Compose does not mount them and the Docker build context excludes them.
+
+Start the profile from the repository root:
 
 ```sh
-cp apps/mobile/.env.example apps/mobile/.env.local
+docker compose --profile mobile up --build
 ```
 
-Set `EXPO_PUBLIC_API_URL` to your computer's LAN origin, such as `http://192.168.1.100:5251`, without `/api`. This is public client configuration, never a place for secrets. After configuring the API database, secrets, and migrations as described in the root README, expose the development API to your network:
+This starts PostgreSQL, the API, the web app, and the Expo Go packager. The API and Metro ports 5251 and 8081 are published on the configured API bind address; the API URL is derived as `http://<LAN_IP>:5251` without `/api`. Connect the phone and computer to the same Wi-Fi network, allow local development traffic through the firewall, and scan the Metro QR code in Expo Go. If the QR code is not convenient, open `exp://<LAN_IP>:8081` in Expo Go. Use a real phone only; do not generate APKs or native builds, and do not use an emulator or simulator. Press Ctrl+C to stop the services; `docker compose down` preserves the database volume.
+
+## Host development on a real phone
+
+From the repository root, copy the example only if `apps/mobile/.env.local` does not already exist, then preserve its current values while adding the mobile settings:
+
+```sh
+if [ ! -f apps/mobile/.env.local ]; then cp apps/mobile/.env.example apps/mobile/.env.local; fi
+```
+
+Set `EXPO_PUBLIC_API_URL` to your computer's LAN origin, such as `http://192.168.1.100:5251`, without `/api`. This is public client configuration, never a place for secrets. After configuring the API database, user secrets, and migrations as described in the root README, expose the development API to your network:
 
 ```sh
 dotnet run --project apps/api/src/Aqours.Api --launch-profile http --urls http://0.0.0.0:5251

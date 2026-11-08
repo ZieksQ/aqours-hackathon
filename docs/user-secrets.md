@@ -1,22 +1,24 @@
 # Local API user secrets
 
-Use .NET user secrets for local API credentials. The API project already has a `UserSecretsId`; run these commands from the repository root. User secrets are scoped to this project and override matching `appsettings.json` values in Development.
+Use .NET user secrets for local API credentials when running the API on the host. The API project already has a `UserSecretsId`; run these commands from the repository root. User secrets are scoped to this project and override matching `appsettings.json` values in Development.
 
-## Prepare PostgreSQL
+The recommended Docker Compose workflow gets API settings from explicitly mapped root `.env` values instead. Compose does not mount the developer's user-secrets directory into the API container. See the [authentication setup](authentication.md) for the mapping from Docker variable names to ASP.NET Core configuration keys. Do not put privileged credentials in web or mobile environment variables.
 
-The root `.env.example` contains the variables Docker Compose needs. Copy it to `.env` and replace the placeholder password:
+## Prepare PostgreSQL for host development
+
+The root `.env.example` contains Compose settings for PostgreSQL and the Docker workflow. Copy it to root `.env` only if that file does not already exist, then replace the database password placeholder:
 
 ```sh
-cp .env.example .env
+if [ ! -f .env ]; then cp .env.example .env; fi
 ```
 
-Skip the copy if `.env` already exists. Start PostgreSQL with `pnpm db:up`. Compose does not pass its `.env` values to the API, so configure the API connection separately:
+Preserve an existing `.env` and its local database password; do not overwrite it with the example. Start PostgreSQL with `pnpm db:up`. For the host-run API, configure its connection string separately with user secrets:
 
 ```sh
 dotnet user-secrets set "ConnectionStrings:Aqours" "Host=localhost;Port=5433;Database=aqours;Username=aqours;Password=<POSTGRES_PASSWORD from .env>" --project apps/api/src/Aqours.Api
 ```
 
-Replace the placeholder with the value in `.env`; do not include the angle brackets.
+Replace the placeholder with the value in `.env`; do not include the angle brackets. The host connection uses `localhost:5433`, while the Docker API service uses `db:5432` through `DOCKER_API_CONNECTION_STRING`.
 
 ## Configure API authentication and the initial administrator
 
@@ -47,4 +49,4 @@ dotnet user-secrets list --project apps/api/src/Aqours.Api
 
 Remove a value with `dotnet user-secrets remove "SeedAdmin:Password" --project apps/api/src/Aqours.Api`, or clear all API user secrets with `dotnet user-secrets clear --project apps/api/src/Aqours.Api`.
 
-Keep `.env`, passwords, connection strings, and signing keys out of source control. In deployed environments, use a secret manager or environment variables; nested names use double underscores, such as `Jwt__SigningKey` and `SeedAdmin__Email`.
+Keep `.env`, passwords, connection strings, and signing keys out of source control. The local user-secrets store is only for host development; development Compose explicitly maps root `.env` values and does not mount user secrets. For production, copy `.env.production.example` to a private `.env.production` only if that file does not already exist. Git and the Docker build context ignore `.env.production`; still restrict file permissions and pass it explicitly with `--env-file` so Compose does not fall back to the development root `.env`. Production uses separate API runtime and migration connection strings. See the [production deployment runbook](deployment.md) and [production authentication settings](authentication.md#production-compose-settings). Use the restricted production environment mechanism for secrets, never a browser-visible web or mobile variable.
