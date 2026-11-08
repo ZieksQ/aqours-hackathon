@@ -49,7 +49,7 @@ Attachment array order follows upload order. The GET routes return the image inl
 | Message body | At most 2,000 characters; it can be empty only when a file is present |
 | File name | Sanitized leaf name, at most 180 characters |
 
-The declared MIME type, filename extension, and leading file signature must agree. Empty files and unsupported content encodings are rejected. The API does not decode, re-encode, resize, or strip metadata from the images; stored bytes remain original, including any EXIF or other embedded metadata. The signature check is not a guarantee that the entire file is a well-formed image. Because the request limit includes multipart framing, the maximum combined file payload can be lower than 15 MiB. The production Nginx proxy limit is 16 MiB; any external edge proxy must allow at least the same request size.
+The declared MIME type, filename extension, and leading file signature must agree. Empty files and unsupported content encodings are rejected. The API does not decode, re-encode, resize, or strip metadata from the images; stored bytes remain original, including any EXIF or other embedded metadata. The signature check is not a guarantee that the entire file is a well-formed image. The 16 MiB total request cap includes multipart framing. The production Nginx proxy limit is also 16 MiB; any external edge proxy must allow at least the same request size.
 
 ## Storage and persistence
 

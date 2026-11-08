@@ -39,6 +39,7 @@
 /.azure
 /design
 **/design
+/storage/chat-attachments
 **/.orchestrator
 **/.agents
 **/.codex

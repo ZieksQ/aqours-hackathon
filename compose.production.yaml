@@ -44,6 +44,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Aqours: ${PROD_API_CONNECTION_STRING:-}
+      ChatAttachments__RootPath: /app/storage/chat-attachments
       Jwt__Issuer: ${PROD_JWT_ISSUER:-}
       Jwt__Audience: ${PROD_JWT_AUDIENCE:-}
       Jwt__SigningKey: ${PROD_JWT_SIGNING_KEY:-}
@@ -58,6 +59,7 @@ services:
       API_HEALTH_HOST: ${PROD_PUBLIC_HOST:-}
     volumes:
       - production-data-protection:/var/lib/aqours/data-protection
+      - production-chat-attachments:/app/storage/chat-attachments
     networks:
       - proxy
       - database
@@ -153,3 +155,4 @@ networks:
 volumes:
   production-database:
   production-data-protection:
+  production-chat-attachments:

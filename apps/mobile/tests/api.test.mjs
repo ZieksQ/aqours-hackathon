@@ -3,9 +3,29 @@ import { afterEach, test } from "node:test";
 import { ApiClient, ApiError } from "../src/shared/api.ts";
 
 const originalFetch = globalThis.fetch;
+const originalFormData = globalThis.FormData;
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  globalThis.FormData = originalFormData;
 });
+
+class TestFormData {
+  fields = [];
+
+  append(name, value, fileName) {
+    this.fields.push({ name, value, fileName });
+  }
+
+  get(name) {
+    return this.fields.find((field) => field.name === name)?.value ?? null;
+  }
+
+  getAll(name) {
+    return this.fields
+      .filter((field) => field.name === name)
+      .map((field) => field.value);
+  }
+}
 
 function session(overrides = {}) {
   return {
@@ -207,4 +227,81 @@ test("live connections cannot reuse a token after sign-out", async () => {
   assert.equal(await api.getAccessToken(), "access-1");
   await api.logout();
   await assert.rejects(api.getAccessToken(), (error) => error.status === 401);
+});
+
+test("multipart request factories rebuild repeated files for one known 401 retry", async () => {
+  globalThis.FormData = TestFormData;
+  const sends = [];
+  globalThis.fetch = async (url, options) => {
+    if (url.endsWith("login")) return json(session());
+    if (url.endsWith("refresh"))
+      return json(session({ accessToken: "access-2", refreshToken: "refresh-2" }));
+    assert.equal(url, "http://supplier.test/api/reports/owned/messages");
+    sends.push({ url, ...options });
+    return sends.length === 1
+      ? new Response(null, { status: 401 })
+      : json({ id: "message-1" });
+  };
+  const api = new ApiClient("http://supplier.test");
+  await api.login("a", "b");
+  let builds = 0;
+  const message = await api.request(
+    "/reports/owned/messages",
+    () => {
+      builds++;
+      const form = new TestFormData();
+      form.append("body", "The pipe is still leaking.");
+      form.append("files", {
+        uri: "file:///first.jpg",
+        name: "first.jpg",
+        type: "image/jpeg",
+      });
+      form.append("files", {
+        uri: "file:///second.png",
+        name: "second.png",
+        type: "image/png",
+      });
+      return form;
+    },
+    true,
+    true,
+    undefined,
+    60000,
+  );
+  assert.deepEqual(message, { id: "message-1" });
+  assert.equal(builds, 2);
+  assert.equal(sends.length, 2);
+  assert.notEqual(sends[0].body, sends[1].body);
+  assert.equal(sends[0].headers.Authorization, "Bearer access-1");
+  assert.equal(sends[1].headers.Authorization, "Bearer access-2");
+  assert.equal(sends[0].headers["Content-Type"], undefined);
+  assert.equal(sends[1].headers["Content-Type"], undefined);
+  assert.equal(sends[0].credentials, "omit");
+  assert.equal(sends[1].body.get("body"), "The pipe is still leaking.");
+  assert.deepEqual(
+    sends[1].body.getAll("files").map((file) => file.name),
+    ["first.jpg", "second.png"],
+  );
+});
+
+test("expired image credentials use the shared refresh and retry only with a changed token", async () => {
+  let refreshes = 0;
+  globalThis.fetch = async (url) => {
+    if (url.endsWith("login"))
+      return json(session({ accessTokenExpiresAt: "2000-01-01T00:00:00Z" }));
+    if (url.endsWith("refresh")) {
+      refreshes++;
+      return json(session({ accessToken: "access-2", refreshToken: "refresh-2" }));
+    }
+    assert.fail("No image GET is sent by the token refresh helper");
+  };
+  const api = new ApiClient("http://supplier.test");
+  await api.login("a", "b");
+  assert.equal(
+    await api.getAccessTokenAfterImageFailure("access-1"),
+    "access-2",
+  );
+  assert.equal(refreshes, 1);
+  assert.equal(await api.getAccessTokenAfterImageFailure("access-2"), null);
+  assert.equal(refreshes, 1);
 });

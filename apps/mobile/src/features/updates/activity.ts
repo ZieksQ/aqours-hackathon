@@ -1,4 +1,5 @@
 import type { Message, Report } from "../../shared/api";
+import { messagePreview } from "../reports/attachments.ts";
 
 export type Activity = {
   id: string;
@@ -29,7 +30,7 @@ export function reportActivity(
         report,
         kind: "reply" as const,
         title: `${message.senderName} replied to your report`,
-        body: `“${message.body}”`,
+        body: messagePreview(message),
         createdAt: message.createdAt,
         tag: `${report.id} · ${issueLabels[report.issueType]}`,
       })),

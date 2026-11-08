@@ -2,6 +2,7 @@ using Aqours.Api.Locations;
 using System.Security.Claims;
 using Aqours.Api.Features.Accounts;
 using Aqours.Application.Features.Reports;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Aqours.Api.Features.Reports;
 
@@ -22,10 +23,17 @@ public sealed record TicketResponse(Guid Id, string Title, string Description, A
     }
 }
 public sealed record TicketPageResponse(IReadOnlyList<TicketResponse> Items, int Page, int PageSize, int TotalCount, QueueSummary Summary);
-public sealed record MessageResponse(Guid Id, Guid ReportId, string SenderId, string SenderName, string SenderRole, string Body, DateTimeOffset CreatedAt)
+public sealed record AttachmentResponse(Guid Id, string FileName, string ContentType, long SizeBytes)
+{
+    public static AttachmentResponse From(ChatAttachmentMetadata attachment) =>
+        new(attachment.Id, attachment.FileName, attachment.ContentType, attachment.SizeBytes);
+}
+public sealed record MessageResponse(Guid Id, Guid ReportId, string SenderId, string SenderName, string SenderRole,
+    string Body, DateTimeOffset CreatedAt, IReadOnlyList<AttachmentResponse> Attachments)
 {
     public static MessageResponse From(TicketMessage message) => new(message.Id, message.ReportId, message.SenderId,
-        message.SenderName, message.SenderRole, message.Body, message.CreatedAt);
+        message.SenderName, message.SenderRole, message.Body, message.CreatedAt,
+        (message.Attachments ?? []).Select(AttachmentResponse.From).ToList());
 }
 public sealed record MessagePageResponse(IReadOnlyList<MessageResponse> Items, long? NextBefore);
 
@@ -37,6 +45,7 @@ public static class StaffReportEndpoints
     public static void MapStaffReportEndpoints(this WebApplication app)
     {
         var staff = app.MapGroup("/api/staff/reports").RequireAuthorization("Personnel");
+        var customer = app.MapGroup("/api/reports").RequireAuthorization("Customer");
         staff.MapGet("", async (ClaimsPrincipal user, StaffReportService service, CancellationToken ct,
             string tab = "unassigned", string? search = null, string? status = null, string? priority = null,
             string? assignment = null, int page = 1, int pageSize = 20) =>
@@ -67,7 +76,9 @@ public static class StaffReportEndpoints
             return result.Succeeded ? Results.Ok(TicketResponse.From(result.Value!)) : Failure(result);
         }).AddEndpointFilter<CsrfFilter>();
         MapMessages(staff, true);
-        MapMessages(app.MapGroup("/api/reports").RequireAuthorization("Customer"), false);
+        MapMessages(customer, false);
+        MapAttachments(staff);
+        MapAttachments(customer);
     }
 
     private static void MapMessages(RouteGroupBuilder group, bool staff)
@@ -77,12 +88,42 @@ public static class StaffReportEndpoints
             var result = await service.HistoryAsync(Actor(user), id, before, pageSize, ct);
             return result.Succeeded ? Results.Ok(new MessagePageResponse(result.Value!.Items.Select(MessageResponse.From).ToList(), result.Value.NextBefore)) : Failure(result);
         });
-        var send = group.MapPost("/{id:guid}/messages", async (Guid id, MessageRequest request, ClaimsPrincipal user, StaffReportService service, CancellationToken ct) =>
+        var send = group.MapPost("/{id:guid}/messages", async (Guid id, ClaimsPrincipal user, StaffReportService service,
+            HttpContext context, CancellationToken ct) =>
         {
-            var result = await service.SendAsync(Actor(user), id, request.Body, ct);
-            return result.Succeeded ? Results.Ok(MessageResponse.From(result.Value!)) : Failure(result);
-        });
+            var actor = Actor(user);
+            var permission = await service.AuthorizeSendAsync(actor, id, ct);
+            if (!permission.Succeeded) return Failure(permission);
+
+            var parsed = await ChatMessageRequestParser.ParseAsync(context.Request, ct);
+            if (!parsed.Succeeded) return parsed.Error!;
+            try
+            {
+                var result = await service.SendAsync(actor, id, parsed.Value!.Body, parsed.Value.Attachments, ct);
+                return result.Succeeded ? Results.Ok(MessageResponse.From(result.Value!)) : Failure(result);
+            }
+            finally
+            {
+                foreach (var attachment in parsed.Value!.Attachments) attachment.Content.Dispose();
+            }
+        }).WithMetadata(new RequestSizeLimitAttribute(ChatMessageRequestParser.MaximumRequestBytes));
         if (staff) send.AddEndpointFilter<CsrfFilter>();
+    }
+
+    private static void MapAttachments(RouteGroupBuilder group)
+    {
+        group.MapGet("/{reportId:guid}/attachments/{attachmentId:guid}", async (Guid reportId, Guid attachmentId,
+            ClaimsPrincipal user, StaffReportService service, HttpContext context, CancellationToken ct) =>
+        {
+            var result = await service.AttachmentAsync(Actor(user), reportId, attachmentId, ct);
+            if (!result.Succeeded) return Failure(result);
+            var file = result.Value!;
+            context.Response.Headers.CacheControl = "no-store";
+            context.Response.Headers.XContentTypeOptions = "nosniff";
+            context.Response.Headers.ContentDisposition = "inline";
+            context.Response.ContentLength = file.SizeBytes;
+            return Results.Stream(file.Content, file.ContentType);
+        });
     }
 
     private static IResult Failure<T>(TicketResult<T> result) => result.Failure switch

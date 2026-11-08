@@ -61,6 +61,32 @@ test("read IDs mark only selected events and new replies remain unread", () => {
   );
   assert.equal(unreadActivity(anotherReport, read).length, 1);
 });
+test("image-only supplier replies have a nonblank photo summary", () => {
+  const activity = reportActivity(report, [
+    {
+      ...messages[0],
+      id: "photo-reply",
+      body: "",
+      attachments: [{ id: "photo-1", fileName: "leak.jpg" }],
+    },
+    {
+      ...messages[0],
+      id: "multiple-photo-reply",
+      body: "  ",
+      attachments: [
+        { id: "photo-2", fileName: "leak-2.jpg" },
+        { id: "photo-3", fileName: "leak-3.png" },
+        { id: "photo-4", fileName: "leak-4.jpg" },
+      ],
+    },
+  ]);
+  assert.deepEqual(
+    activity.slice(0, 2).map((item) => item.body),
+    ["Sent a photo", "Sent 3 photos"],
+  );
+  assert.ok(activity.every((item) => item.body.trim().length > 0));
+  assert.ok(activity.every((item) => !item.body.includes("“”")));
+});
 test("date groups respect local calendar boundaries across months", () => {
   const now = new Date(2026, 10, 1, 12);
   assert.equal(

@@ -33,6 +33,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:5251
       ConnectionStrings__Aqours: ${DOCKER_API_CONNECTION_STRING:-}
+      ChatAttachments__RootPath: /workspace/storage/chat-attachments
       Jwt__Issuer: ${JWT_ISSUER:-Aqours.Local}
       Jwt__Audience: ${JWT_AUDIENCE:-Aqours.WebAndMobile}
       Jwt__SigningKey: ${JWT_SIGNING_KEY:-}
@@ -49,6 +50,7 @@ services:
     volumes:
       - ./apps/api/src:/workspace/apps/api/src
       - ./packages/psgc/data:/workspace/packages/psgc/data:ro
+      - ./storage/chat-attachments:/workspace/storage/chat-attachments
       - /workspace/apps/api/src/Aqours.Api/bin
       - /workspace/apps/api/src/Aqours.Api/obj
       - /workspace/apps/api/src/Aqours.Application/bin

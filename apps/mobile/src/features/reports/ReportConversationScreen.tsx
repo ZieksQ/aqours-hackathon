@@ -5,11 +5,14 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
-  ActivityIndicator,
   Alert,
+  ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   RefreshControl,
@@ -17,7 +20,12 @@ import {
   TextInput,
   View,
 } from "react-native";
-import type { ApiClient, Message, Report } from "../../shared/api";
+import type {
+  ApiClient,
+  Message,
+  MessageAttachment,
+  Report,
+} from "../../shared/api";
 import { colors, fonts } from "../../shared/theme";
 import { Button, Icon, Notice, Text } from "../../shared/ui";
 import { issueLabels, statusLabels } from "../home/ReportCard";
@@ -29,6 +37,12 @@ import {
   previewResolvedReport,
 } from "../home/preview";
 import { reportKeys, reportingApi } from "./api";
+import {
+  imageContentType,
+  imageValidationError,
+  MAX_MESSAGE_ATTACHMENTS,
+  type PickedImage,
+} from "./attachments";
 import { conversationStyles as s } from "./conversationStyles";
 import { useReportConnection } from "./useReportConnection";
 
@@ -61,6 +75,11 @@ export function ReportConversationScreen({
   const scroll = useRef<ScrollView>(null);
   const stickToLatest = useRef(true);
   const sending = useRef(false);
+  const [attachments, setAttachments] = useState<PickedImage[]>([]);
+  const [attachmentError, setAttachmentError] = useState("");
+  const [pickingImages, setPickingImages] = useState(false);
+  const [viewingAttachment, setViewingAttachment] =
+    useState<MessageAttachment | null>(null);
   const replyPending =
     useIsMutating({ mutationKey: ["report-reply", accountId, reportId] }) > 0;
   const detail = useQuery({
@@ -110,9 +129,11 @@ export function ReportConversationScreen({
       ];
   const reply = useMutation({
     mutationKey: ["report-reply", accountId, reportId],
-    mutationFn: () => reportingApi.reply(api, reportId, draft),
+    mutationFn: () => reportingApi.reply(api, reportId, draft, attachments),
     onSuccess: () => {
       onDraftChange("");
+      setAttachments([]);
+      setAttachmentError("");
       void queryClient.invalidateQueries({
         queryKey: reportKeys.messages(accountId, reportId),
       });
@@ -127,11 +148,80 @@ export function ReportConversationScreen({
     },
   });
 
+  async function choosePhotos() {
+    const remaining = MAX_MESSAGE_ATTACHMENTS - attachments.length;
+    if (remaining <= 0 || pickingImages || replyPending) return;
+    setPickingImages(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
+        allowsEditing: false,
+        quality: 1,
+        base64: false,
+        exif: false,
+        preferredAssetRepresentationMode:
+          ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
+      });
+      if (result.canceled) return;
+      const next: PickedImage[] = [];
+      let error = "";
+      for (const [index, asset] of result.assets.entries()) {
+        const uriPart = asset.uri.split(/[/?#]/).at(-1) ?? "";
+        let uriName = uriPart;
+        try {
+          uriName = decodeURIComponent(uriPart);
+        } catch {
+          // Keep the provider's original name when it is not URI encoded.
+        }
+        const fileName = asset.fileName?.split(/[\\/]/).at(-1) || uriName;
+        const nameWithExtension = fileName.includes(".")
+          ? fileName
+          : asset.mimeType?.toLowerCase() === "image/png"
+            ? `${fileName || `photo-${index + 1}`}.png`
+            : asset.mimeType?.toLowerCase() === "image/jpeg"
+              ? `${fileName || `photo-${index + 1}`}.jpg`
+              : fileName;
+        const validation = imageValidationError(
+          nameWithExtension,
+          asset.mimeType,
+          asset.fileSize,
+        );
+        const contentType = imageContentType(nameWithExtension, asset.mimeType);
+        if (validation || !contentType) {
+          error ||= `${nameWithExtension || "Photo"}: ${validation ?? "Choose a JPG or PNG image."}`;
+          continue;
+        }
+        if (attachments.length + next.length >= MAX_MESSAGE_ATTACHMENTS) {
+          error ||= "Attach up to 3 photos per message.";
+          break;
+        }
+        next.push({
+          key: asset.assetId ?? asset.uri,
+          uri: asset.uri,
+          fileName: nameWithExtension,
+          contentType,
+          sizeBytes: asset.fileSize,
+        });
+      }
+      if (next.length > 0)
+        setAttachments((current) =>
+          [...current, ...next].slice(0, MAX_MESSAGE_ATTACHMENTS),
+        );
+      setAttachmentError(error);
+    } catch {
+      setAttachmentError("Could not open your photo library. Try again.");
+    } finally {
+      setPickingImages(false);
+    }
+  }
+
   async function send() {
     if (
       sending.current ||
       replyPending ||
-      !draft.trim() ||
+      (!draft.trim() && attachments.length === 0) ||
       draft.trim().length > 2000 ||
       report?.status !== "InProgress" ||
       detail.isError ||
@@ -281,7 +371,15 @@ export function ReportConversationScreen({
                     )}
                   </View>
                 );
-              return <MessageBubble key={row.key} message={row.message} />;
+              return (
+                <MessageBubble
+                  key={row.key}
+                  api={api}
+                  reportId={reportId}
+                  message={row.message}
+                  onViewAttachment={setViewingAttachment}
+                />
+              );
             })}
             {report.status === "Resolved" && (
               <StatusEvent status={report.status} preview={false} />
@@ -299,15 +397,30 @@ export function ReportConversationScreen({
         <ReplyComposer
           draft={draft}
           onDraftChange={onDraftChange}
+          attachments={attachments}
+          attachmentError={attachmentError}
+          onAddPhotos={() => void choosePhotos()}
+          onRemoveAttachment={(key) =>
+            setAttachments((current) =>
+              current.filter((attachment) => attachment.key !== key),
+            )
+          }
           onSend={() => void send()}
           canReply={canReply}
           sending={replyPending}
+          pickingImages={pickingImages}
           error={reply.error?.message}
           preview={preview}
         />
       ) : report ? (
         <ReadOnlyComposer status={report.status} stale={detail.isError} />
       ) : null}
+      <PhotoViewer
+        api={api}
+        reportId={reportId}
+        attachment={viewingAttachment}
+        onClose={() => setViewingAttachment(null)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -436,24 +549,221 @@ function ReportBubble({ report }: { report: Report }) {
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({
+  api,
+  reportId,
+  message,
+  onViewAttachment,
+}: {
+  api: ApiClient;
+  reportId: string;
+  message: Message;
+  onViewAttachment: (attachment: MessageAttachment) => void;
+}) {
   const customer = message.senderRole === "Customer";
+  const attachments = message.attachments ?? [];
   return (
     <View style={customer ? s.outgoingMessage : s.incomingMessage}>
       {!customer && (
         <Text style={s.senderLabel}>{message.senderName} · Supplier team</Text>
       )}
-      <View style={[s.bubble, customer ? s.customerBubble : s.supplierBubble]}>
-        <Text selectable style={s.messageText}>
-          {message.body}
-        </Text>
-      </View>
+      {message.body?.trim() ? (
+        <View style={[s.bubble, customer ? s.customerBubble : s.supplierBubble]}>
+          <Text selectable style={s.messageText}>
+            {message.body}
+          </Text>
+        </View>
+      ) : null}
+      {attachments.length > 0 && (
+        <View style={s.attachmentList}>
+          {attachments.map((attachment) => (
+            <ProtectedPhoto
+              key={attachment.id}
+              api={api}
+              reportId={reportId}
+              attachment={attachment}
+              onPress={() => onViewAttachment(attachment)}
+            />
+          ))}
+        </View>
+      )}
       <Text style={[s.messageTime, customer ? s.outgoingTime : s.incomingTime]}>
         {customer
           ? `${formatTime(message.createdAt)} · You`
           : formatTime(message.createdAt)}
       </Text>
     </View>
+  );
+}
+
+function ProtectedPhoto({
+  api,
+  reportId,
+  attachment,
+  onPress,
+  enlarged = false,
+}: {
+  api: ApiClient;
+  reportId: string;
+  attachment: MessageAttachment;
+  onPress?: () => void;
+  enlarged?: boolean;
+}) {
+  const [source, setSource] = useState<{
+    uri: string;
+    accessToken: string;
+  } | null>(null);
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">(
+    "loading",
+  );
+  const [attempt, setAttempt] = useState(0);
+  const retriedForToken = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    retriedForToken.current = false;
+    setSource(null);
+    setStatus("loading");
+    void api
+      .getAccessToken()
+      .then((token) => {
+        if (!active) return;
+        setSource({
+          uri: `${api.baseUrl}/api/reports/${encodeURIComponent(reportId)}/attachments/${encodeURIComponent(attachment.id)}`,
+          accessToken: token,
+        });
+      })
+      .catch(() => {
+        if (active) setStatus("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [api, reportId, attachment.id, attempt]);
+
+  async function retryAfterImageError(token: string) {
+    if (retriedForToken.current) {
+      setStatus("error");
+      return;
+    }
+    retriedForToken.current = true;
+    try {
+      const nextToken = await api.getAccessTokenAfterImageFailure(token);
+      if (nextToken && nextToken !== token) {
+        setStatus("loading");
+        setSource((current) =>
+          current
+            ? { ...current, accessToken: nextToken }
+            : current,
+        );
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  const image = source ? (
+    <Image
+      key={source.accessToken}
+      source={{
+        uri: source.uri,
+        headers: { Authorization: `Bearer ${source.accessToken}` },
+      }}
+      resizeMode={enlarged ? "contain" : "cover"}
+      style={enlarged ? s.photoViewerImage : s.photoThumbnail}
+      accessible={false}
+      onLoad={() => setStatus("loaded")}
+      onError={() => void retryAfterImageError(source.accessToken)}
+    />
+  ) : null;
+  return (
+    <View style={enlarged ? s.photoViewerFrame : s.photoFrame}>
+      {status === "error" ? (
+        <View style={s.photoError}>
+          <Text style={s.photoErrorText}>Photo could not be loaded.</Text>
+          <Button
+            label="Retry photo"
+            secondary
+            onPress={() => {
+              retriedForToken.current = false;
+              setAttempt((value) => value + 1);
+            }}
+          />
+        </View>
+      ) : onPress ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Open photo: ${attachment.fileName}`}
+          onPress={onPress}
+          style={({ pressed }) => [s.photoOpen, pressed && s.pressed]}
+        >
+          {image}
+          {status === "loading" && (
+            <ActivityIndicator
+              color={colors.primary}
+              style={s.photoLoadingIndicator}
+            />
+          )}
+        </Pressable>
+      ) : (
+        <>
+          {image}
+          {status === "loading" && (
+            <View style={s.photoViewerLoading}>
+              <ActivityIndicator color={colors.white} />
+              <Text style={s.photoViewerLoadingText}>Loading photo…</Text>
+            </View>
+          )}
+        </>
+      )}
+    </View>
+  );
+}
+
+function PhotoViewer({
+  api,
+  reportId,
+  attachment,
+  onClose,
+}: {
+  api: ApiClient;
+  reportId: string;
+  attachment: MessageAttachment | null;
+  onClose: () => void;
+}) {
+  return (
+    <Modal
+      visible={!!attachment}
+      animationType="fade"
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+    >
+      <View style={s.photoViewer}>
+        <View style={s.photoViewerHeader}>
+          <Text numberOfLines={1} style={s.photoViewerName}>
+            {attachment?.fileName ?? "Photo"}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close photo viewer"
+            onPress={onClose}
+            style={({ pressed }) => [s.photoViewerClose, pressed && s.pressed]}
+          >
+            <Icon name="x" color={colors.white} size={22} />
+          </Pressable>
+        </View>
+        {attachment && (
+          <ProtectedPhoto
+            api={api}
+            reportId={reportId}
+            attachment={attachment}
+            enlarged
+          />
+        )}
+      </View>
+    </Modal>
   );
 }
 
@@ -494,17 +804,27 @@ function StatusEvent({
 function ReplyComposer({
   draft,
   onDraftChange,
+  attachments,
+  attachmentError,
+  onAddPhotos,
+  onRemoveAttachment,
   onSend,
   canReply,
   sending,
+  pickingImages,
   error,
   preview,
 }: {
   draft: string;
   onDraftChange: (draft: string) => void;
+  attachments: PickedImage[];
+  attachmentError: string;
+  onAddPhotos: () => void;
+  onRemoveAttachment: (key: string) => void;
   onSend: () => void;
   canReply: boolean;
   sending: boolean;
+  pickingImages: boolean;
   error?: string;
   preview: boolean;
 }) {
@@ -512,12 +832,13 @@ function ReplyComposer({
     !canReply ||
     preview ||
     sending ||
-    !draft.trim() ||
+    pickingImages ||
+    (!draft.trim() && attachments.length === 0) ||
     draft.trim().length > 2000;
   const errorMessage = error
     ? [
         error,
-        "Your reply has been kept.",
+        "Your message and photos have been kept.",
         "Refresh the conversation before trying again if the connection was lost.",
       ].join(" ")
     : undefined;
@@ -531,7 +852,7 @@ function ReplyComposer({
       <View style={s.composerRow}>
         <TextInput
           accessibilityLabel="Message your supplier"
-          editable={canReply && !sending}
+          editable={canReply && !sending && !pickingImages}
           maxLength={2000}
           multiline
           onChangeText={onDraftChange}
@@ -543,7 +864,42 @@ function ReplyComposer({
         />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={sending ? "Sending message" : "Send message"}
+          accessibilityLabel="Attach photos"
+          accessibilityState={{
+            disabled:
+              !canReply ||
+              preview ||
+              sending ||
+              pickingImages ||
+              attachments.length >= MAX_MESSAGE_ATTACHMENTS,
+            busy: sending,
+          }}
+          disabled={
+            !canReply ||
+            preview ||
+            sending ||
+            pickingImages ||
+            attachments.length >= MAX_MESSAGE_ATTACHMENTS
+          }
+          onPress={onAddPhotos}
+          style={({ pressed }) => [
+            s.attachButton,
+            pressed && s.pressed,
+            (!canReply || preview || sending || pickingImages) &&
+              s.disabledAttachButton,
+          ]}
+        >
+          <Icon name="paperclip" size={21} color={colors.primary} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            sending
+              ? "Sending message"
+              : attachments.length > 0
+                ? `Send message with ${attachments.length} photo${attachments.length === 1 ? "" : "s"}`
+                : "Send message"
+          }
           accessibilityState={{ disabled, busy: sending }}
           disabled={disabled}
           onPress={onSend}
@@ -560,6 +916,47 @@ function ReplyComposer({
           )}
         </Pressable>
       </View>
+      {attachments.length > 0 && (
+        <View style={s.draftAttachmentList}>
+          {attachments.map((attachment) => (
+            <View key={attachment.key} style={s.draftAttachment}>
+              <Image
+                source={{ uri: attachment.uri }}
+                style={s.draftAttachmentImage}
+                resizeMode="cover"
+                accessible={false}
+              />
+              <Text numberOfLines={1} style={s.draftAttachmentName}>
+                {attachment.fileName}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Remove photo ${attachment.fileName}`}
+                accessibilityState={{ disabled: sending || pickingImages }}
+                disabled={sending || pickingImages}
+                onPress={() => onRemoveAttachment(attachment.key)}
+                style={({ pressed }) => [
+                  s.removeAttachment,
+                  pressed && !sending && !pickingImages && s.pressed,
+                ]}
+              >
+                <Icon name="x" size={16} color={colors.ink} />
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      )}
+      {(attachmentError || (!preview && canReply)) && (
+        <View style={s.attachmentHintRow}>
+          {attachmentError ? (
+            <Notice>{attachmentError}</Notice>
+          ) : (
+            <Text style={s.attachmentHint}>
+              JPG or PNG · up to 3 photos, 5 MB each
+            </Text>
+          )}
+        </View>
+      )}
       {errorMessage && (
         <View style={s.composerError}>
           <Notice>{errorMessage}</Notice>

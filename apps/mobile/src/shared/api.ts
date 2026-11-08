@@ -45,7 +45,15 @@ export type Message = {
   senderName: string;
   senderRole: string;
   body: string;
+  attachments?: MessageAttachment[];
   createdAt: string;
+};
+
+export type MessageAttachment = {
+  id: string;
+  fileName: string;
+  contentType: "image/png" | "image/jpeg";
+  sizeBytes: number;
 };
 
 export type CustomerSupplySite = {
@@ -217,12 +225,23 @@ export class ApiClient {
     return this.session.accessToken;
   }
 
+  async getAccessTokenAfterImageFailure(previousToken: string) {
+    const current = this.session;
+    if (!current)
+      throw new ApiError("Your session expired. Please sign in again.", 401);
+    if (current.accessToken !== previousToken) return current.accessToken;
+    if (Date.parse(current.accessTokenExpiresAt) > Date.now()) return null;
+    await this.refresh();
+    return this.session?.accessToken ?? null;
+  }
+
   async request<T>(
     path: string,
-    body?: object,
+    body?: object | FormData | (() => object | FormData),
     authenticated = true,
     retry = true,
     signal?: AbortSignal,
+    timeoutMs = 15000,
   ): Promise<T> {
     if (!this.baseUrl)
       throw new ApiError(
@@ -233,18 +252,27 @@ export class ApiClient {
     let response: Response;
     const controller = new AbortController();
     const abort = () => controller.abort();
-    const timeout = setTimeout(abort, 15000);
+    const timeout = setTimeout(abort, timeoutMs);
     if (signal?.aborted) controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
     try {
+      const requestBody = typeof body === "function" ? body() : body;
+      const isMultipart =
+        typeof FormData !== "undefined" && requestBody instanceof FormData;
       response = await fetch(`${this.baseUrl}/api${path}`, {
-        method: body ? "POST" : "GET",
+        method: requestBody ? "POST" : "GET",
         credentials: "omit",
         headers: {
-          ...(body ? { "Content-Type": "application/json" } : {}),
+          ...(requestBody && !isMultipart
+            ? { "Content-Type": "application/json" }
+            : {}),
           ...(authenticated ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: body ? JSON.stringify(body) : undefined,
+        body: requestBody
+          ? isMultipart
+            ? requestBody
+            : JSON.stringify(requestBody)
+          : undefined,
         signal: controller.signal,
       });
     } catch (error) {
@@ -260,7 +288,7 @@ export class ApiClient {
     if (response.status === 401 && authenticated && retry) {
       // Another request may already have rotated this access token.
       if (this.session?.accessToken === token) await this.refresh();
-      return this.request<T>(path, body, true, false, signal);
+      return this.request<T>(path, body, true, false, signal, timeoutMs);
     }
     if (!response.ok) {
       if (response.status === 401 && authenticated) this.setSession(null);

@@ -3,6 +3,7 @@ import {
   Avatar,
   Badge,
   Button,
+  Dialog,
   MetricStrip,
   PageHeader,
   Pagination,
@@ -16,10 +17,12 @@ import {
   FiCheckCircle,
   FiInfo,
   FiLock,
+  FiPaperclip,
   FiRefreshCw,
   FiSearch,
   FiSend,
   FiSliders,
+  FiX,
   FiUserCheck,
 } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
@@ -38,8 +41,15 @@ import {
   fetchOverview,
   timestamp,
   type History,
+  type Message,
+  type MessageAttachment,
   type Ticket,
+  sendReply,
 } from "./api";
+import {
+  imageValidationError,
+  MAX_MESSAGE_ATTACHMENTS,
+} from "./attachments";
 import { useReportConnection } from "./realtime";
 import { StatusBadge, PriorityBadge } from "./ReportPresentation";
 import "./reports.css";
@@ -636,6 +646,138 @@ function LoadError({ error, retry }: { error: Error; retry: () => void }) {
   );
 }
 
+function MessageBubble({
+  message,
+  ticketId,
+  onViewAttachment,
+}: {
+  message: Message;
+  ticketId: string;
+  onViewAttachment: (attachment: MessageAttachment) => void;
+}) {
+  const customer = message.senderRole === "Customer";
+  const attachments = message.attachments ?? [];
+  return (
+    <article
+      className={`chat-message ${customer ? "message-customer" : "message-staff"}`}
+    >
+      <div className="message-meta">
+        <strong>{message.senderName}</strong>
+        <span>{message.senderRole}</span>
+        <time dateTime={message.createdAt}>{compactDate(message.createdAt)}</time>
+      </div>
+      {message.body?.trim() && (
+        <p className="message-bubble">{message.body}</p>
+      )}
+      {attachments.length > 0 && (
+        <div className="message-attachments">
+          {attachments.map((attachment) => (
+            <MessagePhoto
+              key={attachment.id}
+              ticketId={ticketId}
+              attachment={attachment}
+              onOpen={() => onViewAttachment(attachment)}
+            />
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function MessagePhoto({
+  ticketId,
+  attachment,
+  onOpen,
+  enlarged = false,
+}: {
+  ticketId: string;
+  attachment: MessageAttachment;
+  onOpen?: () => void;
+  enlarged?: boolean;
+}) {
+  const [status, setStatus] = useState<"loading" | "loaded" | "error">(
+    "loading",
+  );
+  const [attempt, setAttempt] = useState(0);
+  const src = `/api/staff/reports/${encodeURIComponent(ticketId)}/attachments/${encodeURIComponent(attachment.id)}`;
+  const image = (
+    <img
+      key={attempt}
+      src={src}
+      alt={`Photo attachment: ${attachment.fileName}`}
+      loading="lazy"
+      onLoad={() => setStatus("loaded")}
+      onError={() => setStatus("error")}
+    />
+  );
+  return (
+    <div
+      className={`message-photo${enlarged ? " message-photo-enlarged" : ""}`}
+      aria-busy={status === "loading"}
+    >
+      {status === "error" ? (
+        <div className="message-photo-error" role="status">
+          <span>Photo could not be loaded.</span>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setStatus("loading");
+              setAttempt((value) => value + 1);
+            }}
+          >
+            Retry photo
+          </Button>
+        </div>
+      ) : enlarged ? (
+        image
+      ) : (
+        <button
+          type="button"
+          className="message-photo-open"
+          aria-label={`Open photo: ${attachment.fileName}`}
+          onClick={onOpen}
+        >
+          {image}
+        </button>
+      )}
+      {status === "loading" && (
+        <span className="message-photo-loading" role="status">
+          Loading photo…
+        </span>
+      )}
+    </div>
+  );
+}
+
+function DraftPhoto({
+  file,
+  src,
+  disabled,
+  onRemove,
+}: {
+  file: File;
+  src: string;
+  disabled: boolean;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="draft-photo">
+      <img src={src} alt={`Selected photo: ${file.name}`} />
+      <Button
+        variant="ghost"
+        className="draft-photo-remove"
+        aria-label={`Remove photo ${file.name}`}
+        disabled={disabled}
+        onClick={onRemove}
+      >
+        <FiX aria-hidden="true" />
+      </Button>
+      <span title={file.name}>{file.name}</span>
+    </div>
+  );
+}
+
 function TicketWorkspace({
   ticket,
   account,
@@ -651,8 +793,23 @@ function TicketWorkspace({
 }) {
   const client = useQueryClient();
   const [resolveConfirm, setResolveConfirm] = useState(false);
+  const [attachments, setAttachments] = useState<{ file: File; src: string }[]>(
+    [],
+  );
+  const attachmentUrls = useRef(new Set<string>());
+  const [attachmentError, setAttachmentError] = useState("");
+  const [viewingAttachment, setViewingAttachment] =
+    useState<MessageAttachment | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const scroll = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
+  useEffect(
+    () => () => {
+      attachmentUrls.current.forEach((url) => URL.revokeObjectURL(url));
+      attachmentUrls.current.clear();
+    },
+    [],
+  );
   const history = useInfiniteQuery({
     queryKey: ["reports", "messages", ticket.id],
     initialPageParam: null as number | null,
@@ -672,6 +829,7 @@ function TicketWorkspace({
       ).map((m) => [m.id, m]),
     ).values(),
   ];
+  const sendLock = useRef(false);
   const lastId = messages.at(-1)?.id;
   useEffect(() => {
     if (lastId && stick.current && scroll.current)
@@ -679,15 +837,22 @@ function TicketWorkspace({
   }, [lastId]);
   const refresh = () => client.invalidateQueries({ queryKey: ["reports"] });
   const send = useMutation({
-    mutationFn: (body: string) =>
-      api(`/staff/reports/${ticket.id}/messages`, { body }),
-    onSuccess: async (_, body) => {
-      if (draft === body) setDraft("");
+    mutationFn: (message: { body: string; files: File[] }) =>
+      sendReply(ticket.id, message.body, message.files),
+    onSuccess: async (_, message) => {
+      if (draft === message.body) setDraft("");
+      attachmentUrls.current.forEach((url) => URL.revokeObjectURL(url));
+      attachmentUrls.current.clear();
+      setAttachments([]);
+      setAttachmentError("");
       stick.current = true;
       await refresh();
     },
     onError: () => {
       void refresh();
+    },
+    onSettled: () => {
+      sendLock.current = false;
     },
   });
   const change = useMutation({
@@ -867,26 +1032,30 @@ function TicketWorkspace({
             />
           )}
           {messages.map((message) => (
-            <article
+            <MessageBubble
               key={message.id}
-              className={`chat-message ${message.senderRole === "Customer" ? "message-customer" : "message-staff"}`}
-            >
-              <div className="message-meta">
-                <strong>{message.senderName}</strong>
-                <span>{message.senderRole}</span>
-                <time dateTime={message.createdAt}>
-                  {compactDate(message.createdAt)}
-                </time>
-              </div>
-              <p className="message-bubble">{message.body}</p>
-            </article>
+              message={message}
+              ticketId={ticket.id}
+              onViewAttachment={setViewingAttachment}
+            />
           ))}
         </div>
         <form
           className={`report-composer${!writable ? " composer-readonly" : ""}`}
           onSubmit={(event) => {
             event.preventDefault();
-            if (writable && draft.trim() && !send.isPending) send.mutate(draft);
+            if (
+              writable &&
+              (draft.trim() || attachments.length > 0) &&
+              !send.isPending &&
+              !sendLock.current
+            ) {
+              sendLock.current = true;
+              send.mutate({
+                body: draft,
+                files: attachments.map((attachment) => attachment.file),
+              });
+            }
           }}
         >
           {!writable ? (
@@ -916,13 +1085,88 @@ function TicketWorkspace({
                 disabled={send.isPending}
                 placeholder={`Write a message to ${ticket.customer.name}…`}
               />
+              <input
+                ref={fileInput}
+                className="sr-only"
+                type="file"
+                accept="image/png,image/jpeg,.png,.jpg,.jpeg"
+                multiple
+                aria-label="Choose photos to attach"
+                onChange={(event) => {
+                  const selected = Array.from(event.currentTarget.files ?? []);
+                  event.currentTarget.value = "";
+                  if (!selected.length) return;
+                  const next = [...attachments];
+                  let error = "";
+                  for (const file of selected) {
+                    const validation = imageValidationError(file);
+                    if (validation) {
+                      error ||= `${file.name}: ${validation}`;
+                      continue;
+                    }
+                    if (next.length >= MAX_MESSAGE_ATTACHMENTS) {
+                      error ||= "Attach up to 3 photos per message.";
+                      break;
+                    }
+                    const src = URL.createObjectURL(file);
+                    attachmentUrls.current.add(src);
+                    next.push({ file, src });
+                  }
+                  setAttachments(next);
+                  setAttachmentError(error);
+                }}
+              />
+              {attachments.length > 0 && (
+                <div className="draft-attachments" aria-label="Attached photos">
+                  {attachments.map(({ file, src }, index) => (
+                    <DraftPhoto
+                      key={`${file.name}-${file.lastModified}-${index}`}
+                      file={file}
+                      src={src}
+                      disabled={send.isPending}
+                      onRemove={() => {
+                        URL.revokeObjectURL(src);
+                        attachmentUrls.current.delete(src);
+                        setAttachments((current) =>
+                          current.filter(
+                            (_, photoIndex) => photoIndex !== index,
+                          ),
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+              {attachmentError && (
+                <p className="attachment-error" role="alert">
+                  {attachmentError}
+                </p>
+              )}
               <FormError error={send.error} />
               <div className="composer-actions">
                 <span className="muted">{draft.length} / 2,000 characters</span>
-                <span className="composer-limit muted">Plain text only</span>
+                <span className="composer-limit muted">
+                  JPG or PNG · up to 3 photos, 5 MB each
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="chat-attach"
+                  disabled={
+                    send.isPending ||
+                    attachments.length >= MAX_MESSAGE_ATTACHMENTS
+                  }
+                  aria-label="Attach photos"
+                  title="Attach photos"
+                  onClick={() => fileInput.current?.click()}
+                >
+                  <FiPaperclip aria-hidden="true" />
+                  <span>Attach</span>
+                </Button>
                 <Button
                   variant="ghost"
                   className="chat-latest"
+                  type="button"
                   aria-label="Latest messages"
                   title="Latest messages"
                   onClick={() => {
@@ -935,9 +1179,16 @@ function TicketWorkspace({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={!draft.trim() || send.isPending}
+                  disabled={
+                    (!draft.trim() && attachments.length === 0) ||
+                    send.isPending
+                  }
                 >
-                  {send.isPending ? "Sending…" : "Send message"}
+                  {send.isPending
+                    ? "Sending…"
+                    : attachments.length > 0
+                      ? "Send"
+                      : "Send message"}
                   <FiSend aria-hidden="true" />
                 </Button>
               </div>
@@ -945,6 +1196,20 @@ function TicketWorkspace({
           )}
         </form>
       </div>
+      {viewingAttachment && (
+        <Dialog
+          title="Photo attachment"
+          titleId="message-photo-title"
+          description={viewingAttachment.fileName}
+          onClose={() => setViewingAttachment(null)}
+        >
+          <MessagePhoto
+            ticketId={ticket.id}
+            attachment={viewingAttachment}
+            enlarged
+          />
+        </Dialog>
+      )}
       <aside className="ticket-details" aria-label="Ticket details">
         <div className="ticket-details-heading">
           <h2>Report context</h2>

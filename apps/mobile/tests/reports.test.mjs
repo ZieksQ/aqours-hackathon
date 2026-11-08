@@ -15,8 +15,10 @@ import {
 } from "../src/features/reports/location-tree.ts";
 
 const originalFetch = globalThis.fetch;
+const originalFormData = globalThis.FormData;
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  globalThis.FormData = originalFormData;
 });
 const session = {
   account: { id: "customer", role: "Customer", requiresPasswordChange: false },
@@ -37,6 +39,24 @@ const regions = readData("list-of-all-regions.json");
 const ncr = readData(
   regions.find((region) => region.psgc_code === "1300000000").file,
 ).region;
+
+class TestFormData {
+  fields = [];
+
+  append(name, value, fileName) {
+    this.fields.push({ name, value, fileName });
+  }
+
+  get(name) {
+    return this.fields.find((field) => field.name === name)?.value ?? null;
+  }
+
+  getAll(name) {
+    return this.fields
+      .filter((field) => field.name === name)
+      .map((field) => field.value);
+  }
+}
 
 function pathsToBarangays(node, parents = []) {
   const path = [...parents, node];
@@ -233,4 +253,102 @@ test("customer replies trim their body and a status conflict is not retried auto
     (error) => error.status === 409,
   );
   assert.equal(sends, 1);
+});
+
+test("photo replies use optional body plus repeated image files without a JSON content type", async () => {
+  globalThis.FormData = TestFormData;
+  let upload;
+  const api = await signedIn((url, options) => {
+    assert.equal(url, "http://supplier.test/api/reports/owned-report/messages");
+    upload = options;
+    return json({ id: "message-photo", body: "" }, 201);
+  });
+  const result = await reportingApi.reply(api, "owned-report", "   ", [
+    {
+      key: "first",
+      uri: "file:///first.jpg",
+      fileName: "first.jpg",
+      contentType: "image/jpeg",
+      sizeBytes: 1200,
+    },
+    {
+      key: "second",
+      uri: "file:///second.png",
+      fileName: "second.png",
+      contentType: "image/png",
+      sizeBytes: 2400,
+    },
+  ]);
+  assert.equal(result.id, "message-photo");
+  assert.equal(upload.method, "POST");
+  assert.equal(upload.credentials, "omit");
+  assert.equal(upload.headers.Authorization, "Bearer customer-token");
+  assert.equal(upload.headers["Content-Type"], undefined);
+  assert.equal(upload.body.get("body"), null);
+  assert.deepEqual(
+    upload.body.getAll("files").map((file) => [file.name, file.type]),
+    [
+      ["first.jpg", "image/jpeg"],
+      ["second.png", "image/png"],
+    ],
+  );
+});
+
+test("photo upload failures surface without retry and leave the text and selected files intact", async () => {
+  globalThis.FormData = TestFormData;
+  let sends = 0;
+  const api = await signedIn((url) => {
+    assert.equal(url, "http://supplier.test/api/reports/owned-report/messages");
+    sends++;
+    return json({ detail: "The upload was rejected." }, 413);
+  });
+  const draft = "  Please check the leak.  ";
+  const files = [
+    {
+      key: "draft-photo",
+      uri: "file:///photo.jpg",
+      fileName: "photo.jpg",
+      contentType: "image/jpeg",
+      sizeBytes: 1200,
+    },
+  ];
+  const originalFiles = structuredClone(files);
+  await assert.rejects(
+    reportingApi.reply(api, "owned-report", draft, files),
+    (error) => error.status === 413,
+  );
+  assert.equal(sends, 1);
+  assert.equal(draft, "  Please check the leak.  ");
+  assert.deepEqual(files, originalFiles);
+});
+
+test("image selection validation accepts original JPEG/PNG and rejects unsupported or oversized files", async () => {
+  const {
+    MAX_MESSAGE_ATTACHMENT_BYTES,
+    imageContentType,
+    imageValidationError,
+    messagePreview,
+  } = await import("../src/features/reports/attachments.ts");
+  assert.equal(imageContentType("photo.jpg", "image/jpeg"), "image/jpeg");
+  assert.equal(imageContentType("photo.png", "image/png"), "image/png");
+  assert.equal(imageContentType("photo.png", "image/jpeg"), null);
+  assert.equal(imageValidationError("photo.heic", "image/heic"),
+    "Choose a JPG or PNG image. HEIC and other formats are not supported.");
+  assert.equal(
+    imageValidationError("photo.jpg", "image/jpeg", MAX_MESSAGE_ATTACHMENT_BYTES),
+    null,
+  );
+  assert.equal(
+    imageValidationError("photo.jpg", "image/jpeg", MAX_MESSAGE_ATTACHMENT_BYTES + 1),
+    "Each photo must be 5 MB or smaller.",
+  );
+  assert.equal(
+    messagePreview({ body: "", attachments: [{ id: "one" }] }),
+    "Sent a photo",
+  );
+  assert.equal(
+    messagePreview({ body: "", attachments: [{ id: "one" }, { id: "two" }] }),
+    "Sent 2 photos",
+  );
+  assert.equal(messagePreview({ body: "" }), "Sent a message");
 });

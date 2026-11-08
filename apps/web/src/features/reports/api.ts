@@ -37,8 +37,16 @@ export type Message = {
   senderName: string;
   senderRole: string;
   body: string;
+  attachments?: MessageAttachment[];
   createdAt: string;
 };
+export type MessageAttachment = {
+  id: string;
+  fileName: string;
+  contentType: "image/png" | "image/jpeg";
+  sizeBytes: number;
+};
+export const MESSAGE_UPLOAD_TIMEOUT_MS = 60_000;
 export type History = { items: Message[]; nextBefore: number | null };
 export const statusName = (status: Ticket["status"]) =>
   ({ Submitted: "Submitted", InProgress: "In progress", Resolved: "Resolved" })[
@@ -85,4 +93,15 @@ export const fetchOverview = () => fetchQueue("tab=all&pageSize=1");
 
 export function reportReference(id: string) {
   return id.length > 20 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
+}
+
+export function sendReply(ticketId: string, body: string, files: File[]) {
+  const path = `/staff/reports/${ticketId}/messages`;
+  if (files.length === 0) return api(path, { body });
+
+  const form = new FormData();
+  const text = body.trim();
+  if (text) form.append("body", text);
+  files.forEach((file) => form.append("files", file, file.name));
+  return api(path, form, "POST", undefined, MESSAGE_UPLOAD_TIMEOUT_MS);
 }

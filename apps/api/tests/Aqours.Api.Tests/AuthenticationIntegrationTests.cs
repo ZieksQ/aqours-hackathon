@@ -43,6 +43,7 @@ public sealed class ApiFixture : IAsyncLifetime
     private WebApplicationFactory<Program>? _factory;
     public WebApplicationFactory<Program> Factory => _factory ?? throw new InvalidOperationException("Fixture is not initialized.");
     public string ConnectionString { get; private set; } = "";
+    public string ChatAttachmentRoot { get; private set; } = "";
 
     public async Task InitializeAsync()
     {
@@ -65,6 +66,7 @@ public sealed class ApiFixture : IAsyncLifetime
         var testConfiguration = new Dictionary<string, string?>
         {
             ["ConnectionStrings:Aqours"] = ConnectionString,
+            ["ChatAttachments:RootPath"] = ChatAttachmentRoot = Path.Combine(Path.GetTempPath(), $"aqours-chat-attachments-tests-{Guid.NewGuid():N}"),
             ["Jwt:Issuer"] = Issuer,
             ["Jwt:Audience"] = Audience,
             ["Jwt:SigningKey"] = SigningKey,
@@ -83,6 +85,7 @@ public sealed class ApiFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         if (_factory is not null) await _factory.DisposeAsync();
+        if (Directory.Exists(ChatAttachmentRoot)) Directory.Delete(ChatAttachmentRoot, recursive: true);
     }
 }
 

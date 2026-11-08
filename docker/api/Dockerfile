@@ -91,7 +91,7 @@ ENV ASPNETCORE_ENVIRONMENT=Production \
     AQOURS_DATA_PROTECTION_KEY_PATH=/var/lib/aqours/data-protection
 
 WORKDIR /app
-RUN install -d -o 1654 -g 1654 /var/lib/aqours/data-protection
+RUN install -d -o 1654 -g 1654 /var/lib/aqours/data-protection /app/storage/chat-attachments
 COPY --from=publish --chown=1654:1654 /out/publish/ ./
 USER 1654:1654
 EXPOSE 8080

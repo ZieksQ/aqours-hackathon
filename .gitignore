@@ -497,3 +497,5 @@ coverage/
 
 # Local Stitch design exports for review
 /design/*/
+# Private chat image attachments are local or volume-backed data.
+/storage/chat-attachments/
