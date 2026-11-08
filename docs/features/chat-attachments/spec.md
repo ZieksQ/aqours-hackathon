@@ -1,6 +1,6 @@
 # Chat message image attachments
 
-**Status:** Backend API contract implemented. Web and mobile attachment UI integration and physical-phone verification are pending.
+**Status:** Backend API contract and web/mobile attachment integration implemented. Client-specific verification is outside this API contract.
 
 This feature adds image files to Customer and supplier Personnel conversation messages. It does not add attachments to initial report submission.
 
@@ -55,6 +55,6 @@ The declared MIME type, filename extension, and leading file signature must agre
 
 `ChatAttachments:RootPath` selects a writable local filesystem directory. The appsettings default is `../../../../storage/chat-attachments`, resolved from the API content root; Compose overrides it with `/workspace/storage/chat-attachments` in development and `/app/storage/chat-attachments` in production. The API creates and checks the configured directory at startup. Compose development bind-mounts the ignored repository directory `storage/chat-attachments`; production uses the persistent `production-chat-attachments` named volume. The production API runs as UID/GID `1654` with a read-only root filesystem; the mounted attachment volume remains writable.
 
-PostgreSQL stores attachment metadata in `report_message_attachments`, including a relative `storage_key`; image bytes are not stored in the database. Files are written first, then the message and metadata are saved together in a database transaction under the report row lock. Confirmed failed writes trigger file cleanup. When commit outcome cannot be determined, files are retained for manual reconciliation. There is no background cleanup process; see the [deployment runbook](../../deployment.md#chat-attachment-reconciliation) for paired backups and careful manual reconciliation.
+PostgreSQL stores attachment metadata in `report_message_attachments`, including a relative `storage_key`; image bytes are not stored in the database. Files are written first, then the message and metadata are saved together in a database transaction under the report row lock. Exceptions before commit is attempted and returned authorization/status conflicts clean up the uncommitted files. Exceptions after commit is attempted, including transaction disposal errors, are treated as uncertain outcomes and keep the files for manual reconciliation; the service does not query the database to infer commit state. There is no background cleanup process; see the [deployment runbook](../../deployment.md#chat-attachment-reconciliation) for paired backups and careful manual reconciliation.
 
 Apply the generated `20261108102951_ChatMessageAttachments` migration explicitly with the repository EF command before starting an API instance with this feature. API startup does not apply migrations. See the root [README](../../../README.md) for local setup and the [architecture rules](../../architecture.md) for layer boundaries.

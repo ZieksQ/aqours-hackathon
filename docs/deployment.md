@@ -1,6 +1,6 @@
 # Production deployment runbook
 
-> **Verification status:** `compose.production.yaml`, the production environment example, API hosting integration, and API/web image files are implemented. The API build and all 15 focused production-hosting tests passed; production and development Compose model checks and shell syntax checks also passed. `nginx -t` was unavailable because the Nginx binary is not installed; Docker image builds, container startup, database migrations, live authentication/data retention, and an actual production deployment were not verified because Docker daemon access was denied. Validate these instructions in staging before a production rollout.
+> **Verification status:** `compose.production.yaml`, the production environment example, API hosting integration, and API/web image files are implemented. The API build and formatting passed, EF migration no-drift was checked, and all 126 API integration tests passed against isolated PostgreSQL 18.6. Development and production Compose model checks and shell syntax checks also passed. `nginx -t` was not run because the host Nginx binary is not installed. Production Docker image builds, container startup, live migrations/authentication/data retention, and an actual production deployment remain unverified. Validate these instructions in staging before a production rollout.
 
 ## Target and network boundary
 
