@@ -25,6 +25,7 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
     public DbSet<Report> Reports => Set<Report>();
 
     public DbSet<ReportMessage> ReportMessages => Set<ReportMessage>();
+    public DbSet<ReportMessageAttachment> ReportMessageAttachments => Set<ReportMessageAttachment>();
 
     public DbSet<NotificationRead> NotificationReads => Set<NotificationRead>();
     public DbSet<PushDeviceToken> PushDeviceTokens => Set<PushDeviceToken>();
@@ -33,6 +34,7 @@ public sealed class AqoursDbContext(DbContextOptions<AqoursDbContext> options)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new ReportConfiguration());
+        builder.ApplyConfiguration(new ReportMessageAttachmentConfiguration());
         builder.ApplyConfiguration(new SupplySiteConfiguration());
         builder.ApplyConfiguration(new SupplyUpdateConfiguration());
         builder.ApplyConfiguration(new WeatherSettingsConfiguration());

@@ -558,6 +558,113 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
+  .message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 80%;
+  }
+  .message-staff .message-attachments {
+    justify-content: flex-end;
+  }
+  .message-photo {
+    position: relative;
+    min-width: 120px;
+    min-height: 72px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .message-photo-open {
+    display: block;
+    max-width: 100%;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--raised);
+    cursor: zoom-in;
+  }
+  .message-photo-open img {
+    display: block;
+    width: auto;
+    max-width: min(240px, 65vw);
+    max-height: 180px;
+    object-fit: cover;
+  }
+  .message-photo-loading,
+  .message-photo-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 72px;
+    padding: 12px;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .message-photo-error {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .message-photo-enlarged {
+    width: min(100%, 900px);
+    margin: 16px auto;
+    padding: 0 16px 16px;
+  }
+  .message-photo-enlarged img {
+    display: block;
+    max-width: 100%;
+    max-height: min(68vh, 720px);
+    margin: 0 auto;
+    object-fit: contain;
+  }
+  .draft-attachments {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+  .draft-photo {
+    display: grid;
+    grid-template-columns: 52px 44px minmax(0, 68px);
+    align-items: center;
+    flex: 0 0 180px;
+    gap: 8px;
+    min-width: 0;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .draft-photo img {
+    width: 52px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    object-fit: cover;
+  }
+  .draft-photo > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .draft-photo-remove.ui-button {
+    width: 44px;
+    min-height: 44px;
+    height: 44px;
+    padding: 4px;
+    border-radius: 50%;
+    background: var(--surface);
+  }
+  .draft-photo-remove svg {
+    width: 14px;
+    height: 14px;
+  }
+  .attachment-error {
+    margin: 4px 0 8px;
+    color: var(--negative);
+    font-size: 12px;
+  }
   .message-staff {
     align-items: flex-end;
   }
@@ -637,6 +744,16 @@
     min-height: 30px;
     padding: 5px 10px;
     font-size: 12px;
+  }
+  .composer-actions .chat-attach {
+    min-height: 30px;
+    padding: 5px 8px;
+    gap: 5px;
+    font-size: 12px;
+  }
+  .chat-attach svg {
+    width: 14px;
+    height: 14px;
   }
   .composer-readonly {
     background: var(--ground);

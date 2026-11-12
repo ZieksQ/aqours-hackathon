@@ -110,6 +110,7 @@ public static class AuthConfiguration
         services.AddAntiforgery(options =>
         {
             options.HeaderName = "X-CSRF-TOKEN";
+            options.SuppressReadingTokenFromFormBody = true;
             options.Cookie.Name = "Aqours.Csrf";
             options.Cookie.HttpOnly = true;
             options.Cookie.SameSite = SameSiteMode.Strict;

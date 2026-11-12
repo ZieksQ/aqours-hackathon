@@ -151,6 +151,57 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                     b.ToTable("report_messages", (string)null);
                 });
 
+            modelBuilder.Entity("Aqours.Domain.Features.Reports.ReportMessageAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("character varying(180)")
+                        .HasColumnName("file_name");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("message_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("storage_key");
+
+                    b.HasKey("Id")
+                        .HasName("pk_report_message_attachments");
+
+                    b.HasIndex("StorageKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_report_message_attachments_storage_key");
+
+                    b.HasIndex("MessageId", "Position")
+                        .IsUnique()
+                        .HasDatabaseName("ix_report_message_attachments_message_id_position");
+
+                    b.ToTable("report_message_attachments", (string)null);
+                });
+
             modelBuilder.Entity("Aqours.Domain.Features.SupplySites.SupplySite", b =>
                 {
                     b.Property<Guid>("Id")
@@ -721,6 +772,18 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_report_messages_asp_net_users_sender_id");
                 });
 
+            modelBuilder.Entity("Aqours.Domain.Features.Reports.ReportMessageAttachment", b =>
+                {
+                    b.HasOne("Aqours.Domain.Features.Reports.ReportMessage", "Message")
+                        .WithMany("Attachments")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_report_message_attachments_report_messages_message_id");
+
+                    b.Navigation("Message");
+                });
+
             modelBuilder.Entity("Aqours.Domain.Features.SupplySites.SupplyUpdate", b =>
                 {
                     b.HasOne("Aqours.Domain.Features.SupplySites.SupplySite", null)
@@ -843,6 +906,11 @@ namespace Aqours.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
+                });
+
+            modelBuilder.Entity("Aqours.Domain.Features.Reports.ReportMessage", b =>
+                {
+                    b.Navigation("Attachments");
                 });
 #pragma warning restore 612, 618
         }

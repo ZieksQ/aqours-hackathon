@@ -63,15 +63,34 @@ public sealed class PostgresStaffReportStore(AqoursDbContext db) : IStaffReportS
 
     public async Task<TicketResult<ReportMessage>> WriteAsync(Guid id, Func<Report, TicketResult<ReportMessage>> change, CancellationToken ct)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var report = await db.Reports.FromSqlInterpolated($"SELECT * FROM reports WHERE id = {id} FOR UPDATE").SingleOrDefaultAsync(ct);
-        if (report is null) return new(Failure: TicketFailure.NotFound);
-        var result = change(report);
-        if (!result.Succeeded) return result;
-        if (result.Value is not null) db.ReportMessages.Add(result.Value);
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
-        return result;
+        var transaction = await db.Database.BeginTransactionAsync(ct);
+        var commitAttempted = false;
+        try
+        {
+            var report = await db.Reports.FromSqlInterpolated($"SELECT * FROM reports WHERE id = {id} FOR UPDATE").SingleOrDefaultAsync(ct);
+            if (report is null) return new(Failure: TicketFailure.NotFound);
+            var result = change(report);
+            if (!result.Succeeded) return result;
+            if (result.Value is not null) db.ReportMessages.Add(result.Value);
+            await db.SaveChangesAsync(ct);
+            commitAttempted = true;
+            await transaction.CommitAsync(ct);
+            return result;
+        }
+        catch (Exception error) when (commitAttempted)
+        {
+            throw new TicketCommitOutcomeUncertainException(
+                $"The ticket transaction commit outcome for report {id} is uncertain.", error);
+        }
+        finally
+        {
+            try { await transaction.DisposeAsync(); }
+            catch (Exception error) when (commitAttempted)
+            {
+                throw new TicketCommitOutcomeUncertainException(
+                    $"Transaction cleanup failed after the commit for report {id} was attempted; its outcome is uncertain.", error);
+            }
+        }
     }
 
     private IQueryable<TicketMessage> Messages(IQueryable<ReportMessage> messages) =>
@@ -91,9 +110,40 @@ public sealed class PostgresStaffReportStore(AqoursDbContext db) : IStaffReportS
         var ids = selected.Select(m => m.Id).ToArray();
         var projected = await Messages(db.ReportMessages.AsNoTracking().Where(m => ids.Contains(m.Id))).ToListAsync(ct);
         var positions = selected.ToDictionary(m => m.Id, m => m.Sequence);
-        return new(projected.OrderBy(m => positions[m.Id]).ToList(), hasMore ? selected[^1].Sequence : null);
+        var ordered = projected.OrderBy(m => positions[m.Id]).ToList();
+        return new(await IncludeAttachmentsAsync(ordered, ct), hasMore ? selected[^1].Sequence : null);
     }
 
-    public Task<TicketMessage> MessageAsync(Guid messageId, CancellationToken ct) =>
-        Messages(db.ReportMessages.AsNoTracking().Where(m => m.Id == messageId)).SingleAsync(ct);
+    public async Task<TicketMessage> MessageAsync(Guid messageId, CancellationToken ct)
+    {
+        var message = await Messages(db.ReportMessages.AsNoTracking().Where(m => m.Id == messageId)).SingleAsync(ct);
+        return (await IncludeAttachmentsAsync([message], ct))[0];
+    }
+
+    public Task<ReportMessageAttachment?> FindAttachmentAsync(Guid attachmentId, CancellationToken ct) =>
+        db.ReportMessageAttachments.AsNoTracking().Include(attachment => attachment.Message)
+            .SingleOrDefaultAsync(attachment => attachment.Id == attachmentId, ct);
+
+    private async Task<IReadOnlyList<TicketMessage>> IncludeAttachmentsAsync(
+        IReadOnlyList<TicketMessage> messages, CancellationToken ct)
+    {
+        if (messages.Count == 0) return messages;
+        var ids = messages.Select(message => message.Id).ToArray();
+        var attachments = await db.ReportMessageAttachments.AsNoTracking()
+            .Where(attachment => ids.Contains(attachment.MessageId))
+            .OrderBy(attachment => attachment.Position)
+            .Select(attachment => new
+            {
+                attachment.MessageId,
+                Metadata = new ChatAttachmentMetadata(attachment.Id, attachment.FileName,
+                    attachment.ContentType, attachment.SizeBytes)
+            })
+            .ToListAsync(ct);
+        var byMessage = attachments.GroupBy(attachment => attachment.MessageId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<ChatAttachmentMetadata>)group.Select(item => item.Metadata).ToList());
+        return messages.Select(message => message with
+        {
+            Attachments = byMessage.GetValueOrDefault(message.Id, [])
+        }).ToList();
+    }
 }

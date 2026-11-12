@@ -26,8 +26,16 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        string contentRootPath)
     {
+        var configuredAttachmentRoot = configuration["ChatAttachments:RootPath"];
+        if (string.IsNullOrWhiteSpace(configuredAttachmentRoot))
+            throw new InvalidOperationException("Configure ChatAttachments:RootPath.");
+        var attachmentRoot = Path.GetFullPath(Path.IsPathRooted(configuredAttachmentRoot)
+            ? configuredAttachmentRoot
+            : Path.Combine(contentRootPath, configuredAttachmentRoot));
+
         services.AddDbContextFactory<AqoursDbContext>(options =>
         {
             var connectionString = configuration.GetConnectionString("Aqours");
@@ -66,6 +74,9 @@ public static class DependencyInjection
         services.AddScoped<SupplyMonitoringService>();
         services.AddScoped<IStaffReportStore, PostgresStaffReportStore>();
         services.AddScoped<StaffReportService>();
+        services.AddSingleton<IChatAttachmentStorage>(provider => new FileSystemChatAttachmentStorage(
+            attachmentRoot,
+            provider.GetRequiredService<ILogger<FileSystemChatAttachmentStorage>>()));
         services.AddScoped<IAccountStore, IdentityAccountStore>();
         services.AddScoped<AccountService>();
         services.AddScoped<IRefreshSessions, PostgresRefreshSessions>();

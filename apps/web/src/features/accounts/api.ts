@@ -22,10 +22,11 @@ export class ApiError extends Error {
     this.errors = errors;
   }
 }
-export async function csrf() {
+export async function csrf(signal?: AbortSignal) {
   const response = await fetch("/api/auth/web/csrf", {
     credentials: "same-origin",
     cache: "no-store",
+    signal,
   });
   if (!response.ok) {
     if (response.status === 401) queryClient.setQueryData(["account"], null);
@@ -40,33 +41,55 @@ export async function csrf() {
 }
 export async function api<T>(
   path: string,
-  body?: unknown,
+  body?: unknown | FormData,
   method?: "POST" | "PUT",
   signal?: AbortSignal,
+  timeoutMs = 15000,
 ): Promise<T> {
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  signal?.addEventListener("abort", abort, { once: true });
+  const timeout = setTimeout(abort, timeoutMs);
   let response: Response;
   try {
+    const isMultipart =
+      typeof FormData !== "undefined" && body instanceof FormData;
+    const headers =
+      body === undefined
+        ? {}
+        : {
+            ...(!isMultipart ? { "Content-Type": "application/json" } : {}),
+            "X-CSRF-TOKEN": await csrf(controller.signal),
+          };
     response = await fetch(`/api${path}`, {
-      signal,
+      signal: controller.signal,
       method: body === undefined ? "GET" : (method ?? "POST"),
       credentials: "same-origin",
       cache: "no-store",
-      headers:
+      headers,
+      body:
         body === undefined
-          ? {}
-          : {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": await csrf(),
-            },
-      body: body === undefined ? undefined : JSON.stringify(body),
+          ? undefined
+          : isMultipart
+            ? body
+            : JSON.stringify(body),
     });
   } catch (error) {
     if (signal?.aborted) throw error;
     if (error instanceof ApiError) throw error;
+    if (controller.signal.aborted)
+      throw new ApiError(
+        0,
+        "The request took too long. Check your connection and try again.",
+      );
     throw new ApiError(
       0,
       "Cannot reach Aqours. Check your connection and try again.",
     );
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener("abort", abort);
   }
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));

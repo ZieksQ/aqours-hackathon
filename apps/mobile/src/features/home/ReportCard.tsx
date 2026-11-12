@@ -2,6 +2,7 @@ import { StyleSheet, View } from "react-native";
 import type { Message, Report } from "../../shared/api";
 import { colors, fonts } from "../../shared/theme";
 import { Button, Icon, Text } from "../../shared/ui";
+import { messagePreview } from "../reports/attachments";
 
 export const issueLabels = {
   NoWater: "No water",
@@ -101,7 +102,7 @@ export function ReportCard({
                 {reportDate(message.createdAt)}
               </Text>
             </View>
-            <Text>“{message.body}”</Text>
+            <Text>{messagePreview(message)}</Text>
           </>
         ) : (
           <Text style={styles.secondary}>

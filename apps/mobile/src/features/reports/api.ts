@@ -4,6 +4,7 @@ import type {
   Report,
   ReportAddress,
 } from "../../shared/api";
+import { MESSAGE_UPLOAD_TIMEOUT_MS, type PickedImage } from "./attachments.ts";
 
 export type SubmitReport = {
   issueType: Report["issueType"];
@@ -62,6 +63,39 @@ export const reportingApi = {
       true,
       signal,
     ),
-  reply: (api: ApiClient, id: string, body: string) =>
-    api.request<Message>(`/reports/${id}/messages`, { body: body.trim() }),
+  reply: (
+    api: ApiClient,
+    id: string,
+    body: string,
+    files: PickedImage[] = [],
+  ) => {
+    if (files.length === 0)
+      return api.request<Message>(`/reports/${id}/messages`, {
+        body: body.trim(),
+      });
+
+    return api.request<Message>(
+      `/reports/${id}/messages`,
+      () => {
+        const form = new FormData();
+        const text = body.trim();
+        if (text) form.append("body", text);
+        files.forEach((file) => {
+          form.append(
+            "files",
+            {
+              uri: file.uri,
+              name: file.fileName,
+              type: file.contentType,
+            } as unknown as Blob,
+          );
+        });
+        return form;
+      },
+      true,
+      true,
+      undefined,
+      MESSAGE_UPLOAD_TIMEOUT_MS,
+    );
+  },
 };

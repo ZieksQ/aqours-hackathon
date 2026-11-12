@@ -33,8 +33,10 @@ server {
     }
 
     location ^~ /api/ {
+        client_max_body_size 16m;
         error_log /dev/null emerg;
         proxy_pass $api_upstream$request_uri;
+        proxy_request_buffering off;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Host $host;

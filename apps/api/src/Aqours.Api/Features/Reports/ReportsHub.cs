@@ -56,7 +56,17 @@ public sealed class ReportNotifications(IHubContext<ReportsHub> hub, IPushNotifi
     {
         await DeliverAsync(() => hub.Clients.Group(ReportsHub.TicketGroup(message.ReportId)).SendAsync("MessageCreated", MessageResponse.From(message)));
         if (message.SenderRole != "Customer")
-            await DeliverPushAsync(message.ReportId, $"{message.SenderName} replied to your report", message.Body);
+        {
+            var body = message.Body.Length > 0
+                ? message.Body
+                : message.Attachments?.Count switch
+                {
+                    1 => "Sent a photo",
+                    > 1 => $"Sent {message.Attachments.Count} photos",
+                    _ => "Sent a message"
+                };
+            await DeliverPushAsync(message.ReportId, $"{message.SenderName} replied to your report", body);
+        }
     }
 
     private async Task DeliverPushAsync(Guid reportId, string title, string body)

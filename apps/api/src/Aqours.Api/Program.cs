@@ -31,7 +31,7 @@ if (args is ["--healthcheck"])
 
 var builder = WebApplication.CreateBuilder(args);
 ProductionHosting.Configure(builder);
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddAccountAuthentication(builder.Environment.IsDevelopment());
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, ReportUserIdProvider>();
@@ -40,6 +40,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();
 var app = builder.Build();
 _ = app.Services.GetRequiredService<JwtSettings>();
+_ = app.Services.GetRequiredService<IChatAttachmentStorage>();
 
 // Migrations are an explicit deployment step; startup only verifies schema and seeds accounts.
 await using (var scope = app.Services.CreateAsyncScope())
