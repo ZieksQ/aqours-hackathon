@@ -6,7 +6,7 @@ Water reporting and supplier response MVP. Account authentication, the Customer 
 
 The recommended local workflow targets native Linux with Docker Engine and the Compose plugin; it does not require a host .NET SDK, Node.js, or pnpm installation.
 
-The optional host workflow requires .NET SDK 10.0.108 (or a newer patch in the 10.0.1xx feature band; see `global.json`), Node.js 22.22.2 or newer, and pnpm 11.24.0. Both workflows use PostgreSQL 18.6 from `postgres:18.6-alpine3.23`.
+The optional host workflow requires .NET SDK 10.0.404 (or a newer patch in the 10.0.4xx feature band; see `global.json`), Node.js 22.22.2 or newer, and pnpm 11.24.0. Both workflows use PostgreSQL 18.6 from `postgres:18.6-alpine3.23`.
 
 ## Local development with Docker Compose
 
@@ -46,7 +46,7 @@ The API uses ASP.NET Core Identity with PostgreSQL persistence and snake_case na
 
 ## Production deployment
 
-Production uses the standalone `compose.production.yaml` project and independent database, chat attachment, and Data Protection volumes. It targets a single native Linux host behind an existing HTTPS edge proxy; only the web service is published, on loopback. Production migrations use a separate, explicit EF bundle and connection string. See the [production deployment runbook](docs/deployment.md) for image tags, database roles, paired database/file backups, migration, and rollout commands. A temporary production-mode API runtime assembled from Release output and ASP.NET 10.0.14 verified multipart upload and private attachment reads across container recreation: both Customer Bearer and Staff cookie authorization returned the same stored bytes. The canonical API image build remains blocked by the missing manifest for pinned SDK 10.0.114; the pinned read-only Nginx 1.30.6 setup fails creating `/var/cache/nginx/fastcgi_temp`, and a full web image build was unavailable because Docker Buildx is missing. The full production stack and physical-phone checks remain unverified; validate the complete flow in staging before a production rollout.
+Production uses the standalone `compose.production.yaml` project and independent database, chat attachment, and Data Protection volumes. It targets a single native Linux host behind an existing HTTPS edge proxy; only the web service is published, on loopback. Production migrations use a separate, explicit EF bundle and connection string. See the [production deployment runbook](docs/deployment.md) for image tags, database roles, paired database/file backups, migration, and rollout commands. A temporary production-mode API runtime assembled from Release output and ASP.NET 10.0.14 verified multipart upload and private attachment reads across container recreation: both Customer Bearer and Staff cookie authorization returned the same stored bytes. The API SDK image now uses a published, digest-pinned 10.0.404 image. The pinned read-only Nginx 1.30.6 setup still fails creating `/var/cache/nginx/fastcgi_temp`; successful CI image builds do not establish production runtime readiness. The full production stack and physical-phone checks remain unverified; validate the complete flow in staging before a production rollout.
 
 ## Host development alternative
 
@@ -87,6 +87,24 @@ WEB_BASE_URL=http://127.0.0.1:5173 node apps/web/scripts/verify-supply-monitorin
 The script uses fixture data and does not require a live API; set `CAPTURE_DIR` to save screenshots.
 
 For host web development, copy `apps/web/.env.example` to `apps/web/.env.local` only if that file does not already exist, then set `VITE_GEOAPIFY_API_KEY` for supply-site maps and the supplier portal map. Preserve any existing per-app environment files. This browser-visible key should be restricted to your application origins. Restart Vite after changing it; builds use the configured value at build time. Map loading failures have a retry action, and an unconfigured map shows a setup notice. The address selectors do not move or verify the map pin. The portal map keeps its location list usable when tiles are unavailable, and its site/report layer reads use the existing personnel cookie policy. No additional migration is required for the portal map.
+
+## GitHub Actions
+
+Two workflows provide CI and container builds:
+
+- **Docker build and publish** (`.github/workflows/docker.yml`) runs for pull requests targeting `main`, pushes to `main`, and manual runs. It calls **Tests and lint** (`.github/workflows/ci.yml`), then builds the API, migration, and web production images for `linux/amd64`. Tests and lint can also run manually on its own.
+- Checks include web/shared ESLint and production build, mobile TypeScript and logic tests, and the Release API build/full test suite. API tests use a fresh PostgreSQL 18.6 service with the dedicated `aqours_auth_integration_tests` database and installed JavaScript SignalR dependencies. The API test step supplies test-only production bootstrap settings so early hosting validation can run before test configuration overrides; it does not use deployment secrets. API TRX results are retained for seven days, including failed test runs.
+- PRs and manual runs on other branches only build images. Successful main pushes or main manual runs publish the three images below using `GITHUB_TOKEN`; no Docker Hub credentials or personal access token is needed. Enable Actions and permit package publishing in repository/organization settings. Existing GHCR packages must grant this repository Actions write access.
+
+| Image            | GHCR name                                   |
+| ---------------- | ------------------------------------------- |
+| API              | `ghcr.io/zieksq/aqours-hackathon-api`       |
+| Migration bundle | `ghcr.io/zieksq/aqours-hackathon-migration` |
+| Web              | `ghcr.io/zieksq/aqours-hackathon-web`       |
+
+Images receive a full commit-SHA tag. After all three publish successfully, `latest` is promoted only if that commit is still the main tip. Main runs are serialized, and superseded PR runs cancel. Build layers use separate GitHub Actions cache scopes per image; API images rerun the restore stage because NuGet cache-mount contents are not exported with those layers. Names derive from the lowercase repository name, so forks use their own GHCR namespace. Use matching commit-SHA tags for all three production image variables; `latest` is a convenience tag, not a coordinated deployment or rollback mechanism.
+
+Optionally set the repository **Actions variable** `VITE_GEOAPIFY_API_KEY` for the browser-visible web build key. Without it, builds succeed and maps show the existing unconfigured notice. Restrict the key to the intended application origins; never put server credentials in it. The workflows have read-only repository access by default, with package writes only in main publishing jobs. They neither deploy containers nor apply production migrations. The documented Nginx runtime issue remains deferred; see the [deployment runbook](docs/deployment.md).
 
 ## Verification
 
