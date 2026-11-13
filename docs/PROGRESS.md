@@ -1,5 +1,7 @@
 # Progress
 
+Archived oldest active entries: [2026-11-13 archive](memory/progress-2026-11-13-01.md).
+
 Archived oldest active entry: [2026-11-08 archive 03](memory/progress-2026-11-08-03.md).
 Archived oldest active entry: [2026-11-08 archive 02](memory/progress-2026-11-08-02.md).
 
@@ -13,10 +15,6 @@ Archived Customer reporting API: [2026-10-30 archive](memory/progress-2026-10-30
 Archived authentication configuration: [2026-10-29 archive](memory/progress-2026-10-29-01.md).
 
 Archived portal foundation and mobile setup: [2026-10-30 archive](memory/progress-2026-10-30-02.md).
-
-- 2026-10-27: Replaced the blank Android native report map with Leaflet/Geoapify tiles inside an Expo-compatible WebView, removed manual coordinate entry and the unused native-map package, and added validated pin messages plus loading/failure/retry feedback. Verified TypeScript, all 22 unit tests, Prettier/source lint, local Expo dependency compatibility, Android/iOS JavaScript exports, a live Geoapify tile response, and browser checks of real tiles, tap/drag, read-only preview, attribution, and blocked-tile failure; physical-phone WebView verification remains pending.
-
-- 2026-10-27: Created a private Google Stitch project for the Aqours supplier web portal and saved nine review designs covering login, Admin/Staff dashboards, reports, active/unassigned tickets, collapsed navigation, and Admin account listing/creation under `design/aqours-web-stitch/`, with context, prompts, original HTML, PNGs, and a screen manifest. Validated export pairs and fixture totals, inspected previews and representative browser layouts, and documented remaining content, typography, and responsive issues; no application frontend implementation was changed.
 
 - 2026-10-27: Applied the Stitch framed-sheet design to the supplier portal with collapsible navigation, an account menu, refreshed login/account forms, a dashboard backed by report API data, and aligned status, priority, handler, and resolution controls across the queue and ticket workspace. Verified shared/web type checks, production build, ESLint, changed-file Prettier, and synthetic browser workflows at 1440/1280/768/390px plus 320px overflow checks; the account directory and historical analytics remain deferred pending API support, and live-backend UI verification was not performed.
 
@@ -57,3 +55,5 @@ Archived portal foundation and mobile setup: [2026-10-30 archive](memory/progres
 - 2026-11-08: Added a production Compose stack with multi-stage API and Nginx SPA images, same-origin REST/SignalR routing, loopback HTTPS-edge ingress, dedicated database/Data Protection volumes, and distinct runtime/migration connections with role-provisioning and EF bundle guidance. API Debug/Release builds, 15/15 focused hosting tests, UI/web builds, five Compose configurations, formatting/shell checks, and independent static review passed; `nginx -t`, Docker image builds, container/runtime checks, migrations, live auth/data retention, and deployment remain unverified because the Nginx binary was unavailable and daemon access was denied.
 
 - 2026-11-08: Implemented chat attachments across API, web, and mobile. Backend suite passed 126/126, independent commit-outcome retest 8/8, and final client review covered 44 targets at three widths, including the three-photo strip, with no new defects; isolated production-mode API runtime verified Customer and Staff could read original bytes after recreation; physical-phone verification remains pending; canonical deployment is blocked by the pinned SDK manifest, Nginx cache-temp startup, and unavailable Docker Buildx.
+
+- 2026-11-13: Added reusable test/lint and Docker build/publish GitHub Actions for PRs, main, and manual runs, with isolated PostgreSQL tests, SHA-tagged GHCR images, guarded latest promotion, and a published digest-pinned .NET 10.0.404 SDK. Actionlint, formatting, frozen install, web/shared lint/build, mobile typecheck/tests, Release API build, all 126 API tests, all three Docker image builds, and migration-bundle help passed locally; GitHub execution/GHCR publishing remain unverified and the Nginx runtime issue remains deferred.

@@ -1,0 +1,91 @@
+name: Tests and lint
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    name: Web and mobile checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.22.2
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint web and shared UI
+        run: pnpm lint:web
+      - name: Typecheck and build web
+        run: pnpm build:web
+      - name: Typecheck mobile
+        run: pnpm typecheck:mobile
+      - name: Test mobile logic
+        run: pnpm --filter @aqours/mobile test
+
+  api:
+    name: API build and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6-alpine3.23
+        env:
+          POSTGRES_DB: aqours_auth_integration_tests
+          POSTGRES_USER: aqours_test
+          POSTGRES_PASSWORD: ci-test-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aqours_test -d aqours_auth_integration_tests"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      AQOURS_TEST_CONNECTION_STRING: Host=localhost;Port=5432;Database=aqours_auth_integration_tests;Username=aqours_test;Password=ci-test-only-password
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.22.2
+          cache: pnpm
+      - name: Install SignalR test dependencies
+        run: pnpm install --frozen-lockfile
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - run: dotnet restore Aqours.slnx
+      - run: dotnet build Aqours.slnx --configuration Release --no-restore
+      - name: Run API tests
+        # ProductionHosting validates these before WebApplicationFactory overrides apply.
+        env:
+          PROD_PUBLIC_HOST: localhost
+          PROD_PROXY_CIDR: 172.30.0.0/24
+          AQOURS_DATA_PROTECTION_KEY_PATH: ${{ runner.temp }}/aqours-test-keys
+          ConnectionStrings__Aqours: ${{ env.AQOURS_TEST_CONNECTION_STRING }}
+          Jwt__Issuer: aqours-integration-tests
+          Jwt__Audience: aqours-integration-client
+          Jwt__SigningKey: test-signing-key-is-at-least-32-bytes-long
+          SeedAdmin__Email: seed-admin@aqours.test
+        run: dotnet test Aqours.slnx --configuration Release --no-build --logger "trx;LogFileName=api-tests.trx" --results-directory TestResults
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: api-test-results
+          path: TestResults/*.trx
+          if-no-files-found: warn
+          retention-days: 7
